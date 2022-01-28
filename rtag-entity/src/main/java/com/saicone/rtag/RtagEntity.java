@@ -5,7 +5,7 @@ import com.saicone.rtag.entity.EntityTag;
 import org.bukkit.entity.Entity;
 
 /**
- * RtagItem class to edit any {@link Entity} NBT tags.
+ * RtagEntity class to edit any {@link Entity} NBT tags.
  *
  * @author Rubenicos
  */
@@ -32,7 +32,16 @@ public class RtagEntity extends RtagEditor<Entity> {
     private final Entity entity;
 
     /**
-     * Constructs an RtagItem with specified Rtag parent
+     * Constructs an RtagEntity with Entity to edit.
+     *
+     * @param entity Entity to edit.
+     */
+    public RtagEntity(Entity entity) {
+        this(Rtag.INSTANCE, entity);
+    }
+
+    /**
+     * Constructs an RtagEntity with specified Rtag parent
      * and Entity to edit.
      *
      * @param rtag Rtag parent.
@@ -43,7 +52,7 @@ public class RtagEntity extends RtagEditor<Entity> {
     }
 
     /**
-     * Constructs an RtagItem with specified Rtag parent
+     * Constructs an RtagEntity with specified Rtag parent
      * and NMS Entity to edit.
      *
      * @param rtag   Rtag parent.
@@ -55,7 +64,7 @@ public class RtagEntity extends RtagEditor<Entity> {
     }
 
     /**
-     * Constructs an RtagItem with specified Rtag parent
+     * Constructs an RtagEntity with specified Rtag parent
      * and NMS Entity to edit.
      *
      * @param rtag   Rtag parent.

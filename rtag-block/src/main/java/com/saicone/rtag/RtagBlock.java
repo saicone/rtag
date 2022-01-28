@@ -5,7 +5,7 @@ import com.saicone.rtag.block.TileTag;
 import org.bukkit.block.Block;
 
 /**
- * RtagItem class to edit any {@link Block} NBT tags.
+ * RtagBlock class to edit any {@link Block} NBT tags.
  *
  * @author Rubenicos
  */
@@ -32,10 +32,19 @@ public class RtagBlock extends RtagEditor<Block> {
     private final Block block;
 
     /**
-     * Constructs an RtagItem with specified Rtag parent
+     * Constructs an RtagBlock with Block to edit.
+     *
+     * @param block Block to edit.
+     */
+    public RtagBlock(Block block) {
+        this(Rtag.INSTANCE, block);
+    }
+
+    /**
+     * Constructs an RtagBlock with specified Rtag parent
      * and Block to edit.
      *
-     * @param rtag Rtag parent.
+     * @param rtag  Rtag parent.
      * @param block Block to edit.
      */
     public RtagBlock(Rtag rtag, Block block) {
@@ -43,7 +52,7 @@ public class RtagBlock extends RtagEditor<Block> {
     }
 
     /**
-     * Constructs an RtagItem with specified Rtag parent
+     * Constructs an RtagBlock with specified Rtag parent
      * and NMS Block to edit.
      *
      * @param rtag   Rtag parent.
@@ -55,7 +64,7 @@ public class RtagBlock extends RtagEditor<Block> {
     }
 
     /**
-     * Constructs an RtagItem with specified Rtag parent
+     * Constructs an RtagBlock with specified Rtag parent
      * and NMS Block to edit.
      *
      * @param rtag   Rtag parent.

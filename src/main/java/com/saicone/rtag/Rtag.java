@@ -34,6 +34,8 @@ public class Rtag {
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
     private static final Class<?> tagList = EasyLookup.classById("NBTTagList");
 
+    public static final Rtag INSTANCE = new Rtag();
+
     private final RtagMirror mirror;
     private final Map<String, RtagDeserializer<Object>> deserializers = new HashMap<>();
     private final Map<Class<?>, RtagSerializer<Object>> serializers = new HashMap<>();

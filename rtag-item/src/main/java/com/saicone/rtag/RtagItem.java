@@ -30,6 +30,15 @@ public class RtagItem extends RtagEditor<ItemStack> {
     }
 
     /**
+     * Constructs an RtagItem with ItemStack to edit.
+     *
+     * @param item Item to edit.
+     */
+    public RtagItem(ItemStack item) {
+        this(Rtag.INSTANCE, item);
+    }
+
+    /**
      * Constructs an RtagItem with specified Rtag parent
      * and ItemStack to edit.
      *
