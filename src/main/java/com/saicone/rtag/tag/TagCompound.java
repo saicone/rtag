@@ -79,7 +79,15 @@ public class TagCompound {
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        newEmpty = m1; newCompound = m2; mapField = m3; clone = m4; hasKey = m5; remove = m6; set = m7; get = m8; getKeys = m9;
+        newEmpty = m1;
+        newCompound = m2;
+        mapField = m3;
+        clone = m4;
+        hasKey = m5;
+        remove = m6;
+        set = m7;
+        get = m8;
+        getKeys = m9;
     }
 
     /**

@@ -27,7 +27,8 @@ public class ItemBridge {
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        asBukkitCopy = m1; asNMSCopy = m2;
+        asBukkitCopy = m1;
+        asNMSCopy = m2;
     }
 
     /**

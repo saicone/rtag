@@ -45,7 +45,10 @@ public class ItemTag {
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        getTag = m1; setTag = m2; save = m3; createStack = m4;
+        getTag = m1;
+        setTag = m2;
+        save = m3;
+        createStack = m4;
     }
 
     /**

@@ -28,7 +28,8 @@ public class EntityBridge {
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        getEntity = m1; getHandle = m2;
+        getEntity = m1;
+        getHandle = m2;
     }
 
     /**

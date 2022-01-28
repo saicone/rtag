@@ -90,7 +90,18 @@ public class TagList {
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        newEmpty = m1; newList = m2; size = m3; add = m4; remove = m5; set = m6; get = m7; getTypeId = m8; isTypeId = m9; typeField = m10; setListField = m11; getListField = m12;
+        newEmpty = m1;
+        newList = m2;
+        size = m3;
+        add = m4;
+        remove = m5;
+        set = m6;
+        get = m7;
+        getTypeId = m8;
+        isTypeId = m9;
+        typeField = m10;
+        setListField = m11;
+        getListField = m12;
     }
 
     /**

@@ -40,7 +40,8 @@ public class EntityTag {
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        save = m1; load = m2;
+        save = m1;
+        load = m2;
     }
 
     /**

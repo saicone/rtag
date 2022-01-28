@@ -117,8 +117,27 @@ public class TagBase {
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        tagByte = m1; tagByteArray = m2; tagDouble = m3; tagFloat = m4; tagInt = m5; tagIntArray = m6; tagLong = m7; tagLongArray = m8; tagShort = m9; tagString = m10;
-        asByte = m11; asByteArray = m12; asDouble = m13; asFloat = m14; asInt = m15; asIntArray = m16; asLong = m17; asLongArray = m18; asShort = m19; asString = m20;
+        tagByte = m1;
+        tagByteArray = m2;
+        tagDouble = m3;
+        tagFloat = m4;
+        tagInt = m5;
+        tagIntArray = m6;
+        tagLong = m7;
+        tagLongArray = m8;
+        tagShort = m9;
+        tagString = m10;
+
+        asByte = m11;
+        asByteArray = m12;
+        asDouble = m13;
+        asFloat = m14;
+        asInt = m15;
+        asIntArray = m16;
+        asLong = m17;
+        asLongArray = m18;
+        asShort = m19;
+        asString = m20;
 
         newFunction(o -> EasyLookup.safeInvoke(tagByte, o), byte.class, Byte.class);
         getValueFunction.put(EasyLookup.classById("NBTTagByte"), o -> EasyLookup.safeInvoke(asByte, o));

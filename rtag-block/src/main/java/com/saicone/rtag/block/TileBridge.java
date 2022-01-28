@@ -30,7 +30,9 @@ public class TileBridge {
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        getHandle = m1; getTileEntity = m2; newBlockPosition = m3;
+        getHandle = m1;
+        getTileEntity = m2;
+        newBlockPosition = m3;
     }
 
     /**
