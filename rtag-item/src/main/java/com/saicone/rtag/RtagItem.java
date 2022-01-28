@@ -2,95 +2,98 @@ package com.saicone.rtag;
 
 import com.saicone.rtag.item.ItemBridge;
 import com.saicone.rtag.item.ItemTag;
-import com.saicone.rtag.util.EasyLookup;
 import org.bukkit.inventory.ItemStack;
 
-public class RtagItem {
+/**
+ * RtagItem class to edit any {@link ItemStack} NBT tags.
+ *
+ * @author Rubenicos
+ */
+public class RtagItem extends RtagEditor<ItemStack> {
 
-    private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
-
-    private final Rtag rtag;
-    private final Object item;
-    private Object tag;
-
-    public RtagItem(Rtag rtag, ItemStack item) {
-        this.rtag = rtag;
-        Object finalItem = null;
-        Object finalTag = null;
+    private static Object asMinecraft(ItemStack item) {
         try {
-            finalItem = ItemBridge.asMinecraft(item);
-            finalTag = ItemTag.getTag(finalItem);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-        this.item = finalItem;
-        tag = finalTag;
-    }
-
-    public ItemStack load() {
-        try {
-            return ItemBridge.asBukkit(item);
+            return ItemBridge.asMinecraft(item);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;
         }
     }
 
-    public boolean add(Object value, Object... path) {
+    private static Object getTag(Object item) {
         try {
-            return rtag.add(tag, value, path);
+            return ItemTag.getTag(item);
         } catch (Throwable t) {
             t.printStackTrace();
-            return false;
+            return null;
         }
     }
 
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and ItemStack to edit.
+     *
+     * @param rtag Rtag parent.
+     * @param item Item to edit.
+     */
+    public RtagItem(Rtag rtag, ItemStack item) {
+        this(rtag, asMinecraft(item));
+    }
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and NMS ItemStack to edit.
+     *
+     * @param rtag Rtag parent.
+     * @param item NMS item to edit.
+     */
+    public RtagItem(Rtag rtag, Object item) {
+        this(rtag, item, getTag(item));
+    }
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and NMS ItemStack to edit.
+     *
+     * @param rtag Rtag parent.
+     * @param item NMS item to edit.
+     * @param tag  Item tag to edit.
+     */
+    public RtagItem(Rtag rtag, Object item, Object tag) {
+        super(rtag, item, tag);
+    }
+
+    /**
+     * Load changes into new ItemStack instance and return them.
+     *
+     * @return Copy of the original item with changes loaded.
+     */
+    public ItemStack load() {
+        try {
+            return ItemBridge.asBukkit(getObject());
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Change item tag into new one.<br>
+     * Value must be Map<String, Object> or NBTTagListCompound.
+     *
+     * @param value Object to replace current tag.
+     * @return      True if tag has replaced.
+     */
     public boolean set(Object value) {
-        Object tag = rtag.toTag(value);
-        if (tagCompound.isInstance(tag)) {
-            this.tag = tag;
+        if (super.set(value)) {
             try {
-                ItemTag.setTag(item, tag);
-                return true;
+                ItemTag.setTag(getObject(), getTag());
             } catch (Throwable t) {
                 t.printStackTrace();
             }
-        }
-        return false;
-    }
-
-    public boolean set(Object value, Object... path) {
-        try {
-            return rtag.set(tag, value, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
+            return true;
+        } else {
             return false;
-        }
-    }
-
-    public <T> T get() {
-        return rtag.fromTag(tag);
-    }
-
-    public <T> T get(Object... path) {
-        try {
-            return rtag.get(tag, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    public Object getExact() {
-        return tag;
-    }
-
-    public Object getExact(Object... path) {
-        try {
-            return rtag.getExact(tag, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
         }
     }
 }

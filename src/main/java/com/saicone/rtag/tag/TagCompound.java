@@ -10,6 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Class to invoke NBTTagCompound methods across versions.
+ *
+ * @author Rubenicos
+ */
 public class TagCompound {
 
     public static final TagData<Object> DATA = new TagData<>() {
@@ -53,8 +58,10 @@ public class TagCompound {
 
             m1 = EasyLookup.constructor(nbtCompound);
             if (ServerInstance.verNumber >= 15) {
+                // Private method
                 m2 = EasyLookup.unreflectConstructor(nbtCompound, Map.class);
             } else {
+                // Private field
                 m3 = EasyLookup.unreflectSetter(nbtCompound, "map");
             }
             // Unreflect reason:
@@ -75,10 +82,23 @@ public class TagCompound {
         newEmpty = m1; newCompound = m2; mapField = m3; clone = m4; hasKey = m5; remove = m6; set = m7; get = m8; getKeys = m9;
     }
 
+    /**
+     * Constructs an empty NBTTagCompound.
+     *
+     * @return New NBTTagCompound instance.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object newTag() throws Throwable {
         return newEmpty.invoke();
     }
 
+    /**
+     * Constructs an NBTTagCompound with provided Map of NBTBase values.
+     *
+     * @param map Map with tags.
+     * @return    New NBTTagCompound instance.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object newTag(Map<String, Object> map) throws Throwable {
         if (map.isEmpty()) return newEmpty.invoke();
         if (ServerInstance.verNumber >= 15) {
@@ -90,6 +110,14 @@ public class TagCompound {
         }
     }
 
+    /**
+     * Constructs an NBTTagCompound with provided Map of Objects
+     * and required {@link Rtag} to convert Objects.
+     *
+     * @param rtag Rtag parent to convert objects into tags.
+     * @param map  Map with objects.
+     * @return     New NBTTagCompound instance.
+     */
     public static Object newTag(Rtag rtag, Map<String, Object> map) {
         Object finalObject = null;
         try {
@@ -106,6 +134,13 @@ public class TagCompound {
         return finalObject;
     }
 
+    /**
+     * Get current tag map.
+     *
+     * @param rtag Rtag parent to convert tags.
+     * @param tag  NBTTagCompound instance.
+     * @return     A Map of Objects.
+     */
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getValue(Rtag rtag, Object tag) {
         Map<String, Object> map = new HashMap<>();
@@ -119,30 +154,82 @@ public class TagCompound {
         return map;
     }
 
+    /**
+     * Copy provided NBTTagCompound into new one without exceptions.
+     *
+     * @param tag NBTTagCompound instance.
+     * @return    A copy of original NBTTagCompound.
+     */
     public static Object safeClone(Object tag) {
         return EasyLookup.safeInvoke(clone, tag);
     }
 
+    /**
+     * Copy provided NBTTagCompound into new one.
+     *
+     * @param tag NBTTagCompound instance.
+     * @return    A copy of original NBTTagCompound.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object clone(Object tag) throws Throwable {
         return clone.invoke(tag);
     }
 
+    /**
+     * The inverse result of {@link #hasKey(Object, String)}.
+     *
+     * @param tag NBTTagCompound instance.
+     * @param key Key to find.
+     * @return    True if key exist.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static boolean notHasKey(Object tag, String key) throws Throwable {
         return !(boolean) hasKey.invoke(tag, key);
     }
 
+    /**
+     * Check if NBTTagCompound contains certain key in Map.
+     *
+     * @param tag NBTTagCompound instance.
+     * @param key Key to find.
+     * @return    True if key exist.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static boolean hasKey(Object tag, String key) throws Throwable {
         return (boolean) hasKey.invoke(tag, key);
     }
 
+    /**
+     * Remove certain key from NBTTagCompound.
+     *
+     * @param tag NBTTagCompound instance.
+     * @param key Key to remove.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static void remove(Object tag, String key) throws Throwable {
         remove.invoke(tag, key);
     }
 
+    /**
+     * Put certain NBTBase value to NBTTagCompound.
+     *
+     * @param tag   NBTTagCompound instance.
+     * @param key   Value key.
+     * @param value Value to put.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static void set(Object tag, String key, Object value) throws Throwable {
         set.invoke(tag, key, value);
     }
 
+    /**
+     * Get NBTBase value associated with key.
+     *
+     * @param tag NBTTagCompound instance.
+     * @param key Value key.
+     * @return    A NBTBase value if exist inside compound, null if not.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object get(Object tag, String key) throws Throwable {
         return get.invoke(tag, key);
     }

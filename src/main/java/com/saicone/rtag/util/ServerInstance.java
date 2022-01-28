@@ -2,6 +2,11 @@ package com.saicone.rtag.util;
 
 import org.bukkit.Bukkit;
 
+/**
+ * Server instance class to get information about current server.
+ *
+ * @author Rubenicos
+ */
 public class ServerInstance {
 
     public static final String version;

@@ -14,7 +14,6 @@ subprojects {
 
     dependencies {
         implementation rootProject
-        compileOnly 'ink.ptms.core:v11800:11800:api'
     }
 
     compileJava {

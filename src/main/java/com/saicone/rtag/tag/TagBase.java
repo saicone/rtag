@@ -1,13 +1,20 @@
 package com.saicone.rtag.tag;
 
+import com.saicone.rtag.Rtag;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
 
 import java.lang.invoke.MethodHandle;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Class to invoke methods inside classes that extends NBTBase.
+ *
+ * @author Rubenicos
+ */
 public class TagBase {
 
     private static final Map<Class<?>, Function<Object, Object>> newTagFunction = new HashMap<>();
@@ -153,10 +160,30 @@ public class TagBase {
         }
     }
 
+    /**
+     * Constructs an NBTBase directly associated with Java object.<br>
+     * For example Float ->  NBTTagFloat
+     *
+     * @see TagCompound#newTag(Map) 
+     * @see TagList#newTag(List) 
+     *
+     * @param object Java object that exist in NBTBase tag.
+     * @return       A NBTBase tag associated with provided object.
+     */
     public static Object newTag(Object object) {
         return newTagFunction.get(object.getClass()).apply(object);
     }
 
+    /**
+     * Get Java value of NBTBase tag.<br>
+     * For example NBTTagString -> String.
+     *
+     * @see TagCompound#getValue(Rtag, Object) 
+     * @see TagList#getValue(Rtag, Object) 
+     *
+     * @param tag Tag to extract value.
+     * @return    A java object inside NBTBase tag.
+     */
     public static Object getValue(Object tag) {
         return getValueFunction.get(tag.getClass()).apply(tag);
     }

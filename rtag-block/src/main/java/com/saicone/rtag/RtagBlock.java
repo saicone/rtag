@@ -1,90 +1,84 @@
 package com.saicone.rtag;
 
-import com.saicone.rtag.block.BlockBridge;
-import com.saicone.rtag.block.BlockTag;
-import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.block.TileBridge;
+import com.saicone.rtag.block.TileTag;
 import org.bukkit.block.Block;
 
-public class RtagBlock {
+/**
+ * RtagItem class to edit any {@link Block} NBT tags.
+ *
+ * @author Rubenicos
+ */
+public class RtagBlock extends RtagEditor<Block> {
 
-    private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
+    private static Object asMinecraft(Block block) {
+        try {
+            return TileBridge.asMinecraft(block);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
+    }
 
-    private final Rtag rtag;
-    private final Object block;
-    private Object tag;
+    private static Object getTag(Object block) {
+        try {
+            return TileTag.saveTag(block);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
+    }
 
+    private final Block block;
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and Block to edit.
+     *
+     * @param rtag Rtag parent.
+     * @param block Block to edit.
+     */
     public RtagBlock(Rtag rtag, Block block) {
-        this.rtag = rtag;
-        Object finalBlock = null;
-        Object finalTag = null;
+        this(rtag, block, asMinecraft(block));
+    }
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and NMS Block to edit.
+     *
+     * @param rtag   Rtag parent.
+     * @param block  Original block.
+     * @param object NMS block to edit.
+     */
+    public RtagBlock(Rtag rtag, Block block, Object object) {
+        this(rtag, block, object, getTag(object));
+    }
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and NMS Block to edit.
+     *
+     * @param rtag   Rtag parent.
+     * @param block  Original block.
+     * @param object NMS block to edit.
+     * @param tag    Block tag to edit.
+     */
+    public RtagBlock(Rtag rtag, Block block, Object object, Object tag) {
+        super(rtag, object, tag);
+        this.block = block;
+    }
+
+    /**
+     * Load changes into block instance.
+     *
+     * @return The original block.
+     */
+    public Block load() {
         try {
-            finalBlock = BlockBridge.asMinecraft(block);
-            finalTag = BlockTag.saveTag(finalBlock);
+            TileTag.loadTag(getObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        this.block = finalBlock;
-        tag = finalTag;
-    }
-
-    public void load() {
-        try {
-            BlockTag.loadTag(block, tag);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    public boolean add(Object value, Object... path) {
-        try {
-            return rtag.add(tag, value, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean set(Object value) {
-        Object tag = rtag.toTag(value);
-        if (tagCompound.isInstance(tag)) {
-            this.tag = tag;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean set(Object value, Object... path) {
-        try {
-            return rtag.set(tag, value, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return false;
-        }
-    }
-
-    public <T> T get() {
-        return rtag.fromTag(tag);
-    }
-
-    public <T> T get(Object... path) {
-        try {
-            return rtag.get(tag, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    public Object getExact() {
-        return tag;
-    }
-
-    public Object getExact(Object... path) {
-        try {
-            return rtag.getExact(tag, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
+        return block;
     }
 }

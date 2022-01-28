@@ -8,7 +8,12 @@ import org.bukkit.block.Block;
 
 import java.lang.invoke.MethodHandle;
 
-public class BlockBridge {
+/**
+ * Class to invoke Minecraft World methods across versions.
+ *
+ * @author Rubenicos
+ */
+public class TileBridge {
 
     private static final Class<?> craftBlockState = EasyLookup.classById("CraftBlockState");
 
@@ -28,6 +33,13 @@ public class BlockBridge {
         getHandle = m1; getTileEntity = m2; newBlockPosition = m3;
     }
 
+    /**
+     * Get provided Bukkit Block and convert into Minecraft TileEntity.
+     *
+     * @param block Block to convert.
+     * @return      A Minecraft TileEntity.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object asMinecraft(Block block) throws Throwable {
         if (craftBlockState.isInstance(block.getState())) {
             Location loc = block.getLocation();
@@ -37,6 +49,13 @@ public class BlockBridge {
         }
     }
 
+    /**
+     * Get provided Bukkit World and convert into Minecraft World.
+     *
+     * @param world World to convert.
+     * @return      A Minecraft World.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object asMinecraft(World world) throws Throwable {
         return getHandle.invoke(world);
     }

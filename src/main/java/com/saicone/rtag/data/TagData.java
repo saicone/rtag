@@ -13,10 +13,34 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * TagData class to handle NBTTagCompound
+ * with writeable and readable objects.<br>
+ * The TagData instance provide easy methods
+ * handle objects has bytes.
+ * <h2>Write</h2>
+ * Object -> NBTTagCompound -> Bytes<br>
+ * With bytes you can write to file or convert
+ * into Base64 String.
+ * <h2>Read</h2>
+ * Bytes -> NBTTagCompound -> Object<br>
+ * You can read bytes from file or Base64.
+ *
+ * @author Rubenicos
+ *
+ * @param <T> Object type to write and read.
+ */
 public class TagData<T> {
 
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
 
+    /**
+     * Clone provided object by extract NBTTagCompound
+     * and use it to build new object.
+     *
+     * @param object Object to copy.
+     * @return       A copy of provided object.
+     */
     public T clone(T object) {
         return fromCompound(toCompound(object));
     }
@@ -34,6 +58,12 @@ public class TagData<T> {
         }
     }
 
+    /**
+     * Convert object into NBTTagCompound.
+     *
+     * @param object Object to convert.
+     * @return       A NBTTagCompound representing the object.
+     */
     public Object toCompound(T object) {
         if (object == null) {
             return null;
@@ -46,14 +76,30 @@ public class TagData<T> {
         }
     }
 
-    public T fromCompound(Object object) {
-        if (tagCompound.isInstance(object)) {
-            return build(object);
+    /**
+     * Create new object from NBTTagCompound.
+     *
+     * @param compound NBTTagCompound instance.
+     * @return         A new object with NBTTagCompound parameters.
+     */
+    public T fromCompound(Object compound) {
+        if (tagCompound.isInstance(compound)) {
+            return build(compound);
         } else {
             return null;
         }
     }
 
+    /**
+     * Write provided object into file.<br>
+     * Provided file must be exist.<br>
+     * This method first convert provided object into NBTTagCompound,
+     * then write compound into FileOutputStream.
+     *
+     * @param object Object to write.
+     * @param file   File to write inside.
+     * @return       Provided file.
+     */
     public File toFile(T object, File file) {
         try {
             TagDataStream.write(toCompound(object), file);
@@ -63,11 +109,23 @@ public class TagData<T> {
         return file;
     }
 
+    /**
+     * Convert objects into Base64.
+     *
+     * @param object Objects to convert.
+     * @return       A Base64 String that represent provided objects.
+     */
     @SafeVarargs
     public final String toBase64(T... object) {
         return listToBase64(Arrays.asList(object));
     }
 
+    /**
+     * Convert list of objects into Base64.
+     *
+     * @param objects Objects to convert.
+     * @return        A Base64 String that represent provided list.
+     */
     public String listToBase64(List<T> objects) {
         String data = "";
         if (!objects.isEmpty()) {
@@ -84,6 +142,15 @@ public class TagData<T> {
         return data;
     }
 
+    /**
+     * Convert object into bytes.<br>
+     * This method first convert provided object into NBTTagCompound,
+     * then write compound into ByteArrayOutputStream.<br>
+     * Object -> NBTTagCompound -> Bytes
+     *
+     * @param object Object to convert.
+     * @return       A byte array that represent the object.
+     */
     public byte[] toBytes(T object) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
@@ -95,6 +162,12 @@ public class TagData<T> {
         return output.toByteArray();
     }
 
+    /**
+     * Get object by read provided file.
+     *
+     * @param file File to read.
+     * @return     A object if provided file contains it, null if not.
+     */
     public T fromFile(File file) {
         try {
             return fromCompound(TagDataStream.read(file));
@@ -104,11 +177,23 @@ public class TagData<T> {
         }
     }
 
+    /**
+     * Get array of objects by read Base64 string.
+     *
+     * @param base64 Base64 that represent the objets.
+     * @return       Array of objects.
+     */
     @SuppressWarnings("unchecked")
     public T[] fromBase64(String base64) {
         return (T[]) listFromBase64(base64).toArray();
     }
 
+    /**
+     * Get list og objects by reAD Base64 string.
+     *
+     * @param base64 Base64 that represent the list.
+     * @return       List of objects.
+     */
     public List<T> listFromBase64(String base64) {
         List<T> list = new ArrayList<>();
         if (!base64.trim().isEmpty()) {
@@ -130,6 +215,15 @@ public class TagData<T> {
         return list;
     }
 
+    /**
+     * Get object from bytes.<br>
+     * The method first read the bytes with ByteArrayInputStream to
+     * get an NBTTagCompound and convert it into object.<br>
+     * Bytes -> NBTTagCompound -> Object
+     *
+     * @param bytes Bytes to read.
+     * @return      A NBTTagCompound converted to object.
+     */
     public T fromBytes(byte[] bytes) {
         try {
             return fromCompound(TagDataStream.read(new ByteArrayInputStream(bytes)));

@@ -12,6 +12,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Very simple class to get textured heads from:<br>
+ * - Texture ID<br>
+ * - Texture URL<br>
+ * - Texture Base64<br>
+ *
+ * The main plan for this class was making textured heads by
+ * edit item NBTTagCompound, but it's stupid because with
+ * single reflected method is possible.
+ *
+ * @author Rubenicos
+ */
 public class SkullTexture {
 
     private static final Material PLAYER_HEAD;
@@ -27,6 +39,7 @@ public class SkullTexture {
         }
         MethodHandle m1 = null;
         try {
+            // Private field
             m1 = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
@@ -34,6 +47,12 @@ public class SkullTexture {
         setProfile = m1;
     }
 
+    /**
+     * Main method to get textured head and save into cache.
+     *
+     * @param texture Texture ID, URL o Base64.
+     * @return        A ItemStack that represent the textured head.
+     */
     public static ItemStack getTextureHead(String texture) {
         return cache.computeIfAbsent(texture, SkullTexture::buildHead);
     }

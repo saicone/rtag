@@ -6,6 +6,11 @@ import com.saicone.rtag.util.ServerInstance;
 
 import java.lang.invoke.MethodHandle;
 
+/**
+ * Class to invoke Minecraft Entity methods across versions.
+ *
+ * @author Rubenicos
+ */
 public class EntityTag {
 
     private static final MethodHandle save;
@@ -38,6 +43,13 @@ public class EntityTag {
         save = m1; load = m2;
     }
 
+    /**
+     * Save current NBTTagCompound into new one entity.
+     *
+     * @param entity Entity instance.
+     * @return       A NBTTagCompound that represent the tile.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object saveTag(Object entity) throws Throwable {
         if (ServerInstance.verNumber >= 9) {
             return save.invoke(entity, TagCompound.newTag());
@@ -48,6 +60,13 @@ public class EntityTag {
         }
     }
 
+    /**
+     * Load NBTTagCompound into entity.
+     *
+     * @param entity Entity instance.
+     * @param tag    The NBTTagCompound to load.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static void loadTag(Object entity, Object tag) throws Throwable {
         load.invoke(entity, tag);
     }

@@ -8,6 +8,11 @@ import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class to invoke NBTTagList methods across versions.
+ *
+ * @author Rubenicos
+ */
 public class TagList {
 
     private static final Class<?> nbtList = EasyLookup.classById("NBTTagList");
@@ -20,15 +25,17 @@ public class TagList {
     private static final MethodHandle set;
     private static final MethodHandle get;
     private static final MethodHandle getTypeId;
-    private static final MethodHandle listField;
+    private static final MethodHandle isTypeId;
     private static final MethodHandle typeField;
+    private static final MethodHandle setListField;
+    private static final MethodHandle getListField;
 
     static {
-        MethodHandle m1 = null, m2 = null, m3 = null, m4 = null, m5 = null, m6 = null, m7 = null, m8 = null, m9 = null, m10 = null;
+        MethodHandle m1 = null, m2 = null, m3 = null, m4 = null, m5 = null, m6 = null, m7 = null, m8 = null, m9 = null, m10 = null, m11 = null, m12 = null;
         try {
             Class<?> base = EasyLookup.classById("NBTBase");
             // Old names
-            String size = "size", add = "add", remove = "a", set = "a", get = "g", getTypeId = "getTypeId";
+            String size = "size", add = "add", remove = "a", set = "a", get = "g", getTypeId = "getTypeId", list = "list";
             // New names
             if (ServerInstance.verNumber >= 18) {
                 add = "c";
@@ -47,17 +54,24 @@ public class TagList {
                     get = "h";
                 }
             }
+            if (ServerInstance.isUniversal) {
+                list = "c";
+            }
 
             m1 = EasyLookup.constructor(nbtList);
             if (ServerInstance.verNumber >= 15) {
+                // Private constructor
                 m2 = EasyLookup.unreflectConstructor(nbtList, List.class, byte.class);
             } else {
-                m9 = EasyLookup.unreflectSetter(nbtList, "list");
+                // Private fields
                 m10 = EasyLookup.unreflectSetter(nbtList, "type");
+                m11 = EasyLookup.unreflectSetter(nbtList, list);
             }
             m3 = EasyLookup.method(nbtList, size, int.class);
             if (ServerInstance.verNumber >= 14) {
                 m4 = EasyLookup.method(nbtList, add, void.class, int.class, base);
+                // Private method
+                m9 = EasyLookup.unreflectMethod(nbtList, "a", base);
             } else {
                 // Unreflect reason:
                 // (1.12 - 1.13) return boolean
@@ -71,16 +85,31 @@ public class TagList {
             m6 = EasyLookup.unreflectMethod(nbtList, set, int.class, base);
             m7 = EasyLookup.method(nbtList, get, base, int.class);
             m8 = EasyLookup.method(base, getTypeId, byte.class);
+            // Private field
+            m12 = EasyLookup.unreflectGetter(nbtList, list);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        newEmpty = m1; newList = m2; size = m3; add = m4; remove = m5; set = m6; get = m7; getTypeId = m8; listField = m9; typeField = m10;
+        newEmpty = m1; newList = m2; size = m3; add = m4; remove = m5; set = m6; get = m7; getTypeId = m8; isTypeId = m9; typeField = m10; setListField = m11; getListField = m12;
     }
 
+    /**
+     * Constructs an empty NBTTagList.
+     *
+     * @return New NBTTagList instance.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object newTag() throws Throwable {
         return newEmpty.invoke();
     }
 
+    /**
+     * Constructs and NBTTagList with provided List of NBTBase.
+     *
+     * @param list List with NBTBase values.
+     * @return     New NBTTagList instance.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object newTag(List<Object> list) throws Throwable {
         if (list.isEmpty()) return newEmpty.invoke();
         byte type = (byte) getTypeId.invoke(list.get(0));
@@ -89,11 +118,19 @@ public class TagList {
         } else {
             Object tag = newTag();
             typeField.invoke(tag, type);
-            listField.invoke(tag, list);
+            setListField.invoke(tag, list);
             return tag;
         }
     }
 
+    /**
+     * Constructs and NBTTagList with provided List of NBTBase
+     * and required {@link Rtag} to convert Objects.
+     *
+     * @param rtag Rtag parent to convert objects into tags.
+     * @param list List with objects.
+     * @return     New NBTTagList instance.
+     */
     public static Object newTag(Rtag rtag, List<Object> list) {
         Object finalObject = null;
         try {
@@ -112,6 +149,13 @@ public class TagList {
         return finalObject;
     }
 
+    /**
+     * Get current tag list.
+     *
+     * @param rtag Rtag parent to convert tags.
+     * @param tag  NBTTagList instance.
+     * @return     A list of objects.
+     */
     public static List<Object> getValue(Rtag rtag, Object tag) {
         List<Object> list = new ArrayList<>();
         try {
@@ -125,38 +169,80 @@ public class TagList {
         return list;
     }
 
+    /**
+     * Get the size of elements inside list.
+     *
+     * @param tag NBTTagList instance.
+     * @return    Size of list inside.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static int size(Object tag) throws Throwable {
         return (int) size.invoke(tag);
     }
 
+    /**
+     * Add NBTBase tag.
+     *
+     * @param listTag NBTTagList instance.
+     * @param tag     NBTBase tag to add.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    @SuppressWarnings("unchecked")
     public static void add(Object listTag, Object tag) throws Throwable {
         if (ServerInstance.verNumber >= 14) {
-            add.invoke(listTag, getTypeId.invoke(tag), tag);
+            if ((boolean) isTypeId.invoke(listTag, tag)) {
+                ((List<Object>) getListField.invoke(listTag)).add(tag);
+            }
         } else {
             add.invoke(listTag, tag);
         }
     }
 
-    public static void add(Object listTag, Object... tag) throws Throwable {
-        if (ServerInstance.verNumber >= 14) {
-            for (Object o : tag) {
-                add.invoke(listTag, getTypeId.invoke(o), o);
-            }
-        } else {
-            for (Object o : tag) {
-                add.invoke(listTag, o);
-            }
+    /**
+     * Add multiple NBTBase tags.
+     *
+     * @param listTag NBTTagList instance.
+     * @param tags    NBTBase tags to add.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public static void add(Object listTag, Object... tags) throws Throwable {
+        for (Object tag : tags) {
+            add(listTag, tag);
         }
     }
 
+    /**
+     * Remove NBTBase tag.
+     *
+     * @param tag   NBTTagList instance.
+     * @param index The index of the tag to be removed
+     * @return      Removed tag.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object remove(Object tag, int index) throws Throwable {
         return remove.invoke(tag, index);
     }
 
+    /**
+     * Set NBTBase tag at index.
+     *
+     * @param listTag NBTTagList instance.
+     * @param index   Index of element to replace.
+     * @param tag     Tag value to set.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static void set(Object listTag, int index, Object tag) throws Throwable {
         set.invoke(listTag, index, tag);
     }
 
+    /**
+     * Get NBTBase tag from index.
+     *
+     * @param tag   NBTTagList instance.
+     * @param index Index of the tag to return.
+     * @return      A NBTBase instance.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object get(Object tag, int index) throws Throwable {
         return get.invoke(tag, index);
     }

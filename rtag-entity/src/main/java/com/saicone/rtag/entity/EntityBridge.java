@@ -6,6 +6,11 @@ import org.bukkit.entity.Entity;
 
 import java.lang.invoke.MethodHandle;
 
+/**
+ * Class to invoke CraftEntity methods across versions.
+ *
+ * @author Rubenicos
+ */
 public class EntityBridge {
 
     private static final Class<?> entityClass = EasyLookup.classById("Entity");
@@ -26,6 +31,13 @@ public class EntityBridge {
         getEntity = m1; getHandle = m2;
     }
 
+    /**
+     * Get provided Minecraft Entity and convert into Bukkit Entity.
+     *
+     * @param entity Entity to convert.
+     * @return       A Bukkit Entity.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Entity asBukkit(Object entity) throws Throwable {
         if (entityClass.isInstance(entity)) {
             return (Entity) getEntity.invoke(Bukkit.getServer(), entity);
@@ -34,6 +46,13 @@ public class EntityBridge {
         }
     }
 
+    /**
+     * Get provided Bukkit Entity and convert into Minecraft Entity.
+     *
+     * @param entity Entity to convert.
+     * @return       A Minecraft Entity.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object asMinecraft(Entity entity) throws Throwable {
         return getHandle.invoke(entity);
     }

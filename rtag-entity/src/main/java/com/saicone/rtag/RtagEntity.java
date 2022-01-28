@@ -2,89 +2,83 @@ package com.saicone.rtag;
 
 import com.saicone.rtag.entity.EntityBridge;
 import com.saicone.rtag.entity.EntityTag;
-import com.saicone.rtag.util.EasyLookup;
 import org.bukkit.entity.Entity;
 
-public class RtagEntity {
+/**
+ * RtagItem class to edit any {@link Entity} NBT tags.
+ *
+ * @author Rubenicos
+ */
+public class RtagEntity extends RtagEditor<Entity> {
 
-    private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
+    private static Object asMinecraft(Entity entity) {
+        try {
+            return EntityBridge.asMinecraft(entity);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
+    }
 
-    private final Rtag rtag;
-    private final Object entity;
-    private Object tag;
+    private static Object getTag(Object entity) {
+        try {
+            return EntityTag.saveTag(entity);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
+    }
 
+    private final Entity entity;
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and Entity to edit.
+     *
+     * @param rtag Rtag parent.
+     * @param entity Entity to edit.
+     */
     public RtagEntity(Rtag rtag, Entity entity) {
-        this.rtag = rtag;
-        Object finalEntity = null;
-        Object finalTag = null;
+        this(rtag, entity, asMinecraft(entity));
+    }
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and NMS Entity to edit.
+     *
+     * @param rtag   Rtag parent.
+     * @param entity Original entity.
+     * @param object NMS entity to edit.
+     */
+    public RtagEntity(Rtag rtag, Entity entity, Object object) {
+        this(rtag, entity, object, getTag(object));
+    }
+
+    /**
+     * Constructs an RtagItem with specified Rtag parent
+     * and NMS Entity to edit.
+     *
+     * @param rtag   Rtag parent.
+     * @param entity Original entity.
+     * @param object NMS entity to edit.
+     * @param tag    Entity tag to edit.
+     */
+    public RtagEntity(Rtag rtag, Entity entity, Object object, Object tag) {
+        super(rtag, object, tag);
+        this.entity = entity;
+    }
+
+    /**
+     * Load changes into entity instance.
+     *
+     * @return The original entity.
+     */
+    public Entity load() {
         try {
-            finalEntity = EntityBridge.asMinecraft(entity);
-            finalTag = EntityTag.saveTag(finalEntity);
+            EntityTag.loadTag(getObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        this.entity = finalEntity;
-        tag = finalTag;
-    }
-
-    public void load() {
-        try {
-            EntityTag.loadTag(entity, tag);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    public boolean add(Object value, Object... path) {
-        try {
-            return rtag.add(tag, value, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return false;
-        }
-    }
-
-    public boolean set(Object value) {
-        Object tag = rtag.toTag(value);
-        if (tagCompound.isInstance(tag)) {
-            this.tag = tag;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean set(Object value, Object... path) {
-        try {
-            return rtag.set(tag, value, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return false;
-        }
-    }
-
-    public <T> T get() {
-        return rtag.fromTag(tag);
-    }
-
-    public <T> T get(Object... path) {
-        try {
-            return rtag.get(tag, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    public Object getExact() {
-        return tag;
-    }
-
-    public Object getExact(Object... path) {
-        try {
-            return rtag.getExact(tag, path);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
+        return entity;
     }
 }

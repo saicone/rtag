@@ -3,6 +3,11 @@ package com.saicone.rtag.item;
 import com.saicone.rtag.data.TagData;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * ItemTagData to write and read {@link ItemStack} into bytes.
+ *
+ * @author Rubenicos
+ */
 public class ItemTagData extends TagData<ItemStack> {
 
     @Override

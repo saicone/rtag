@@ -6,7 +6,12 @@ import com.saicone.rtag.util.ServerInstance;
 
 import java.lang.invoke.MethodHandle;
 
-public class BlockTag {
+/**
+ * Class to invoke Minecraft TileEntity methods across versions.
+ *
+ * @author Rubenicos
+ */
+public class TileTag {
 
     private static final MethodHandle save;
     private static final MethodHandle load;
@@ -45,6 +50,13 @@ public class BlockTag {
         save = m1; load = m2;
     }
 
+    /**
+     * Save current NBTTagCompound into new one.
+     *
+     * @param tile TileEntity instance.
+     * @return     A NBTTagCompound that represent the tile.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object saveTag(Object tile) throws Throwable {
         if (ServerInstance.verNumber >= 18) {
             return save.invoke(tile);
@@ -57,6 +69,13 @@ public class BlockTag {
         }
     }
 
+    /**
+     * Load NBTTagCompound into tile.
+     *
+     * @param tile TileEntity instance.
+     * @param tag  The NBTTagCompound to load.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static void loadTag(Object tile, Object tag) throws Throwable {
         if (ServerInstance.verNumber == 16) {
             load.invoke(tile, TileEntity16.getBlockData(tile), tag);
@@ -65,6 +84,7 @@ public class BlockTag {
         }
     }
 
+    // TileEntity methods for Minecraft 1.16 only.
     private static final class TileEntity16 {
 
         private static final MethodHandle getPosition;
@@ -77,7 +97,7 @@ public class BlockTag {
                 try {
                     m1 = EasyLookup.method("TileEntity", "getPosition", "BlockPosition");
                     m2 = EasyLookup.method("TileEntity", "getWorld", "World");
-                    m3 = EasyLookup.method("World", "getType", void.class, "IBlockData", "BlockPosition");
+                    m3 = EasyLookup.method("World", "getType", "IBlockData", "BlockPosition");
                 } catch (NoSuchMethodException | IllegalAccessException e) {
                     e.printStackTrace();
                 }
@@ -87,6 +107,13 @@ public class BlockTag {
             getType = m3;
         }
 
+        /**
+         * Get BlockData interface from TileEntity.
+         *
+         * @param tile TileEntity in world.
+         * @return     A IBlockData assigned to provided TileEntity.
+         * @throws Throwable if any error occurs on reflected method invoking.
+         */
         public static Object getBlockData(Object tile) throws Throwable {
             return getType.invoke(getWorld.invoke(tile), getPosition.invoke(tile));
         }

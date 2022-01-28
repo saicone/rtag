@@ -6,6 +6,11 @@ import com.saicone.rtag.util.ServerInstance;
 
 import java.lang.invoke.MethodHandle;
 
+/**
+ * Class to invoke Minecraft ItemStack methods across versions.
+ *
+ * @author Rubenicos
+ */
 public class ItemTag {
 
     private static final MethodHandle getTag;
@@ -43,18 +48,46 @@ public class ItemTag {
         getTag = m1; setTag = m2; save = m3; createStack = m4;
     }
 
+    /**
+     * Get current NBTTagCompound.
+     *
+     * @param item ItemStack instance.
+     * @return     The NBTTagCompound inside provided item.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object getTag(Object item) throws Throwable {
         return getTag.invoke(item);
     }
 
+    /**
+     * Overwrite current NBTTagCompound
+     *
+     * @param item ItemStack instance.
+     * @param tag  NBTTagCompound to put into item.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static void setTag(Object item, Object tag) throws Throwable {
         setTag.invoke(item, tag);
     }
 
+    /**
+     * Save current NBTTagCompound into new one.
+     *
+     * @param item ItemStack instance.
+     * @return     A NBTTagCompound that represent the item.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object saveTag(Object item) throws Throwable {
         return save.invoke(item, TagCompound.newTag());
     }
 
+    /**
+     * Create ItemStack from NBTTagCompound.
+     *
+     * @param compound NBTTagCompound that represent the item.
+     * @return         A new ItemStack.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object createStack(Object compound) throws Throwable {
         return createStack.invoke(compound);
     }

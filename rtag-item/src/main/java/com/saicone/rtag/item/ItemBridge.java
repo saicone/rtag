@@ -5,6 +5,11 @@ import org.bukkit.inventory.ItemStack;
 
 import java.lang.invoke.MethodHandle;
 
+/**
+ * Class to invoke CraftItemStack methods across versions.
+ *
+ * @author Rubenicos
+ */
 public class ItemBridge {
 
     private static final Class<?> itemStack = EasyLookup.classById("ItemStack");
@@ -25,6 +30,13 @@ public class ItemBridge {
         asBukkitCopy = m1; asNMSCopy = m2;
     }
 
+    /**
+     * Get provided Minecraft ItemStack and convert into Bukkit ItemStack.
+     *
+     * @param item Minecraft ItemStack.
+     * @return     Bukkit ItemStack.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static ItemStack asBukkit(Object item) throws Throwable {
         if (itemStack.isInstance(item)) {
             return (ItemStack) asBukkitCopy.invoke(item);
@@ -33,6 +45,13 @@ public class ItemBridge {
         }
     }
 
+    /**
+     * Get provided Bukkit ItemStack and convert into Minecraft ItemStack.
+     *
+     * @param item Bukkit ItemStack.
+     * @return     Minecraft ItemStack.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public static Object asMinecraft(ItemStack item) throws Throwable {
         return asNMSCopy.invoke(item);
     }
