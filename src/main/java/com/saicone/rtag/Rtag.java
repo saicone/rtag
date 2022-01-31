@@ -4,8 +4,10 @@ import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.EasyLookup;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiPredicate;
 
 /**
  * <p>Rtag class to edit NBTTagCompound & NBTTagList objects.<br>
@@ -33,6 +35,8 @@ public class Rtag {
 
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
     private static final Class<?> tagList = EasyLookup.classById("NBTTagList");
+    private static final BiPredicate<Integer, Object[]> addPredicate = (index, path) -> path.length == index || path[index] instanceof Integer;
+    private static final BiPredicate<Integer, Object[]> setPredicate = (index, path) -> path[index] instanceof Integer;
 
     public static final Rtag INSTANCE = new Rtag();
 
@@ -108,33 +112,7 @@ public class Rtag {
         if (path.length == 0) {
             return false;
         }
-        Object finalTag = tag;
-        for (int i = 0; i < path.length; i++) {
-            Object key = path[i];
-            if (key instanceof Integer && tagList.isInstance(finalTag)) {
-                if (TagList.size(finalTag) >= (int) key) {
-                    finalTag = TagList.get(finalTag, (int) key);
-                } else {
-                    // Out of bounds
-                    return false;
-                }
-            } else if (tagCompound.isInstance(finalTag)) {
-                String keyString = String.valueOf(key);
-                // Create tag if not exists
-                if (TagCompound.notHasKey(finalTag, keyString)) {
-                    int i1 = i + 1;
-                    if (path.length == i1 || path[i1] instanceof Integer) {
-                        TagCompound.set(finalTag, keyString, TagList.newTag());
-                    } else {
-                        TagCompound.set(finalTag, keyString, TagCompound.newTag());
-                    }
-                }
-                finalTag = TagCompound.get(finalTag, keyString);
-            } else {
-                // Incompatible tag
-                return false;
-            }
-        }
+        Object finalTag = getExactOrCreate(tag, path, addPredicate);
         if (tagList.isInstance(finalTag)) {
             Object valueTag = toTag(value);
             if (valueTag != null) {
@@ -162,54 +140,59 @@ public class Rtag {
     public boolean set(Object tag, Object value, Object... path) throws Throwable {
         if (path.length == 0) {
             return false;
-        }
-        Object finalTag = tag;
-        for (int i = 0; i < path.length - 1; i++) {
-            Object key = path[i];
-            if (key instanceof Integer && tagList.isInstance(finalTag)) {
-                if (TagList.size(finalTag) >= (int) key) {
-                    finalTag = TagList.get(finalTag, (int) key);
-                } else {
-                    // Out of bounds
-                    return false;
-                }
-            } else if (tagCompound.isInstance(finalTag)) {
-                String keyString = String.valueOf(key);
-                // Create tag if not exists
-                if (TagCompound.notHasKey(finalTag, keyString)) {
-                    TagCompound.set(finalTag, keyString, path[i + 1] instanceof Integer ? TagList.newTag() : TagCompound.newTag());
-                }
-                finalTag = TagCompound.get(finalTag, keyString);
-            } else {
-                // Incompatible tag
+        } else {
+            int last = path.length - 1;
+            Object finalTag = getExactOrCreate(tag, Arrays.copyOf(path, last), setPredicate);
+            if (finalTag == null) {
                 return false;
+            } else if (value == null) {
+                return removeExact(finalTag, path[last]);
+            } else {
+                return setExact(finalTag, value, path[last]);
             }
         }
-        Object key = path[path.length - 1];
-        if (key instanceof Integer && tagList.isInstance(finalTag)) {
-            if (value == null) {
-                TagList.remove(finalTag, (int) key);
-            } else {
-                Object valueTag = toTag(value);
-                if (valueTag != null) {
-                    TagList.set(finalTag, (int) key, valueTag);
-                } else {
-                    // Fail on convert
-                    return false;
-                }
+    }
+
+    /**
+     * Set value to exact NBTTag list or compound.
+     *
+     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param value Value to set.
+     * @param key   Key associated with value.
+     * @return      True if the value is set.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public boolean setExact(Object tag, Object value, Object key) throws Throwable {
+        if (key instanceof Integer && tagList.isInstance(tag)) {
+            Object valueTag = toTag(value);
+            if (valueTag != null) {
+                TagList.set(tag, (int) key, valueTag);
+                return true;
             }
-        } else if (tagCompound.isInstance(finalTag)) {
-            if (value == null) {
-                TagCompound.remove(finalTag, String.valueOf(key));
-            } else {
-                Object valueTag = toTag(value);
-                if (valueTag != null) {
-                    TagCompound.set(finalTag, String.valueOf(key), valueTag);
-                } else {
-                    // Fail on convert
-                    return false;
-                }
+        } else if (tagCompound.isInstance(tag)) {
+            Object valueTag = toTag(value);
+            if (valueTag != null) {
+                TagCompound.set(tag, String.valueOf(key), valueTag);
+                return true;
             }
+        }
+        // Incompatible tag or value
+        return false;
+    }
+
+    /**
+     * Remove value from exact NBTTag list or compound.
+     *
+     * @param tag Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param key Key associated with value.
+     * @return    True if the value is removed (or don't exist).
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public boolean removeExact(Object tag, Object key) throws Throwable {
+        if (key instanceof Integer && tagList.isInstance(tag)) {
+            TagList.remove(tag, (int) key);
+        } else if (tagCompound.isInstance(tag)) {
+            TagCompound.remove(tag, String.valueOf(key));
         } else {
             // Incompatible tag
             return false;
@@ -253,8 +236,23 @@ public class Rtag {
      * @throws Throwable if any error occurs on reflected method invoking.
      */
     public Object getExact(Object tag, Object... path) throws Throwable {
+        return getExactOrCreate(tag, path, null);
+    }
+
+    /**
+     * Get exact NBTBase value without any conversion, from the specified path inside tag.<br>
+     * See {@link #get(Object, Object...)} for path information.
+     *
+     * @param tag           Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param path          Final value path to get.
+     * @param listPredicate Predicate to set new NBTTagList if NBTTagCompound doesn't contains key.
+     * @return              The value assigned to specified path or null.
+     * @throws Throwable    if any error occurs on reflected method invoking.
+     */
+    public Object getExactOrCreate(Object tag, Object[] path, BiPredicate<Integer, Object[]> listPredicate) throws Throwable {
         Object finalTag = tag;
-        for (Object key : path) {
+        for (int i = 0; i < path.length; i++) {
+            Object key = path[i];
             if (key instanceof Integer && tagList.isInstance(finalTag)) {
                 if (TagList.size(finalTag) >= (int) key) {
                     finalTag = TagList.get(finalTag, (int) key);
@@ -263,9 +261,14 @@ public class Rtag {
                     return null;
                 }
             } else if (tagCompound.isInstance(finalTag)) {
-                finalTag = TagCompound.get(finalTag, String.valueOf(key));
+                String keyString = String.valueOf(key);
+                // Create tag if not exists
+                if (listPredicate != null && TagCompound.notHasKey(finalTag, keyString)) {
+                    TagCompound.set(finalTag, keyString, listPredicate.test(i + 1, path) ? TagList.newTag() : TagCompound.newTag());
+                }
+                finalTag = TagCompound.get(finalTag, keyString);
                 if (finalTag == null) {
-                    // Unknown path
+                    // Unknown path or incompatible tag
                     return null;
                 }
             } else {
