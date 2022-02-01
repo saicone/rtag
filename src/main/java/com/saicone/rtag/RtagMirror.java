@@ -23,7 +23,15 @@ public class RtagMirror {
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
     private static final Class<?> tagList = EasyLookup.classById("NBTTagList");
 
-    private final Rtag rtag;
+    private Rtag rtag;
+
+    /**
+     * Constructs an RtagMirror without Rtag parent.
+     * Not compatible with NBTTagCompound or NBTTagList.
+     */
+    public RtagMirror() {
+        this(null);
+    }
 
     /**
      * Constructs an RtagMirror with specified Rtag parent.
@@ -44,6 +52,15 @@ public class RtagMirror {
     }
 
     /**
+     * Set current {@link Rtag} parent.
+     *
+     * @param rtag Rtag to set.
+     */
+    public void setRtag(Rtag rtag) {
+        this.rtag = rtag;
+    }
+
+    /**
      * Convert any object to NBTBase tag.
      *
      * @param object Object to convert.
@@ -53,13 +70,14 @@ public class RtagMirror {
     public Object toTag(Object object) {
         if (nbtBase.isInstance(object)) {
             return object;
-        } else if (object instanceof Map) {
-            return TagCompound.newTag(getRtag(), (Map<String, Object>) object);
-        } else if (object instanceof List) {
-            return TagList.newTag(getRtag(), (List<Object>) object);
-        } else {
-            return TagBase.newTag(object);
+        } else if (getRtag() != null) {
+            if (object instanceof Map) {
+                return TagCompound.newTag(getRtag(), (Map<String, Object>) object);
+            } else if (object instanceof List) {
+                return TagList.newTag(getRtag(), (List<Object>) object);
+            }
         }
+        return TagBase.newTag(object);
     }
 
     /**
@@ -69,12 +87,13 @@ public class RtagMirror {
      * @return    Converted object.
      */
     public Object fromTag(Object tag) {
-        if (tagCompound.isInstance(tag)) {
-            return TagCompound.getValue(getRtag(), tag);
-        } else if (tagList.isInstance(tag)) {
-            return TagList.getValue(getRtag(), tag);
-        } else {
-            return TagBase.getValue(tag);
+        if (getRtag() != null) {
+            if (tagCompound.isInstance(tag)) {
+                return TagCompound.getValue(getRtag(), tag);
+            } else if (tagList.isInstance(tag)) {
+                return TagList.getValue(getRtag(), tag);
+            }
         }
+        return TagBase.getValue(tag);
     }
 }

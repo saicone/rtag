@@ -36,7 +36,7 @@ public class Rtag {
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
     private static final Class<?> tagList = EasyLookup.classById("NBTTagList");
     private static final BiPredicate<Integer, Object[]> addPredicate = (index, path) -> path.length == index || path[index] instanceof Integer;
-    private static final BiPredicate<Integer, Object[]> setPredicate = (index, path) -> path[index] instanceof Integer;
+    private static final BiPredicate<Integer, Object[]> setPredicate = (index, path) -> path.length > index && path[index] instanceof Integer;
 
     public static final Rtag INSTANCE = new Rtag();
 
@@ -57,7 +57,8 @@ public class Rtag {
      * @param mirror Mirror to convert objects.
      */
     public Rtag(RtagMirror mirror) {
-        this.mirror = mirror == null ? new RtagMirror(this) : mirror;
+        this.mirror = mirror == null ? new RtagMirror() : mirror;
+        this.mirror.setRtag(this);
     }
 
     /**
@@ -287,13 +288,15 @@ public class Rtag {
      * @return       Converted object instance of NBTBase or null.
      */
     public Object toTag(Object object) {
-        if (serializers.containsKey(object.getClass())) {
+        if (object == null) {
+            return null;
+        } else if (serializers.containsKey(object.getClass())) {
             RtagSerializer<Object> serializer = serializers.get(object.getClass());
             Map<String, Object> map = serializer.serialize(object);
             map.put("rtag==", serializer.getInID());
             return toTag(map);
         } else {
-            return mirror.toTag(object);
+            return getMirror().toTag(object);
         }
     }
 
@@ -323,7 +326,7 @@ public class Rtag {
      */
     @SuppressWarnings("unchecked")
     public Object fromTagExact(Object tag) {
-        Object object = mirror.fromTag(tag);
+        Object object = getMirror().fromTag(tag);
         if (object instanceof Map) {
             Object type = ((Map<String, Object>) object).get("rtag==");
             if (type instanceof String && deserializers.containsKey((String) type)) {

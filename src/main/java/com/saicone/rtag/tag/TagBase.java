@@ -190,7 +190,7 @@ public class TagBase {
      * @return       A NBTBase tag associated with provided object.
      */
     public static Object newTag(Object object) {
-        return newTagFunction.get(object.getClass()).apply(object);
+        return object == null ? null : newTagFunction.get(object.getClass()).apply(object);
     }
 
     /**
@@ -204,6 +204,6 @@ public class TagBase {
      * @return    A java object inside NBTBase tag.
      */
     public static Object getValue(Object tag) {
-        return getValueFunction.get(tag.getClass()).apply(tag);
+        return tag == null ? null : getValueFunction.get(tag.getClass()).apply(tag);
     }
 }
