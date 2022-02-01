@@ -314,7 +314,7 @@ public class EasyLookup {
      *                                modifier bit is set and asVarargsCollector fails.
      */
     public static MethodHandle unreflectMethod(Object clazz, String name, Object... classes) throws NoSuchMethodException, IllegalAccessException {
-        Method m = classOf(clazz).getMethod(name, classesOf(classes));
+        Method m = classOf(clazz).getDeclaredMethod(name, classesOf(classes));
         m.setAccessible(true);
         return lookup.unreflect(m);
     }

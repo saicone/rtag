@@ -25,7 +25,7 @@ public class EntityTag {
             if (ServerInstance.verNumber >= 18) {
                 save = "f";
                 load = "g";
-            } if (ServerInstance.verNumber >= 12) {
+            } else if (ServerInstance.verNumber >= 12) {
                 save = "save";
                 if (ServerInstance.verNumber >= 16) {
                     load = "load";
