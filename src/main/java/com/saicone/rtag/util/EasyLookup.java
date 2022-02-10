@@ -139,10 +139,11 @@ public class EasyLookup {
      * Same has {@link Class#forName(String)} but save the class into memory.
      *
      * @param name Class name.
+     * @return     Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static void addClass(String name) throws ClassNotFoundException {
-        addClass(name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name, name);
+    public static Class<?> addClass(String name) throws ClassNotFoundException {
+        return addClass(name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name, name);
     }
 
     /**
@@ -151,12 +152,25 @@ public class EasyLookup {
      *
      * @param id   Class ID.
      * @param name Class name.
+     * @return     Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static void addClass(String id, String name) throws ClassNotFoundException {
+    public static Class<?> addClass(String id, String name) throws ClassNotFoundException {
+        return addClass(id, Class.forName(name));
+    }
+
+    /**
+     * Save class into memory with provided ID to get from {@link #classById(String)}.
+     *
+     * @param id    Class ID.
+     * @param clazz Class object.
+     * @return      Added class.
+     */
+    public static Class<?> addClass(String id, Class<?> clazz) {
         if (!classes.containsKey(id)) {
-            classes.put(id, Class.forName(name));
+            classes.put(id, clazz);
         }
+        return clazz;
     }
 
     /**
@@ -165,10 +179,11 @@ public class EasyLookup {
      * after "net.minecraft."
      *
      * @param name Class name.
+     * @return     Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static void addNMSClass(String name) throws ClassNotFoundException {
-        addClass(nmsClass(name));
+    public static Class<?> addNMSClass(String name) throws ClassNotFoundException {
+        return addClass(nmsClass(name));
     }
 
     /**
@@ -178,10 +193,11 @@ public class EasyLookup {
      *
      * @param id   Class ID.
      * @param name Class name.
+     * @return     Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static void addNMSClass(String id, String name) throws ClassNotFoundException {
-        addClass(id, nmsClass(name));
+    public static Class<?> addNMSClass(String id, String name) throws ClassNotFoundException {
+        return addClass(id, nmsClass(name));
     }
 
     private static String nmsClass(String name) {
@@ -197,10 +213,11 @@ public class EasyLookup {
      * Name must be the full path after "org.bukkit.craftbukkit.<VERSION>."
      *
      * @param name Class name.
+     * @return     Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static void addOBCClass(String name) throws ClassNotFoundException {
-        addClass(obcClass(name));
+    public static Class<?> addOBCClass(String name) throws ClassNotFoundException {
+        return addClass(obcClass(name));
     }
 
     /**
@@ -209,10 +226,11 @@ public class EasyLookup {
      *
      * @param id   Class ID.
      * @param name Class name.
+     * @return     Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static void addOBCClass(String id, String name) throws ClassNotFoundException {
-        addClass(id, obcClass(name));
+    public static Class<?> addOBCClass(String id, String name) throws ClassNotFoundException {
+        return addClass(id, obcClass(name));
     }
 
     private static String obcClass(String name) {
