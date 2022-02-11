@@ -38,6 +38,9 @@ public class Rtag {
     private static final BiPredicate<Integer, Object[]> addPredicate = (index, path) -> path.length == index || path[index] instanceof Integer;
     private static final BiPredicate<Integer, Object[]> setPredicate = (index, path) -> path.length > index && path[index] instanceof Integer;
 
+    /**
+     * Rtag public instance only compatible with regular Java objects.
+     */
     public static final Rtag INSTANCE = new Rtag();
 
     private final RtagMirror mirror;

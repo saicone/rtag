@@ -1,7 +1,7 @@
 package com.saicone.rtag.tag;
 
 import com.saicone.rtag.Rtag;
-import com.saicone.rtag.data.TagData;
+import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
 
@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class TagCompound {
 
-    public static final TagData<Object> DATA = new TagData<>() {
+    public static final TStream<Object> DATA = new TStream<>() {
         @Override
         public Object clone(Object object) {
             return TagCompound.safeClone(object);

@@ -1,4 +1,4 @@
-package com.saicone.rtag.data;
+package com.saicone.rtag.stream;
 
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
@@ -13,7 +13,7 @@ import java.util.zip.GZIPOutputStream;
  *
  * @author Rubenicos
  */
-public class TagDataStream {
+public class TStreamTools {
 
     private static final MethodHandle readNBT;
     private static final MethodHandle writeNBT;

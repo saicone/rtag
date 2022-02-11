@@ -81,7 +81,8 @@ public class ItemTag {
      * @throws Throwable if any error occurs on reflected method invoking.
      */
     public static Object saveTag(Object item) throws Throwable {
-        return save.invoke(item, TagCompound.newTag());
+        Object compound =  TagCompound.newTag();
+        return item == null ? compound : save.invoke(item, compound);
     }
 
     /**

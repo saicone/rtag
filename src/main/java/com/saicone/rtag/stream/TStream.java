@@ -1,22 +1,19 @@
-package com.saicone.rtag.data;
+package com.saicone.rtag.stream;
 
 import com.saicone.rtag.util.EasyLookup;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * TagData class to handle NBTTagCompound
+ * Tag stream class to handle NBTTagCompound
  * with writeable and readable objects.<br>
- * The TagData instance provide easy methods
+ * The TStream instance provide easy methods
  * handle objects has bytes.
  * <h2>Write</h2>
  * Object -> NBTTagCompound -> Bytes<br>
@@ -30,8 +27,9 @@ import java.util.List;
  *
  * @param <T> Object type to write and read.
  */
-public class TagData<T> {
+public class TStream<T> {
 
+    private static final Class<?> byteArray = EasyLookup.classById("byte[]");
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
 
     /**
@@ -45,14 +43,26 @@ public class TagData<T> {
         return fromCompound(toCompound(object));
     }
 
-    protected Object extract(T object) {
+    /**
+     * Extract object information into NBTTagCompound.
+     *
+     * @param object Object to extract.
+     * @return       A NBTTagCompound with object information.
+     */
+    public Object extract(T object)  {
         return object;
     }
 
+    /**
+     * Build object type using an NBTTagCompound.
+     *
+     * @param compound NBTTagCompound with object information.
+     * @return         A new object with NBTTagCompound parameters.
+     */
     @SuppressWarnings("unchecked")
-    protected T build(Object object) {
+    public T build(Object compound) {
         try {
-            return (T) object;
+            return (T) compound;
         } catch (ClassCastException e) {
             return null;
         }
@@ -68,9 +78,9 @@ public class TagData<T> {
         if (object == null) {
             return null;
         }
-        Object tag = extract(object);
-        if (tagCompound.isInstance(tag)) {
-            return tag;
+        Object compound = extract(object);
+        if (tagCompound.isInstance(compound)) {
+            return compound;
         } else {
             return null;
         }
@@ -102,7 +112,7 @@ public class TagData<T> {
      */
     public File toFile(T object, File file) {
         try {
-            TagDataStream.write(toCompound(object), file);
+            TStreamTools.write(toCompound(object), file);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -130,10 +140,13 @@ public class TagData<T> {
         String data = "";
         if (!objects.isEmpty()) {
             try (ByteArrayOutputStream out = new ByteArrayOutputStream(); BukkitObjectOutputStream output = new BukkitObjectOutputStream(out)) {
-                output.writeInt(objects.size());
                 for (T object : objects) {
-                    output.writeObject(toBytes(object));
+                    byte[] bytes = toBytes(object);
+                    if (bytes != null) {
+                        output.writeObject(bytes);
+                    }
                 }
+                output.writeObject(null);
                 data = Base64Coder.encodeLines(out.toByteArray());
             } catch (Exception e) {
                 e.printStackTrace();
@@ -152,9 +165,13 @@ public class TagData<T> {
      * @return       A byte array that represent the object.
      */
     public byte[] toBytes(T object) {
+        Object compound = toCompound(object);
+        if (compound == null) {
+            return null;
+        }
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
-            TagDataStream.write(toCompound(object), output);
+            TStreamTools.write(compound, output);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -170,7 +187,7 @@ public class TagData<T> {
      */
     public T fromFile(File file) {
         try {
-            return fromCompound(TagDataStream.read(file));
+            return fromCompound(TStreamTools.read(file));
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -196,18 +213,18 @@ public class TagData<T> {
      */
     public List<T> listFromBase64(String base64) {
         List<T> list = new ArrayList<>();
-        if (!base64.trim().isEmpty()) {
+        if (!base64.isBlank()) {
             try (ByteArrayInputStream in = new ByteArrayInputStream(Base64Coder.decodeLines(base64)); BukkitObjectInputStream input = new BukkitObjectInputStream(in)) {
-                int size = input.readInt();
-                for (int i = 0; i < size; i++) {
-                    byte[] bytes = (byte[]) input.readObject();
-                    if (bytes != null) {
-                        T object = fromBytes(bytes);
+                Object o;
+                while ((o = input.readObject()) != null) {
+                    if (byteArray.isInstance(o)) {
+                        T object = fromBytes((byte[]) o);
                         if (object != null) {
                             list.add(object);
                         }
                     }
                 }
+            } catch (EOFException ignored) {
             } catch (ClassNotFoundException | IOException e) {
                 e.printStackTrace();
             }
@@ -226,7 +243,7 @@ public class TagData<T> {
      */
     public T fromBytes(byte[] bytes) {
         try {
-            return fromCompound(TagDataStream.read(new ByteArrayInputStream(bytes)));
+            return fromCompound(TStreamTools.read(new ByteArrayInputStream(bytes)));
         } catch (IOException e) {
             e.printStackTrace();
             return null;

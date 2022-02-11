@@ -169,13 +169,15 @@ public class TagList {
      */
     public static List<Object> getValue(Rtag rtag, Object tag) {
         List<Object> list = new ArrayList<>();
-        try {
-            int length = (int) size.invoke(tag);
-            for (int i = 0; i < length; i++) {
-                list.add(rtag.fromTagExact(get.invoke(tag, i)));
+        if (tag != null) {
+            try {
+                int length = (int) size.invoke(tag);
+                for (int i = 0; i < length; i++) {
+                    list.add(rtag.fromTagExact(get.invoke(tag, i)));
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
         }
         return list;
     }
