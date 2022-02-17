@@ -1,5 +1,7 @@
 package com.saicone.rtag.item;
 
+import com.saicone.rtag.util.ServerInstance;
+
 /**
  * ItemMirror interface to make item NBTTagCompound
  * compatible with actual server version.
@@ -9,24 +11,66 @@ package com.saicone.rtag.item;
 public interface ItemMirror {
 
     /**
+     * Get the minimum version where compatibility is deprecated.
+     *
+     * @return A version number.
+     */
+    default int getDeprecationVersion() {
+        return ServerInstance.verNumber + 1;
+    }
+
+    /**
+     * Get the minimum version compatibility.
+     *
+     * @return A version number.
+     */
+    default int getMinVersion() {
+        return 8;
+    }
+
+    /**
      * Upgrade current NBTTagCompound from lower version.
      *
      * @param compound Item NBTTagCompound.
-     * @param tag      Item tag.
+     * @param id       Item material identifier.
      * @param from     Version specified in compound.
-     * @param to       Current server version.
+     * @param to       Version to convert.
      * @throws Throwable if any error occurs on reflected method invoking.
      */
-    default void upgrade(Object compound, Object tag, int from, int to) throws Throwable { }
+    default void upgrade(Object compound, String id, int from, int to) throws Throwable { }
+
+    /**
+     * Upgrade current NBTTagCompound from lower version.
+     *
+     * @param compound Item NBTTagCompound.
+     * @param id       Item material identifier.
+     * @param tag      Item tag.
+     * @param from     Version specified in compound.
+     * @param to       Version to convert.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    default void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable { }
 
     /**
      * Downgrade current NBTTagCompound from upper version.
      *
      * @param compound Item NBTTagCompound.
-     * @param tag      Item tag.
+     * @param id       Item material identifier.
      * @param from     Version specified in compound.
-     * @param to       Current server version.
+     * @param to       Version to convert.
      * @throws Throwable if any error occurs on reflected method invoking.
      */
-    default void downgrade(Object compound, Object tag, int from, int to) throws Throwable { }
+    default void downgrade(Object compound, String id, int from, int to) throws Throwable { }
+
+    /**
+     * Downgrade current NBTTagCompound from upper version.
+     *
+     * @param compound Item NBTTagCompound.
+     * @param id       Item material identifier.
+     * @param tag      Item tag.
+     * @param from     Version specified in compound.
+     * @param to       Version to convert.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    default void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable { }
 }

@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * Minecraft enchantment tags with associated ID.<br>
- * Take in count Mojang discontinued IDs since MC 1.14.<br>
+ * Take in count Mojang discontinued IDs since MC 1.14,
+ * any ID for new enchantments is not official.
  *
  * @author Rubenicos
  */
@@ -32,19 +33,19 @@ public enum EnchantmentTag {
     LUCK_OF_THE_SEA(7, 61, "LUCK", "LUCK_OF_SEA"),
     LURE(7, 62),
     MENDING(9, 70),
-    MULTISHOT(14),
-    PIERCING(14),
+    MULTISHOT(14, 52),
+    PIERCING(14, 53),
     POWER(1, 48, "ARROW_DAMAGE", "ARROW_POWER"),
     PROJECTILE_PROTECTION(0, 4, "PROTECTION_PROJECTILE"),
     PROTECTION(0, 0, "PROTECTION_ENVIRONMENTAL"),
     PUNCH(11, 49, "ARROW_KNOCKBACK"),
-    QUICK_CHARGE(14, "QUICKCHARGE"),
+    QUICK_CHARGE(14, 54, "QUICKCHARGE"),
     RESPIRATION(0, 5, "OXYGEN"),
     RIPTIDE(13, 67),
     SHARPNESS(0, 16, "DAMAGE_ALL"),
     SILK_TOUCH(0, 33),
     SMITE(0, 17, "DAMAGE_UNDEAD"),
-    SOUL_SPEED(16),
+    SOUL_SPEED(16, 11),
     SWEEPING(11, 22, "SWEEPING_EDGE"),
     THORNS(4, 7),
     UNBREAKING(0, 34, "DURABILITY"),
@@ -85,10 +86,6 @@ public enum EnchantmentTag {
     private final short id;
     private final String[] aliases;
 
-    EnchantmentTag(int version, String... aliases) {
-        this(version, -1, aliases);
-    }
-
     EnchantmentTag(int version, int id, String... aliases) {
         this(version, (short) id, aliases);
     }
@@ -99,14 +96,29 @@ public enum EnchantmentTag {
         this.aliases = aliases;
     }
 
+    /**
+     * Get added version for this enchant.
+     *
+     * @return A server version number.
+     */
     public int getVersion() {
         return version;
     }
 
+    /**
+     * Get enchant numeric ID.
+     *
+     * @return A number representing the enchantment.
+     */
     public short getId() {
         return id;
     }
 
+    /**
+     * Get current enchant aliases.
+     *
+     * @return A string array with enchant aliases.
+     */
     public String[] getAliases() {
         return aliases;
     }

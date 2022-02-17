@@ -1,7 +1,6 @@
 package com.saicone.rtag.item;
 
-import com.saicone.rtag.item.mirror.ItemDisplayMirror;
-import com.saicone.rtag.item.mirror.ItemEnchantMirror;
+import com.saicone.rtag.item.mirror.*;
 import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
@@ -22,18 +21,30 @@ public class ItemTagStream extends TStream<ItemStack> {
     /**
      * ItemTagStream public instance adapted for current server version.
      */
-    public static final ItemTagStream INSTANCE;
+    public static final ItemTagStream INSTANCE = new ItemTagStream();
 
     static {
         List<ItemMirror> mirror = new ArrayList<>();
-        mirror.add(ItemDisplayMirror.INSTANCE);
+        mirror.add(new IPotionMirror());
+        mirror.add(new IMaterialMirror());
+        mirror.add(new IDisplayMirror());
 
         if (ServerInstance.isLegacy) {
-            mirror.add(ItemEnchantMirror.LEGACY);
+            // "Enchantments" -> "ench"
+            // Enchant Name Enchant ID
+            mirror.add(new IEnchantMirror(IEnchantMirror.fromString, "StoredEnchantments", "ench", "Enchantments"));
         } else {
-            mirror.add(ItemEnchantMirror.INSTANCE);
+            // "ench" -> "Enchantments"
+            // Enchant ID -> Enchant Name
+            mirror.add(new IEnchantMirror(IEnchantMirror.fromShort, "StoredEnchantments", "Enchantments", "ench"));
         }
-        INSTANCE = new ItemTagStream(mirror);
+        if (ServerInstance.verNumber >= 9) {
+            mirror.add(new IShulkerMirror(INSTANCE));
+            if (ServerInstance.verNumber >= 17) {
+                mirror.add(new IBundleMirror(INSTANCE));
+            }
+        }
+        INSTANCE.getMirror().addAll(mirror);
     }
 
     private final List<ItemMirror> mirror;
@@ -141,14 +152,29 @@ public class ItemTagStream extends TStream<ItemStack> {
     public void onLoad(Object compound) throws Throwable {
         Integer version = (Integer) TagBase.getValue(TagCompound.get(compound, getVersionKey()));
         if (version != null && version != getVersion()) {
+            String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
+            if (id == null) return;
+
             Object tag = TagCompound.get(compound, "tag");
             if (version > getVersion()) {
-                for (ItemMirror item : mirror) {
-                    item.downgrade(compound, tag, version, getVersion());
+                if (tag == null) {
+                    for (ItemMirror item : mirror) {
+                        item.downgrade(compound, id, version, getVersion());
+                    }
+                } else {
+                    for (ItemMirror item : mirror) {
+                        item.downgrade(compound, id, tag, version, getVersion());
+                    }
                 }
             } else {
-                for (ItemMirror item : mirror) {
-                    item.upgrade(compound, tag, version, getVersion());
+                if (tag == null) {
+                    for (ItemMirror item : mirror) {
+                        item.upgrade(compound, id, version, getVersion());
+                    }
+                } else {
+                    for (ItemMirror item : mirror) {
+                        item.upgrade(compound, id, tag, version, getVersion());
+                    }
                 }
             }
         }

@@ -7,32 +7,36 @@ import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
 
 /**
- * ItemDisplayMirror class to convert item display
+ * IDisplayMirror class to convert item display
  * across versions.
  *
  * @author Rubenicos
  */
-public class ItemDisplayMirror implements ItemMirror {
+public class IDisplayMirror implements ItemMirror {
+
+    @Override
+    public int getDeprecationVersion() {
+        return 14;
+    }
+
+    @Override
+    public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+        processDisplay(tag, from, true);
+    }
+
+    @Override
+    public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+        processDisplay(tag, to, false);
+    }
 
     /**
-     * ItemDisplayMirror public instance adapted for current server version.
+     * Process current display inside item tag.
+     *
+     * @param tag     ItemStack tag.
+     * @param version Version to convert.
+     * @param toJson  True to convert texts into Json component.
+     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static final ItemDisplayMirror INSTANCE = new ItemDisplayMirror();
-
-    @Override
-    public void upgrade(Object compound, Object tag, int from, int to) throws Throwable {
-        if (tag != null) {
-            processDisplay(tag, from, true);
-        }
-    }
-
-    @Override
-    public void downgrade(Object compound, Object tag, int from, int to) throws Throwable {
-        if (tag != null) {
-            processDisplay(tag, to, false);
-        }
-    }
-
     public void processDisplay(Object tag, int version, boolean toJson) throws Throwable {
         if (version <= 13) {
             Object display = TagCompound.get(tag, "display");
@@ -49,6 +53,13 @@ public class ItemDisplayMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Process current display lore tag.
+     *
+     * @param display Display tag.
+     * @param toJson  True to convert texts into Json component.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public void processLore(Object display, boolean toJson) throws Throwable {
         Object displayLore = TagCompound.get(display, "Lore");
         if (displayLore != null) {
@@ -62,6 +73,12 @@ public class ItemDisplayMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Process current display name tag.
+     * @param display Display tag.
+     * @param toJson  True to convert texts into Json component.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public void processName(Object display, boolean toJson) throws Throwable {
         Object tag = processTag(TagCompound.get(display, "Name"), toJson);
         if (tag != null) {
@@ -69,6 +86,14 @@ public class ItemDisplayMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Process current NBT tag that contains text inside.
+     *
+     * @param tag    NBTTagString instance.
+     * @param toJson True to convert text into Json component.
+     * @return       A new tag with converted text value.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public Object processTag(Object tag, boolean toJson) throws Throwable {
         Object tagValue = TagBase.getValue(tag);
         if (tagValue != null) {
@@ -80,7 +105,15 @@ public class ItemDisplayMirror implements ItemMirror {
         return null;
     }
 
+    /**
+     * Process current text and convert into Json component or not.
+     *
+     * @param string Text to convert.
+     * @param toJson True to convert text into Json component.
+     * @return       A new converted text.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
     public Object processString(String string, boolean toJson) throws Throwable {
-        return TagBase.newTag(toJson ? ChatComponent.toJsonOrNull(string) : ChatComponent.toString(string));
+        return toJson ? ChatComponent.toJsonOrNull(string) : ChatComponent.toString(string);
     }
 }
