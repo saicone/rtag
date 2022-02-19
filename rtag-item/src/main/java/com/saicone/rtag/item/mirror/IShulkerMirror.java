@@ -33,14 +33,14 @@ public class IShulkerMirror implements ItemMirror {
     @Override
     public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
         if (id.contains("shulker_box")) {
-            processTag(tag);
+            processTag(tag, from, to);
         }
     }
 
     @Override
     public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
         if (id.contains("shulker_box")) {
-            processTag(tag);
+            processTag(tag, from, to);
         }
     }
 
@@ -50,13 +50,13 @@ public class IShulkerMirror implements ItemMirror {
      * @param tag ItemStack tag.
      * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void processTag(Object tag) throws Throwable {
+    public void processTag(Object tag, int from, int to) throws Throwable {
         Object items = Rtag.INSTANCE.getExact(tag, "BlockEntityTag", "Items");
         if (items != null) {
             int size = TagList.size(items);
             for (int i = 0; i < size; i++) {
                 Object item = TagList.get(items, i);
-                stream.onLoad(item);
+                stream.onLoad(item, from, to);
             }
         }
     }

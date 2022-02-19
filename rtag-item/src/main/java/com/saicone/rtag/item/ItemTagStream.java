@@ -32,11 +32,11 @@ public class ItemTagStream extends TStream<ItemStack> {
         if (ServerInstance.isLegacy) {
             // "Enchantments" -> "ench"
             // Enchant Name Enchant ID
-            mirror.add(new IEnchantMirror(IEnchantMirror.fromString, "StoredEnchantments", "ench", "Enchantments"));
+            mirror.add(new IEnchantMirror(IEnchantMirror.fromString, "StoredEnchantments", "Enchantments", "ench"));
         } else {
             // "ench" -> "Enchantments"
             // Enchant ID -> Enchant Name
-            mirror.add(new IEnchantMirror(IEnchantMirror.fromShort, "StoredEnchantments", "Enchantments", "ench"));
+            mirror.add(new IEnchantMirror(IEnchantMirror.fromShort, "StoredEnchantments", "ench", "Enchantments"));
         }
         if (ServerInstance.verNumber >= 9) {
             mirror.add(new IShulkerMirror(INSTANCE));
@@ -152,29 +152,41 @@ public class ItemTagStream extends TStream<ItemStack> {
     public void onLoad(Object compound) throws Throwable {
         Integer version = (Integer) TagBase.getValue(TagCompound.get(compound, getVersionKey()));
         if (version != null && version != getVersion()) {
-            String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
-            if (id == null) return;
+            onLoad(compound, version, getVersion());
+        }
+    }
 
-            Object tag = TagCompound.get(compound, "tag");
-            if (version > getVersion()) {
-                if (tag == null) {
-                    for (ItemMirror item : mirror) {
-                        item.downgrade(compound, id, version, getVersion());
-                    }
-                } else {
-                    for (ItemMirror item : mirror) {
-                        item.downgrade(compound, id, tag, version, getVersion());
-                    }
+    /**
+     * Executed method when NBTTagCompound used tu build an item.
+     *
+     * @param compound NBTTagCompound with item information.
+     * @param from     Version specified in compound.
+     * @param to       Version to convert.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public void onLoad(Object compound, int from, int to) throws Throwable {
+        String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
+        if (id == null) return;
+
+        Object tag = TagCompound.get(compound, "tag");
+        if (from > to) {
+            if (tag == null) {
+                for (ItemMirror item : mirror) {
+                    item.downgrade(compound, id, from, to);
                 }
             } else {
-                if (tag == null) {
-                    for (ItemMirror item : mirror) {
-                        item.upgrade(compound, id, version, getVersion());
-                    }
-                } else {
-                    for (ItemMirror item : mirror) {
-                        item.upgrade(compound, id, tag, version, getVersion());
-                    }
+                for (ItemMirror item : mirror) {
+                    item.downgrade(compound, id, tag, from, to);
+                }
+            }
+        } else {
+            if (tag == null) {
+                for (ItemMirror item : mirror) {
+                    item.upgrade(compound, id, from, to);
+                }
+            } else {
+                for (ItemMirror item : mirror) {
+                    item.upgrade(compound, id, tag, from, to);
                 }
             }
         }

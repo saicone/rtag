@@ -8,7 +8,7 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.ItemMaterialTag;
 
-import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,7 +30,7 @@ public class IMaterialMirror implements ItemMirror {
      * Constructs an simple IMaterialMirror with cache duration of 3 hours.
      */
     public IMaterialMirror() {
-        this(3, TimeUnit.HOURS, "paper");
+        this(3, TimeUnit.HOURS, "minecraft:paper");
     }
 
     /**
@@ -44,7 +44,7 @@ public class IMaterialMirror implements ItemMirror {
         cache = CacheBuilder.newBuilder().expireAfterAccess(duration, unit).build();
         Object tag;
         try {
-            tag = TagBase.newTag(ItemMaterialTag.SERVER_VALUES.containsKey(defaultMaterial) ? defaultMaterial : "paper");
+            tag = TagBase.newTag(ItemMaterialTag.SERVER_VALUES.containsKey(defaultMaterial) ? defaultMaterial : "minecraft:paper");
         } catch (Throwable t) {
             tag = null;
         }
@@ -64,7 +64,7 @@ public class IMaterialMirror implements ItemMirror {
     @Override
     public void downgrade(Object compound, String id, int from, int to) throws Throwable {
         // Compatibility with IPotionMirror
-        if (to <= 8 && id.equals("potion")) {
+        if (to <= 8 && id.equals("minecraft:potion")) {
             return;
         }
         resolveMaterial(compound, id, getDamage(compound, null, from), null, from, to);
@@ -73,7 +73,7 @@ public class IMaterialMirror implements ItemMirror {
     @Override
     public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
         // Compatibility with IPotionMirror
-        if (to <= 8 && id.equals("potion")) {
+        if (to <= 8 && id.equals("minecraft:potion")) {
             return;
         }
         resolveSaved(compound, id, getDamage(compound, tag, from), tag, from, to);
@@ -93,7 +93,7 @@ public class IMaterialMirror implements ItemMirror {
     public void resolveSaved(Object compound, String id, int damage, Object tag, int from, int to) throws Throwable {
         String savedID = (String) TagBase.getValue(TagCompound.get(tag, "savedID"));
         if (savedID != null) {
-            String material = translate(savedID, from);
+            String material = translate(savedID, from, to);
             if (!material.equals("null")) {
                 resolveItem(compound, material, tag, from, to);
             }
@@ -117,13 +117,13 @@ public class IMaterialMirror implements ItemMirror {
     public void resolveMaterial(Object compound, String id, int damage, Object tag, int from, int to) throws Throwable {
         String material;
         boolean isEgg;
-        if ((isEgg = (from <= 12 && from >= 9) && id.equalsIgnoreCase("spawn_egg"))) {
+        if ((isEgg = (from <= 12 && from >= 9) && id.equalsIgnoreCase("minecraft:spawn_egg"))) {
             material = id + "=" + getEggEntity(compound, from);
         } else {
             material = id + (damage > 0 ? ":" + damage : "");
         }
 
-        String newMaterial = translate(material, from);
+        String newMaterial = translate(material, from, to);
         if (!material.equals(newMaterial)) {
             if (isEgg && (to >= 13 || to <= 8)) {
                 TagCompound.remove(compound, "EntityTag");
@@ -158,7 +158,7 @@ public class IMaterialMirror implements ItemMirror {
             split = material.split(":", 2);
             setDamage(compound, tag, split.length > 1 ? Integer.parseInt(split[1]) : 0, from, to);
         }
-        TagCompound.set(compound, "id", split[0]);
+        TagCompound.set(compound, "id", TagBase.newTag("minecraft:" + split[0]));
     }
 
     /**
@@ -204,11 +204,18 @@ public class IMaterialMirror implements ItemMirror {
         } else if (tag != null) {
             damage = TagCompound.get(tag, "Damage");
         }
-        if (damage != null) {
+        if ((damage = TagBase.getValue(damage)) != null) {
             // Avoid any rare error
-            try {
-                return (int) TagBase.getValue(damage);
-            } catch (ClassCastException | NullPointerException ignored) { }
+            if (damage instanceof Short) {
+                return ((Short) damage).intValue();
+            } else if (damage instanceof Integer) {
+                return (int) damage;
+            } else {
+                // WTH happens with damage tag!?
+                try {
+                    return Integer.parseInt(String.valueOf(damage));
+                } catch (NumberFormatException ignored) { }
+            }
         }
         return 0;
     }
@@ -242,31 +249,36 @@ public class IMaterialMirror implements ItemMirror {
      * current server version.
      *
      * @param material Material to translate.
-     * @param version  Material version.
+     * @param from     Version specified in compound
+     * @param to       Version to convert.
      * @return         A string representing current server version material.
      */
-    public String translate(String material, int version) {
+    public String translate(String material, int from, int to) {
         String mat = cache.getIfPresent(material);
         if (mat == null) {
             if (ItemMaterialTag.SERVER_VALUES.containsKey(material)) {
                 cache.put(material, material);
             } else {
-                compute(material, version);
+                compute(material, ItemMaterialTag.changeNameCase(material.replace("minecraft:", ""), true), from, to);
             }
             mat = cache.getIfPresent(material);
         }
         return mat;
     }
 
-    private void compute(String material, int version) {
-        for (ItemMaterialTag value : ItemMaterialTag.SERVER_VALUES.values()) {
-            for (Map.Entry<Integer, String> entry : value.getNames().entrySet()) {
-                if (entry.getKey() <= version && entry.getValue().equals(material)) {
-                    cache.put(material, entry.getValue());
-                    return;
+    private void compute(String key, String value, int from, int to) {
+        for (ItemMaterialTag tag : ItemMaterialTag.SERVER_VALUES.values()) {
+            TreeMap<Integer, String> names = tag.getNames();
+            for (Integer tagVersion : names.descendingKeySet()) {
+                if (tagVersion <= from) {
+                    String tagName = names.get(tagVersion);
+                    if (tagName.equals(value)) {
+                        cache.put(key, ItemMaterialTag.changeNameCase(names.floorEntry(to).getValue(), false));
+                        return;
+                    }
                 }
             }
         }
-        cache.put(material, "null");
+        cache.put(key, "null");
     }
 }

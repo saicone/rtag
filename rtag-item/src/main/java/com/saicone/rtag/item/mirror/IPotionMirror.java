@@ -26,8 +26,8 @@ public class IPotionMirror implements ItemMirror {
     static {
         Object potion = null, splash = null;
         try {
-            potion = TagBase.newTag("potion");
-            splash = TagBase.newTag("splash_potion");
+            potion = TagBase.newTag("minecraft:potion");
+            splash = TagBase.newTag("minecraft:splash_potion");
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -42,14 +42,14 @@ public class IPotionMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
-        if (from <= 8 && id.equals("potion")) {
+        if (from <= 8 && id.equals("minecraft:potion")) {
             upgrade(compound);
         }
     }
 
     @Override
     public void upgrade(Object compound, String id, int from, int to) throws Throwable {
-        if (from <= 8 && id.equals("potion")) {
+        if (from <= 8 && id.equals("minecraft:potion")) {
             upgrade(compound);
         }
     }
@@ -68,7 +68,7 @@ public class IPotionMirror implements ItemMirror {
 
     @Override
     public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
-        if (to <= 8 && (id.equals("potion") || id.equals("splash_potion"))) {
+        if (to <= 8 && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
             String potion = (String) TagBase.getValue(TagCompound.get(tag, "Potion"));
             if (potion == null || potion.equals("empty") || potion.equals("water")) return;
 
@@ -110,7 +110,7 @@ public class IPotionMirror implements ItemMirror {
             String potionType = potion.replace("minecraft:", "").toUpperCase();
             for (PotionType type : PotionType.VALUES) {
                 if (type.name().equals(potionType)) {
-                    if (id.equalsIgnoreCase("splash_potion")) {
+                    if (id.equalsIgnoreCase("minecraft:splash_potion")) {
                         return type.getSplash();
                     } else {
                         return type.getPotion();

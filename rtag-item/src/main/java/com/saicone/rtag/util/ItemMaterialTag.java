@@ -1161,7 +1161,7 @@ public enum ItemMaterialTag {
     static {
         Map<String, ItemMaterialTag> fixed = new HashMap<>();
         for (ItemMaterialTag tag : VALUES) {
-            Map<Integer, String> names = tag.getNames();
+            TreeMap<Integer, String> names = tag.getNames();
             // Fix legacy SPAWN_EGG entity name for MC 1.11 & 1.12
             if (tag.name().contains("SPAWN_EGG") && names.size() > 1) {
                 int version = names.containsKey(11) ? 11 : names.containsKey(10) ? 10 : names.containsKey(9) ? 9 : 0;
@@ -1171,17 +1171,10 @@ public enum ItemMaterialTag {
                     names.put(12, "SPAWN_EGG=" + entity);
                 }
             }
-            for (Integer version : names.keySet()) {
+            for (Integer version : names.descendingKeySet()) {
                 if (version <= ServerInstance.verNumber) {
                     if (materialExistFor(tag)) {
-                        String name = names.get(version);
-                        if (name.contains("=")) {
-                            String[] split = name.split("=", 2);
-                            name = split[0].toLowerCase() + "=" + split[1];
-                        } else {
-                            name = name.toLowerCase();
-                        }
-                        fixed.put(name, tag);
+                        fixed.put("minecraft:" + changeNameCase(names.get(version), false), tag);
                         break;
                     }
                 }
@@ -1211,7 +1204,15 @@ public enum ItemMaterialTag {
         return false;
     }
 
-    private final Map<Integer, String> names;
+    public static String changeNameCase(String name, boolean upper) {
+        String finalName = upper ? name.toUpperCase() : name.toLowerCase();
+        if (name.contains("=")) {
+            return finalName.split("=", 2)[0] + "=" + name.split("=", 2)[1];
+        }
+        return finalName;
+    }
+
+    private final TreeMap<Integer, String> names;
     private final String[] aliases;
 
     ItemMaterialTag(int version, String name1, int ver1, String name2, int ver2, String name3, int ver3, String name4, int ver4, String... aliases) {
@@ -1245,7 +1246,7 @@ public enum ItemMaterialTag {
      *
      * @return A TreeMap with material names.
      */
-    public Map<Integer, String> getNames() {
+    public TreeMap<Integer, String> getNames() {
         return names;
     }
 

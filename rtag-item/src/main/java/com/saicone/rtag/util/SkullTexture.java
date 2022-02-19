@@ -24,18 +24,19 @@ import java.util.UUID;
  *
  * @author Rubenicos
  */
+@SuppressWarnings("deprecation")
 public class SkullTexture {
 
-    private static final Material PLAYER_HEAD;
+    private static final ItemStack PLAYER_HEAD;
     private static final MethodHandle setProfile;
 
     private static final Map<String, ItemStack> cache = new HashMap<>();
 
     static {
         if (ServerInstance.verNumber >= 13) {
-            PLAYER_HEAD = Material.PLAYER_HEAD;
+            PLAYER_HEAD = new ItemStack(Material.PLAYER_HEAD);
         } else {
-            PLAYER_HEAD = Material.getMaterial("SKULL_ITEM");
+            PLAYER_HEAD = new ItemStack(Material.getMaterial("SKULL_ITEM"), 1, (short) 3);
         }
         MethodHandle m1 = null;
         try {
@@ -57,12 +58,11 @@ public class SkullTexture {
         return cache.computeIfAbsent(texture, SkullTexture::buildHead);
     }
 
-    @SuppressWarnings("deprecation")
     private static ItemStack buildHead(String texture) {
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
         profile.getProperties().put("textures", new Property("textures", getTextureValue(texture)));
 
-        ItemStack item = new ItemStack(PLAYER_HEAD, 1, (short) 3);
+        ItemStack item = new ItemStack(PLAYER_HEAD);
         ItemMeta meta = item.getItemMeta();
         try {
             setProfile.invoke(meta, profile);

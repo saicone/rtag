@@ -21,10 +21,15 @@ public class IEnchantMirror implements ItemMirror {
     public static final Map<Object, Object> fromShort = new HashMap<>();
 
     static {
-        for (EnchantmentTag enchant : EnchantmentTag.LEGACY_VALUES) {
-            fromShort.put(enchant.getId(), "minecraft:" + enchant.name().toLowerCase());
+        try {
+            for (EnchantmentTag enchant : EnchantmentTag.LEGACY_VALUES) {
+                String name = "minecraft:" + enchant.name().toLowerCase();
+                fromShort.put(enchant.getId(), TagBase.newTag(name));
+                fromString.put(name, TagBase.newTag(enchant.getId()));
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
-        fromShort.forEach((key, value) -> fromString.put(value, key));
     }
 
     private final Map<Object, Object> map;
@@ -64,14 +69,14 @@ public class IEnchantMirror implements ItemMirror {
     @Override
     public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
         if (from <= 12) {
-            processEnchants(tag, id.equalsIgnoreCase("enchanted_book"));
+            processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
 
     @Override
     public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
         if (from > 12) {
-            processEnchants(tag, id.equalsIgnoreCase("enchanted_book"));
+            processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
 
@@ -90,12 +95,9 @@ public class IEnchantMirror implements ItemMirror {
                 Object enchant = TagList.get(enchants, i);
                 Object value = TagBase.getValue(TagCompound.get(enchant, "id"));
                 if (value != null) {
-                    Object object = map.get(value);
-                    if (object != null) {
-                        Object id = TagBase.newTag(object);
-                        if (id != null) {
-                            TagCompound.set(enchant, "id", id);
-                        }
+                    Object id = map.get(value);
+                    if (id != null) {
+                        TagCompound.set(enchant, "id", id);
                     }
                 }
             }
