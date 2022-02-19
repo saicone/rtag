@@ -26,6 +26,7 @@ public class ItemTagStream extends TStream<ItemStack> {
     static {
         List<ItemMirror> mirror = new ArrayList<>();
         mirror.add(new IPotionMirror());
+        mirror.add(new ISkullOwnerMirror());
         mirror.add(new IMaterialMirror());
         mirror.add(new IDisplayMirror());
 
