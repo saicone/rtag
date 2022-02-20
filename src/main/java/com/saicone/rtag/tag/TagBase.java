@@ -3,12 +3,12 @@ package com.saicone.rtag.tag;
 import com.saicone.rtag.Rtag;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.ThrowableFunction;
 
 import java.lang.invoke.MethodHandle;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * Class to invoke methods inside classes that extends NBTBase.
@@ -17,8 +17,10 @@ import java.util.function.Function;
  */
 public class TagBase {
 
-    private static final Map<Class<?>, Function<Object, Object>> newTagFunction = new HashMap<>();
-    private static final Map<Class<?>, Function<Object, Object>> getValueFunction = new HashMap<>();
+    private static final ThrowableFunction<Object, Object> DEFAULT_FUNCTION = (o) -> null;
+
+    private static final Map<Class<?>, ThrowableFunction<Object, Object>> newTagFunction = new HashMap<>();
+    private static final Map<Class<?>, ThrowableFunction<Object, Object>> getValueFunction = new HashMap<>();
 
     private static final MethodHandle tagByte;
     private static final MethodHandle asByte;
@@ -139,41 +141,44 @@ public class TagBase {
         asShort = m19;
         asString = m20;
 
-        newFunction(o -> EasyLookup.safeInvoke(tagByte, o), byte.class, Byte.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagByte"), o -> EasyLookup.safeInvoke(asByte, o));
+        newFunction(tagByte::invoke, byte.class, Byte.class);
+        getValueFunction.put(EasyLookup.classById("NBTTagByte"), asByte::invoke);
 
-        newTagFunction.put(EasyLookup.classById("byte[]"), o -> EasyLookup.safeInvoke(tagByteArray, o));
-        getValueFunction.put(EasyLookup.classById("NBTTagByteArray"), o -> EasyLookup.safeInvoke(asByteArray, o));
+        newTagFunction.put(EasyLookup.classById("byte[]"), tagByteArray::invoke);
+        getValueFunction.put(EasyLookup.classById("NBTTagByteArray"), asByteArray::invoke);
 
-        newFunction(o -> EasyLookup.safeInvoke(tagDouble, o), double.class, Double.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagDouble"), o -> EasyLookup.safeInvoke(asDouble, o));
+        newFunction(tagDouble::invoke, double.class, Double.class);
+        getValueFunction.put(EasyLookup.classById("NBTTagDouble"), asDouble::invoke);
 
-        newFunction(o -> EasyLookup.safeInvoke(tagFloat, o), float.class, Float.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagFloat"), o -> EasyLookup.safeInvoke(asFloat, o));
+        newFunction(tagFloat::invoke, float.class, Float.class);
+        getValueFunction.put(EasyLookup.classById("NBTTagFloat"), asFloat::invoke);
 
-        newFunction(o -> EasyLookup.safeInvoke(tagInt, o), int.class, Integer.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagInt"), o -> EasyLookup.safeInvoke(asInt, o));
+        newFunction(tagInt::invoke, int.class, Integer.class);
+        getValueFunction.put(EasyLookup.classById("NBTTagInt"), asInt::invoke);
 
-        newTagFunction.put(EasyLookup.classById("int[]"), o -> EasyLookup.safeInvoke(tagIntArray, o));
-        getValueFunction.put(EasyLookup.classById("NBTTagIntArray"), o -> EasyLookup.safeInvoke(asIntArray, o));
+        newTagFunction.put(EasyLookup.classById("int[]"), tagIntArray::invoke);
+        getValueFunction.put(EasyLookup.classById("NBTTagIntArray"), asIntArray::invoke);
 
-        newFunction(o -> EasyLookup.safeInvoke(tagLong, o), long.class, Long.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagLong"), o -> EasyLookup.safeInvoke(asLong, o));
+        newFunction(tagLong::invoke, long.class, Long.class);
+        getValueFunction.put(EasyLookup.classById("NBTTagLong"), asLong::invoke);
 
         if (ServerInstance.verNumber >= 12) {
-            newTagFunction.put(EasyLookup.classById("long[]"), o -> EasyLookup.safeInvoke(tagLongArray, o));
-            getValueFunction.put(EasyLookup.classById("NBTTagLongArray"), o -> EasyLookup.safeInvoke(asLongArray, o));
+            newTagFunction.put(EasyLookup.classById("long[]"), tagLongArray::invoke);
+            getValueFunction.put(EasyLookup.classById("NBTTagLongArray"), asLongArray::invoke);
         }
 
-        newFunction(o -> EasyLookup.safeInvoke(tagShort, o), short.class, Short.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagShort"), o -> EasyLookup.safeInvoke(asShort, o));
+        newFunction(tagShort::invoke, short.class, Short.class);
+        getValueFunction.put(EasyLookup.classById("NBTTagShort"), asShort::invoke);
 
-        newTagFunction.put(String.class, o -> EasyLookup.safeInvoke(tagString, o));
-        getValueFunction.put(EasyLookup.classById("NBTTagString"), o -> EasyLookup.safeInvoke(asString, o));
+        newTagFunction.put(String.class, tagString::invoke);
+        getValueFunction.put(EasyLookup.classById("NBTTagString"), asString::invoke);
 
     }
 
-    private static void newFunction(Function<Object, Object> function, Class<?>... classes) {
+    TagBase() {
+    }
+
+    private static void newFunction(ThrowableFunction<Object, Object> function, Class<?>... classes) {
         for (Class<?> c : classes) {
             newTagFunction.put(c, function);
         }
@@ -188,9 +193,10 @@ public class TagBase {
      *
      * @param object Java object that exist in NBTBase tag.
      * @return       A NBTBase tag associated with provided object.
+     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object newTag(Object object) {
-        return object == null ? null : newTagFunction.get(object.getClass()).apply(object);
+    public static Object newTag(Object object) throws Throwable {
+        return object == null ? null : newTagFunction.getOrDefault(object.getClass(), DEFAULT_FUNCTION).apply(object);
     }
 
     /**
@@ -202,8 +208,9 @@ public class TagBase {
      *
      * @param tag Tag to extract value.
      * @return    A java object inside NBTBase tag.
+     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object getValue(Object tag) {
-        return tag == null ? null : getValueFunction.get(tag.getClass()).apply(tag);
+    public static Object getValue(Object tag) throws Throwable {
+        return tag == null ? null : getValueFunction.getOrDefault(tag.getClass(), DEFAULT_FUNCTION).apply(tag);
     }
 }
