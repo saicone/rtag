@@ -9,12 +9,35 @@ import org.bukkit.Bukkit;
  */
 public class ServerInstance {
 
+    /**
+     * Current server version defined in craftbukkit package.
+     */
     public static final String version;
+    /**
+     * Current server version number simplified, for example:<br>
+     * 1.8 -> 8<br>
+     * 1.12.2 -> 12<br>
+     * 1.17 -> 17<br>
+     */
     public static final int verNumber;
 
+    /**
+     * Return true if server version is 1.12.2 or below.
+     */
     public static final boolean isLegacy;
+    /**
+     * Return true if server version is 1.17 or upper.
+     */
     public static final boolean isUniversal;
+    /**
+     * Return true if server instance is a SpigotMC server.<br>
+     * https://www.spigotmc.org/
+     */
     public static final boolean isSpigot;
+    /**
+     * Return true if server instance is a PaperMC server.<br>
+     * https://papermc.io/
+     */
     public static final boolean isPaper;
 
     static {
@@ -34,5 +57,8 @@ public class ServerInstance {
         } catch (ClassNotFoundException ignored) { }
         isSpigot = spigot;
         isPaper = paper;
+    }
+
+    ServerInstance() {
     }
 }

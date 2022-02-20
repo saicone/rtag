@@ -44,6 +44,9 @@ public class EntityTag {
         load = m2;
     }
 
+    EntityTag() {
+    }
+
     /**
      * Save current NBTTagCompound into new one entity.
      *

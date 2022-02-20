@@ -31,6 +31,9 @@ public class ItemBridge {
         asNMSCopy = m2;
     }
 
+    ItemBridge() {
+    }
+
     /**
      * Get provided Minecraft ItemStack and convert into Bukkit ItemStack.
      *

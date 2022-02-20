@@ -51,6 +51,9 @@ public class TileTag {
         load = m2;
     }
 
+    TileTag() {
+    }
+
     /**
      * Save current NBTTagCompound into new one.
      *

@@ -44,6 +44,9 @@ public class ChatComponent {
         toJson = m4;
     }
 
+    ChatComponent() {
+    }
+
     /**
      * Convert json component string to IChatBaseComponent.
      *

@@ -35,6 +35,9 @@ public class TileBridge {
         newBlockPosition = m3;
     }
 
+    TileBridge() {
+    }
+
     /**
      * Get provided Bukkit Block and convert into Minecraft TileEntity.
      *

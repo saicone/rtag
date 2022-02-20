@@ -77,7 +77,12 @@ public class RtagMirror {
                 return TagList.newTag(getRtag(), (List<Object>) object);
             }
         }
-        return TagBase.newTag(object);
+        try {
+            return TagBase.newTag(object);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -94,6 +99,11 @@ public class RtagMirror {
                 return TagList.getValue(getRtag(), tag);
             }
         }
-        return TagBase.getValue(tag);
+        try {
+            return TagBase.getValue(tag);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
     }
 }

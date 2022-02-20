@@ -63,6 +63,9 @@ public class EasyLookup {
         }
     }
 
+    EasyLookup() {
+    }
+
     /**
      * Invoke {@link MethodHandle} without exception.
      *

@@ -48,6 +48,9 @@ public class SkullTexture {
         setProfile = m1;
     }
 
+    SkullTexture() {
+    }
+
     /**
      * Main method to get textured head and save into cache.
      *

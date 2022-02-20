@@ -32,6 +32,9 @@ public class EntityBridge {
         getHandle = m2;
     }
 
+    EntityBridge() {
+    }
+
     /**
      * Get provided Minecraft Entity and convert into Bukkit Entity.
      *

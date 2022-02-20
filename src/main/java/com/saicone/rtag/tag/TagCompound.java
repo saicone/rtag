@@ -90,6 +90,9 @@ public class TagCompound {
         getKeys = m9;
     }
 
+    TagCompound() {
+    }
+
     /**
      * Constructs an empty NBTTagCompound.
      *

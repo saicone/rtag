@@ -30,6 +30,9 @@ public class TStreamTools {
         writeNBT = m2;
     }
 
+    TStreamTools() {
+    }
+
     /**
      * Read NBTTagCompound from file.
      *

@@ -51,6 +51,9 @@ public class ItemTag {
         createStack = m4;
     }
 
+    ItemTag() {
+    }
+
     /**
      * Get current NBTTagCompound.
      *

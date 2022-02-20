@@ -104,6 +104,9 @@ public class TagList {
         getListField = m12;
     }
 
+    TagList() {
+    }
+
     /**
      * Constructs an empty NBTTagList.
      *
