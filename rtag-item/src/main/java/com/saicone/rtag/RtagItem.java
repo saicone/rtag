@@ -29,6 +29,8 @@ public class RtagItem extends RtagEditor<ItemStack> {
         }
     }
 
+    private final ItemStack item;
+
     /**
      * Constructs an RtagItem with ItemStack to edit.
      *
@@ -46,30 +48,53 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * @param item Item to edit.
      */
     public RtagItem(Rtag rtag, ItemStack item) {
-        this(rtag, asMinecraft(item));
+        this(rtag, item, asMinecraft(item));
     }
 
     /**
      * Constructs an RtagItem with specified Rtag parent
      * and NMS ItemStack to edit.
      *
-     * @param rtag Rtag parent.
-     * @param item NMS item to edit.
+     * @param rtag   Rtag parent.
+     * @param item   Item to load changes.
+     * @param object NMS item to edit.
      */
-    public RtagItem(Rtag rtag, Object item) {
-        this(rtag, item, getTag(item));
+    public RtagItem(Rtag rtag, ItemStack item, Object object) {
+        this(rtag, item, object, getTag(object));
     }
 
     /**
      * Constructs an RtagItem with specified Rtag parent
      * and NMS ItemStack to edit.
      *
-     * @param rtag Rtag parent.
-     * @param item NMS item to edit.
-     * @param tag  Item tag to edit.
+     * @param rtag   Rtag parent.
+     * @param item   Item to load changes.
+     * @param object NMS item to edit.
+     * @param tag    Item tag to edit.
      */
-    public RtagItem(Rtag rtag, Object item, Object tag) {
-        super(rtag, item, tag);
+    public RtagItem(Rtag rtag, ItemStack item, Object object, Object tag) {
+        super(rtag, object, tag);
+        this.item = item;
+    }
+
+    /**
+     * Get current item instance.
+     *
+     * @return A Bukkit ItemStack.
+     */
+    public ItemStack getItem() {
+        return item;
+    }
+
+    /**
+     * Load changes into item instance.
+     */
+    public void load() {
+        try {
+            ItemBridge.setHandle(item, getObject());
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     /**
@@ -77,7 +102,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
      *
      * @return Copy of the original item with changes loaded.
      */
-    public ItemStack load() {
+    public ItemStack loadCopy() {
         try {
             return ItemBridge.asBukkit(getObject());
         } catch (Throwable t) {

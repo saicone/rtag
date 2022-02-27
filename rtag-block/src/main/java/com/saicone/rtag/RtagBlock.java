@@ -29,8 +29,6 @@ public class RtagBlock extends RtagEditor<Block> {
         }
     }
 
-    private final Block block;
-
     /**
      * Constructs an RtagBlock with Block to edit.
      *
@@ -48,7 +46,7 @@ public class RtagBlock extends RtagEditor<Block> {
      * @param block Block to edit.
      */
     public RtagBlock(Rtag rtag, Block block) {
-        this(rtag, block, asMinecraft(block));
+        this(rtag, asMinecraft(block));
     }
 
     /**
@@ -56,11 +54,10 @@ public class RtagBlock extends RtagEditor<Block> {
      * and NMS Block to edit.
      *
      * @param rtag   Rtag parent.
-     * @param block  Original block.
      * @param object NMS block to edit.
      */
-    public RtagBlock(Rtag rtag, Block block, Object object) {
-        this(rtag, block, object, getTag(object));
+    public RtagBlock(Rtag rtag, Object object) {
+        this(rtag, object, getTag(object));
     }
 
     /**
@@ -68,26 +65,21 @@ public class RtagBlock extends RtagEditor<Block> {
      * and NMS Block to edit.
      *
      * @param rtag   Rtag parent.
-     * @param block  Original block.
      * @param object NMS block to edit.
      * @param tag    Block tag to edit.
      */
-    public RtagBlock(Rtag rtag, Block block, Object object, Object tag) {
+    public RtagBlock(Rtag rtag, Object object, Object tag) {
         super(rtag, object, tag);
-        this.block = block;
     }
 
     /**
      * Load changes into block instance.
-     *
-     * @return The original block.
      */
-    public Block load() {
+    public void load() {
         try {
             TileTag.loadTag(getObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        return block;
     }
 }

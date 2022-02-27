@@ -29,8 +29,6 @@ public class RtagEntity extends RtagEditor<Entity> {
         }
     }
 
-    private final Entity entity;
-
     /**
      * Constructs an RtagEntity with Entity to edit.
      *
@@ -48,7 +46,7 @@ public class RtagEntity extends RtagEditor<Entity> {
      * @param entity Entity to edit.
      */
     public RtagEntity(Rtag rtag, Entity entity) {
-        this(rtag, entity, asMinecraft(entity));
+        this(rtag, asMinecraft(entity));
     }
 
     /**
@@ -56,11 +54,10 @@ public class RtagEntity extends RtagEditor<Entity> {
      * and NMS Entity to edit.
      *
      * @param rtag   Rtag parent.
-     * @param entity Original entity.
-     * @param object NMS entity to edit.
+     * @param entity NMS entity to edit.
      */
-    public RtagEntity(Rtag rtag, Entity entity, Object object) {
-        this(rtag, entity, object, getTag(object));
+    public RtagEntity(Rtag rtag, Object entity) {
+        this(rtag, entity, getTag(entity));
     }
 
     /**
@@ -68,26 +65,21 @@ public class RtagEntity extends RtagEditor<Entity> {
      * and NMS Entity to edit.
      *
      * @param rtag   Rtag parent.
-     * @param entity Original entity.
-     * @param object NMS entity to edit.
+     * @param entity NMS entity to edit.
      * @param tag    Entity tag to edit.
      */
-    public RtagEntity(Rtag rtag, Entity entity, Object object, Object tag) {
-        super(rtag, object, tag);
-        this.entity = entity;
+    public RtagEntity(Rtag rtag, Object entity, Object tag) {
+        super(rtag, entity, tag);
     }
 
     /**
      * Load changes into entity instance.
-     *
-     * @return The original entity.
      */
-    public Entity load() {
+    public void load() {
         try {
             EntityTag.loadTag(getObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        return entity;
     }
 }

@@ -64,10 +64,8 @@ public abstract class RtagEditor<T> {
 
     /**
      * Load changes into object instance.
-     *
-     * @return Current object instance of type.
      */
-    public abstract T load();
+    public abstract void load();
 
     /**
      * Add value to an NBTTagList on specified path inside current object tag.<br>
