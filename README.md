@@ -30,15 +30,17 @@ Short listValue = itemTag.get("list", "path", 0);
 itemTag.remove("deep", "path");
 String newValue = itemTag.get("deep", "path"); // return null
 
-// Save item with changes
+// Get item copy with changes
 ItemStack newItem = itemTag.loadCopy();
+// Or load changes into original item
+itemTag.load();
 ```
 
 ### Requirements
-* **At least Minecraft 1.8.8:** Rtag is made to be used in latest Minecraft versions, old versions support is only for commercial reasons.
-* Minimum Java 11
+*  **At least Minecraft 1.8.8:** Rtag is made to be used in latest Minecraft versions, old versions support is only for commercial purposes.
+*  Minimum Java 11
 
-# Why Rtag?
+# Why Rtag
 There are other libraries to edit NBT tags, why should Rtag be used over the others?
 
 ## Really fast
@@ -52,19 +54,37 @@ rtag.set(compound, "Normal string", "CustomTagPath");
 String string = rtag.get(compound, "CustomTagPath");
 ```
 
-## Store custom objects.
+## Store custom objects
 You can register (de)serializers in Rtag instance to set and get custom objects with automatic conversion.
 ```java
-public class MyObjectSerializer implements RtagSerializer<MyObject> {
+public class MyObjectSerializer implements RtagSerializer<MyObject>, RtagDeserializer<MyObject> {
+    
+    public MyObjectSerializer(Rtag rtag) {
+        rtag.putSerializer(MyObject.class, this);
+        rtag.putDeserializer(this);
+    }
+    
+    // MyObject -> Map
     @Override
     public String getInID() {
         // It's suggested to use a unique namespaced key
+        return "myplugin:MyObject";
+    }
+    
+    // Map -> MyObject
+    @Override
+    public String getOutID() {
         return "myplugin:MyObject";
     }
 
     @Override
     public Map<String, Object> serialize(MyObject object) {
         // Convert your custom object into map
+    }
+    
+    @Override
+    public deserialize(Map<String, Object> compound) {
+        // Convert compount into you custom object
     }
 }
 ```
@@ -74,7 +94,7 @@ public class MyObjectSerializer implements RtagSerializer<MyObject> {
 ### ItemTagStream
 With ItemTagStream instance you can convert items into Base64|File|Bytes and viceversa.
 
-Including **cross-version support**! Save a item on any version and get on any version without compatibility problems. Materials, enchantments, potions... etc, all will be converted!
+Including **cross-version support**! Save an item on any version and get on any version without compatibility problems. Materials, enchantments, potions... etc, all will be converted!
 ```java
 ItemTagStream tag = ItemTagStream.INSTANCE;
 

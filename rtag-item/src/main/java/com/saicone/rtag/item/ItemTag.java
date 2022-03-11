@@ -27,7 +27,7 @@ public class ItemTag {
             if (ServerInstance.verNumber >= 13) {
                 createStack = "a";
                 if (ServerInstance.verNumber >= 18) {
-                    getTag = "s";
+                    getTag = ServerInstance.release >= 2 ? "t" : "s";
                     setTag = "c";
                     save = "b";
                 }

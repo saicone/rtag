@@ -17,9 +17,16 @@ public class ServerInstance {
      * Current server version number simplified, for example:<br>
      * 1.8 -> 8<br>
      * 1.12.2 -> 12<br>
-     * 1.17 -> 17<br>
+     * 1.17 -> 17
      */
     public static final int verNumber;
+    /**
+     * Current release version number, for example:<br>
+     * v1_9_R2 -> 2<br>
+     * v1_13_R1 -> 1<br>
+     * v1_16_R3 -> 3<br>
+     */
+    public static final int release;
 
     /**
      * Return true if server version is 1.12.2 or below.
@@ -43,6 +50,7 @@ public class ServerInstance {
     static {
         version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         verNumber = Integer.parseInt(version.split("_")[1]);
+        release = Integer.parseInt(version.split("_")[2].substring(1));
         isLegacy = verNumber <= 12;
         isUniversal = verNumber >= 17;
         boolean spigot = false;
