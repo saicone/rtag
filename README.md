@@ -94,8 +94,8 @@ dependencies {
   ```xml
   <repositories>
       <repository>
-          <id>CodeMC</id>
-          <url>https://repo.codemc.org/repository/maven-public/</url>
+          <id>Jitpack</id>
+          <url>https://jitpack.io</url>
       </repository>
   </repositories>
     
