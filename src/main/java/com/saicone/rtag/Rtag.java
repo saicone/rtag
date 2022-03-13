@@ -10,13 +10,13 @@ import java.util.Map;
 import java.util.function.BiPredicate;
 
 /**
- * <p>Rtag class to edit NBTTagCompound & NBTTagList objects.<br>
+ * <p>Rtag class to edit NBTTagCompound &amp; NBTTagList objects.<br>
  * Uses a tree-like path format to find the required tag
  * instead of creating multiple classes for deep-tags.<br></p>
  *
  * <h2>Object conversion</h2>
  * <p>The Rtag instance uses a {@link RtagMirror} to convert
- * objects between TagBase <-> Object.<br>
+ * objects between TagBase &lt;-&gt; Object.<br>
  * By default it's only compatible with regular Java
  * objects like String, Short, Integer, Double, Float,
  * Long, Byte, Map and List.<br>
@@ -207,8 +207,8 @@ public class Rtag {
     /**
      * Get value from the specified path inside tag.<br>
      * The value will be cast to the type are you looking for after conversion.<br>
-     *
-     * <h2>Path format</h2>
+     * <br>
+     * <b>Path format</b>
      * <p>Rtag uses a tree-like format for paths, every object inside
      * path can be {@link Integer} or {@link String} and will used
      * to obtain the last possible NBTBase instance.<br>

@@ -17,6 +17,11 @@ import java.util.Set;
  */
 public class TagCompound {
 
+    /**
+     * Tag stream instance to save and get compounds.
+     *
+     * @see TStream
+     */
     public static final TStream<Object> DATA = new TStream<>() {
         @Override
         public Object clone(Object object) {

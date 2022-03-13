@@ -213,7 +213,7 @@ public class EasyLookup {
 
     /**
      * Save the typically org.bukkit.craftbukkit class into memory.<br>
-     * Name must be the full path after "org.bukkit.craftbukkit.<VERSION>."
+     * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
      *
      * @param name Class name.
      * @return     Added class.
@@ -225,7 +225,7 @@ public class EasyLookup {
 
     /**
      * Save the typically org.bukkit.craftbukkit class into memory with specified ID.<br>
-     * Name must be the full path after "org.bukkit.craftbukkit.<VERSION>."
+     * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
      *
      * @param id   Class ID.
      * @param name Class name.
@@ -330,7 +330,7 @@ public class EasyLookup {
      * @param name    Method name.
      * @param classes Required classes in method.
      * @return        A MethodHandle representing a method for provided class.
-     * @throws NoSuchMethodException  if a matching method is not found or if the name is "<init>"or "<clinit>".
+     * @throws NoSuchMethodException  if a matching method is not found or if the name is "&lt;init&gt;"or "&lt;clinit&gt;".
      * @throws IllegalAccessException if access checking fails or if the method's variable arity
      *                                modifier bit is set and asVarargsCollector fails.
      */

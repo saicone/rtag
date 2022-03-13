@@ -17,7 +17,13 @@ import java.util.Map;
  */
 public class IEnchantMirror implements ItemMirror {
 
+    /**
+     * Map to get TagBase enchantment ID from String.
+     */
     public static final Map<Object, Object> fromString = new HashMap<>();
+    /**
+     * Map to get TagBase enchantment namespaced key from Short ID.
+     */
     public static final Map<Object, Object> fromShort = new HashMap<>();
 
     static {

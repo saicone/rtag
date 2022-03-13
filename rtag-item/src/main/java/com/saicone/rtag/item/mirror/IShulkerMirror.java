@@ -46,8 +46,9 @@ public class IShulkerMirror implements ItemMirror {
 
     /**
      * Process current shulker tag to convert items inside.
-     *
-     * @param tag ItemStack tag.
+     * @param tag  ItemStack tag.
+     * @param from Version specified in compound.
+     * @param to   Version to convert.
      * @throws Throwable if any error occurs on reflected method invoking.
      */
     public void processTag(Object tag, int from, int to) throws Throwable {

@@ -25,7 +25,7 @@ public interface RtagSerializer<T> {
     /**
      * Method who be invoked to convert any Object to {@link Map}.
      *
-     * @param object A Object as <T> instance.
+     * @param object A Object as &lt;T&gt; instance.
      * @return       A serialized {@link Map}.
      */
     Map<String, Object> serialize(T object);

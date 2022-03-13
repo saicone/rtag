@@ -86,7 +86,7 @@ public abstract class RtagEditor<T> {
 
     /**
      * Change object tag into new one.<br>
-     * Value must be Map<String, Object> or NBTTagListCompound.
+     * Value must be Map&lt;String, Object&gt; or NBTTagListCompound.
      *
      * @param value Object to replace current tag.
      * @return      True if tag has replaced.
