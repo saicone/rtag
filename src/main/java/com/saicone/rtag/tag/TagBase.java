@@ -186,7 +186,7 @@ public class TagBase {
 
     /**
      * Constructs an NBTBase directly associated with Java object.<br>
-     * For example Float ->  NBTTagFloat
+     * For example Float -&gt;  NBTTagFloat
      *
      * @see TagCompound#newTag(Map) 
      * @see TagList#newTag(List) 
@@ -201,7 +201,7 @@ public class TagBase {
 
     /**
      * Get Java value of NBTBase tag.<br>
-     * For example NBTTagString -> String.
+     * For example NBTTagString -&gt; String.
      *
      * @see TagCompound#getValue(Rtag, Object) 
      * @see TagList#getValue(Rtag, Object) 

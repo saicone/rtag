@@ -15,16 +15,16 @@ public class ServerInstance {
     public static final String version;
     /**
      * Current server version number simplified, for example:<br>
-     * 1.8 -> 8<br>
-     * 1.12.2 -> 12<br>
-     * 1.17 -> 17
+     * 1.8 -&gt; 8<br>
+     * 1.12.2 -&gt; 12<br>
+     * 1.17 -&gt; 17
      */
     public static final int verNumber;
     /**
      * Current release version number, for example:<br>
-     * v1_9_R2 -> 2<br>
-     * v1_13_R1 -> 1<br>
-     * v1_16_R3 -> 3<br>
+     * v1_9_R2 -&gt; 2<br>
+     * v1_13_R1 -&gt; 1<br>
+     * v1_16_R3 -&gt; 3<br>
      */
     public static final int release;
 

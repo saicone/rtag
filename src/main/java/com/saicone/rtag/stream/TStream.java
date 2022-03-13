@@ -16,11 +16,11 @@ import java.util.List;
  * The TStream instance provide easy methods
  * handle objects has bytes.
  * <h2>Write</h2>
- * Object -> NBTTagCompound -> Bytes<br>
+ * Object -&gt; NBTTagCompound -&gt; Bytes<br>
  * With bytes you can write to file or convert
  * into Base64 String.
  * <h2>Read</h2>
- * Bytes -> NBTTagCompound -> Object<br>
+ * Bytes -&gt; NBTTagCompound -&gt; Object<br>
  * You can read bytes from file or Base64.
  *
  * @author Rubenicos
@@ -159,7 +159,7 @@ public class TStream<T> {
      * Convert object into bytes.<br>
      * This method first convert provided object into NBTTagCompound,
      * then write compound into ByteArrayOutputStream.<br>
-     * Object -> NBTTagCompound -> Bytes
+     * Object -&gt; NBTTagCompound -&gt; Bytes
      *
      * @param object Object to convert.
      * @return       A byte array that represent the object.
@@ -236,7 +236,7 @@ public class TStream<T> {
      * Get object from bytes.<br>
      * The method first read the bytes with ByteArrayInputStream to
      * get an NBTTagCompound and convert it into object.<br>
-     * Bytes -> NBTTagCompound -> Object
+     * Bytes -&gt; NBTTagCompound -&gt; Object
      *
      * @param bytes Bytes to read.
      * @return      A NBTTagCompound converted to object.
