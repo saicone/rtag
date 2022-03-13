@@ -1,0 +1,5 @@
+name: Rtag
+version: ${version}
+main: com.saicone.rtag.RtagPlugin
+authors: [Rubenicos]
+api-version: 1.13

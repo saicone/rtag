@@ -1,0 +1,24 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.yml'
+        expand(
+                'version': project.version
+        )
+    }
+}
+
+dependencies {
+    implementation project(':rtag-block')
+    implementation project(':rtag-entity')
+    implementation project(':rtag-item')
+
+    compileOnly 'ink.ptms.core:v11800:11800:api'
+}
+
+jar.dependsOn (shadowJar)

@@ -1,3 +1,3 @@
 rootProject.name = 'rtag'
 
-include('rtag-block', 'rtag-entity', 'rtag-item')
+include('rtag-block', 'rtag-entity', 'rtag-item', 'rtag-plugin')
