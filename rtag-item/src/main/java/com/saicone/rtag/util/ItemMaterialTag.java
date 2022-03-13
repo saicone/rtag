@@ -165,7 +165,7 @@ public enum ItemMaterialTag {
     CARVED_PUMPKIN(13, "PUMPKIN", 8),
     CAT_SPAWN_EGG(14),
     CAULDRON(8, "CAULDRON_ITEM"),
-    CAVE_SPIDER_SPAWN_EGG(13, "SPAWN_EGG=cave_spider", 11, "SPAWN_EGG=CaveSpider", 9, "SPAWN_EGG:59", 8, "MONSTER_EGG"),
+    CAVE_SPIDER_SPAWN_EGG(13, Map.of("SPAWN_EGG=cave_spider", 11, "SPAWN_EGG=CaveSpider", 9, "SPAWN_EGG:59", 8), "MONSTER_EGG"),
     CHAIN(16),
     CHAINMAIL_BOOTS(8),
     CHAINMAIL_CHESTPLATE(8),
@@ -499,7 +499,7 @@ public enum ItemMaterialTag {
     HORN_CORAL(13),
     HORN_CORAL_BLOCK(13),
     HORN_CORAL_FAN(13),
-    HORSE_SPAWN_EGG(13, "SPAWN_EGG=horse", 11, "SPAWN_EGG=EntityHorse", 9, "SPAWN_EGG:100", 8, "MONSTER_EGG"),
+    HORSE_SPAWN_EGG(13, Map.of("SPAWN_EGG=horse", 11, "SPAWN_EGG=EntityHorse", 9, "SPAWN_EGG:100", 8), "MONSTER_EGG"),
     HUSK_SPAWN_EGG(13, "SPAWN_EGG=husk", 11, "MONSTER_EGG"),
     ICE(8),
     INFESTED_CHISELED_STONE_BRICKS(13, "MONSTER_EGG:5", 8, "MONSTER_EGGS"),
@@ -633,7 +633,7 @@ public enum ItemMaterialTag {
     MAGENTA_WOOL(13, "WOOL:2", 8),
     MAGMA_BLOCK(13, "MAGMA", 10),
     MAGMA_CREAM(8),
-    MAGMA_CUBE_SPAWN_EGG(13, "SPAWN_EGG=magma_cube", 11, "SPAWN_EGG=LavaSlime", 9, "SPAWN_EGG:62", 8, "MONSTER_EGG"),
+    MAGMA_CUBE_SPAWN_EGG(13, Map.of("SPAWN_EGG=magma_cube", 11, "SPAWN_EGG=LavaSlime", 9, "SPAWN_EGG:62", 8), "MONSTER_EGG"),
     MAP(8, "EMPTY_MAP"),
     MEDIUM_AMETHYST_BUD(17),
     //    1.12           1.13
@@ -647,7 +647,7 @@ public enum ItemMaterialTag {
     MILK_BUCKET(8),
     MINECART(8),
     MOJANG_BANNER_PATTERN(14),
-    MOOSHROOM_SPAWN_EGG(13, "SPAWN_EGG=mooshroom", 11, "SPAWN_EGG=MushroomCow", 9, "SPAWN_EGG:96", 8, "MONSTER_EGG"),
+    MOOSHROOM_SPAWN_EGG(13, Map.of("SPAWN_EGG=mooshroom", 11, "SPAWN_EGG=MushroomCow", 9, "SPAWN_EGG:96", 8), "MONSTER_EGG"),
     MOSSY_COBBLESTONE(8),
     MOSSY_COBBLESTONE_SLAB(14),
     MOSSY_COBBLESTONE_STAIRS(14),
@@ -728,7 +728,7 @@ public enum ItemMaterialTag {
     OAK_WOOD(13, "LOG:12", 8),
     OBSERVER(11),
     OBSIDIAN(8),
-    OCELOT_SPAWN_EGG(13, "SPAWN_EGG=ocelot", 11, "SPAWN_EGG=Ozelot", 9, "SPAWN_EGG:98", 8, "MONSTER_EGG"),
+    OCELOT_SPAWN_EGG(13, Map.of("SPAWN_EGG=ocelot", 11, "SPAWN_EGG=Ozelot", 9, "SPAWN_EGG:98", 8), "MONSTER_EGG"),
     ORANGE_BANNER(13, "BANNER:14", 8),
     ORANGE_BED(13, "BED:1", 12),
     ORANGE_CANDLE(17),
@@ -1145,7 +1145,7 @@ public enum ItemMaterialTag {
     ZOMBIE_HORSE_SPAWN_EGG(13, "SPAWN_EGG=zombie_horse", 11, "MONSTER_EGG"),
     ZOMBIE_SPAWN_EGG(13, "SPAWN_EGG=Zombie", 9, "SPAWN_EGG:54", 8, "MONSTER_EGG"),
     ZOMBIE_VILLAGER_SPAWN_EGG(13, "SPAWN_EGG=zombie_villager", 11, "MONSTER_EGG"),
-    ZOMBIFIED_PIGLIN_SPAWN_EGG(16, "ZOMBIE_PIGMAN_SPAWN_EGG", 13, "SPAWN_EGG=zombie_pigman", 11, "SPAWN_EGG=PigZombie", 9, "SPAWN_EGG:57", 8, "MONSTER_EGG");
+    ZOMBIFIED_PIGLIN_SPAWN_EGG(16, Map.of("ZOMBIE_PIGMAN_SPAWN_EGG", 13, "SPAWN_EGG=zombie_pigman", 11, "SPAWN_EGG=PigZombie", 9, "SPAWN_EGG:57", 8), "MONSTER_EGG");
 
     /**
      * Cached values of {@link ItemMaterialTag#values()} with
@@ -1204,6 +1204,13 @@ public enum ItemMaterialTag {
         return false;
     }
 
+    /**
+     * Change material name case without affecting entity ID (if contains it).
+     *
+     * @param name  Material name.
+     * @param upper True for uppercase.
+     * @return      A material name.
+     */
     public static String changeNameCase(String name, boolean upper) {
         String finalName = upper ? name.toUpperCase() : name.toLowerCase();
         if (name.contains("=")) {
@@ -1215,29 +1222,24 @@ public enum ItemMaterialTag {
     private final TreeMap<Integer, String> names;
     private final String[] aliases;
 
-    ItemMaterialTag(int version, String name1, int ver1, String name2, int ver2, String name3, int ver3, String name4, int ver4, String... aliases) {
-        this(version, name1, ver1, name2, ver2, name3, ver3, aliases);
-        names.put(ver4, name4);
-    }
-
-    ItemMaterialTag(int version, String name1, int ver1, String name2, int ver2, String name3, int ver3, String... aliases) {
-        this(version, name1, ver1, name2, ver2, aliases);
-        names.put(ver3, name3);
-    }
-
     ItemMaterialTag(int version, String name1, int ver1, String name2, int ver2, String... aliases) {
-        this(version, name1, ver1, aliases);
-        names.put(ver2, name2);
+        this(version, Map.of(name1, ver1, name2, ver2), aliases);
     }
 
     ItemMaterialTag(int version, String name1, int ver1, String... aliases) {
-        this(version, aliases);
-        names.put(ver1, name1);
+        this(version, Map.of(name1, ver1), aliases);
     }
 
     ItemMaterialTag(int version, String... aliases) {
         this.names = new TreeMap<>();
         names.put(version, this.name());
+        this.aliases = aliases;
+    }
+
+    ItemMaterialTag(int version, Map<String, Integer> names, String... aliases) {
+        this.names = new TreeMap<>();
+        this.names.put(version, this.name());
+        names.forEach((name, ver) -> this.names.put(ver, name));
         this.aliases = aliases;
     }
 
