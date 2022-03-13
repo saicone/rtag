@@ -1,9 +1,21 @@
-# Rtag
-[![CodeFactor](https://www.codefactor.io/repository/github/saicone/rtag/badge?style=flat-square)](https://www.codefactor.io/repository/github/saicone/rtag)
-![Code size](https://img.shields.io/github/languages/code-size/saicone/rtag?style=flat-square)
-![Lines of code](https://img.shields.io/tokei/lines/github/saicone/rtag?style=flat-square)
+<h1 align="center">Rtag</h1>
 
-The "readable tag" library, an easy way to handle NBTTagCompounds.
+<h4 align="center">The "readable tag" library, an easy way to handle NBTTagCompounds.</h4>
+
+<p align="center">
+    <a href="https://www.codefactor.io/repository/github/saicone/rtag">
+        <img src="https://www.codefactor.io/repository/github/saicone/rtag/badge?style=flat-square"/>
+    </a>
+    <a href="https://github.com/saicone/rtag">
+        <img src="https://img.shields.io/github/languages/code-size/saicone/rtag?style=flat-square"/>
+    </a>
+    <a href="https://github.com/saicone/rtag">
+        <img src="https://img.shields.io/tokei/lines/github/saicone/rtag?style=flat-square"/>
+    </a>
+    <a href="https://jitpack.io/#com.saicone/rtag">
+        <img src="https://jitpack.io/v/com.saicone/rtag.svg?style=flat-square"/>
+    </a>
+</p>
 
 Rtag convert NBT tags to known objects and viceversa for better readability.
 
@@ -36,9 +48,87 @@ ItemStack newItem = itemTag.loadCopy();
 itemTag.load();
 ```
 
+## Get Rtag
+
 ### Requirements
 *  **At least Minecraft 1.8.8:** Rtag is made to be used in latest Minecraft versions, old versions support is only for commercial purposes.
 *  Minimum Java 11
+
+### Project build
+For Gradle Groovy project (build.gradle)
+```groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compileOnly 'com.saicone.rtag:rtag:VERSION'
+    // Other modules
+    compileOnly 'com.saicone.rtag:rtag-block:VERSION'
+    compileOnly 'com.saicone.rtag:rtag-entity:VERSION'
+    compileOnly 'com.saicone.rtag:rtag-item:VERSION'
+}
+```
+
+<details>
+  <summary>For Gradle Kotlin project (build.gradle.kts)</summary>
+  
+  ```kotlin
+  repositories {
+      maven("https://jitpack.io")
+  }
+
+  dependencies {
+      compileOnly("com.saicone.rtag:rtag:VERSION")
+      // Other modules
+      compileOnly("com.saicone.rtag:rtag-block:VERSION")
+      compileOnly("com.saicone.rtag:rtag-entity:VERSION")
+      compileOnly("com.saicone.rtag:rtag-item:VERSION")
+  }
+  ```
+</details>
+
+<details>
+  <summary>For Maven project (pom.xml)</summary>
+  
+  ```xml
+  <repositories>
+      <repository>
+          <id>CodeMC</id>
+          <url>https://repo.codemc.org/repository/maven-public/</url>
+      </repository>
+  </repositories>
+    
+  <dependencies>
+      <dependency>
+          <groupId>com.saicone.rtag</groupId>
+          <artifactId>rtag</artifactId>
+          <version>VERSION</version>
+          <scope>provided</scope>
+      </dependency>
+      <!-- Other modules -->
+      <dependency>
+          <groupId>com.saicone.rtag</groupId>
+          <artifactId>rtag-block</artifactId>
+          <version>VERSION</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>com.saicone.rtag</groupId>
+          <artifactId>rtag-entity</artifactId>
+          <version>VERSION</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>com.saicone.rtag</groupId>
+          <artifactId>rtag-item</artifactId>
+          <version>VERSION</version>
+          <scope>provided</scope>
+      </dependency>
+  </dependencies>
+  ```
+</details>
+
 
 # Why Rtag
 There are other libraries to edit NBT tags, why should Rtag be used over the others?
