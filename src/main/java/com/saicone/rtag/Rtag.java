@@ -146,7 +146,7 @@ public class Rtag {
             return false;
         } else {
             int last = path.length - 1;
-            Object finalTag = getExactOrCreate(tag, Arrays.copyOf(path, last), setPredicate);
+            Object finalTag = getExactOrCreate(tag, Arrays.copyOf(path, last), value == null ? null : setPredicate);
             if (finalTag == null) {
                 return false;
             } else if (value == null) {
