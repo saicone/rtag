@@ -68,6 +68,25 @@ public abstract class RtagEditor<T> {
     public abstract void load();
 
     /**
+     * Check if current object has tag.
+     *
+     * @return True if tag is not null.
+     */
+    public boolean hasTag() {
+        return getTag() != null;
+    }
+
+    /**
+     * Check if current tag contains a object in defined path.
+     *
+     * @param path Final value path to get.
+     * @return     True if final value is not null.
+     */
+    public boolean hasTag(Object... path) {
+        return getExact(path) != null;
+    }
+
+    /**
      * Add value to an NBTTagList on specified path inside current object tag.<br>
      * See {@link Rtag#add(Object, Object, Object...)} for more information.
      *
@@ -86,7 +105,7 @@ public abstract class RtagEditor<T> {
 
     /**
      * Change object tag into new one.<br>
-     * Value must be Map&lt;String, Object&gt; or NBTTagListCompound.
+     * Value must be Map&lt;String, Object&gt; or NBTTagCompound.
      *
      * @param value Object to replace current tag.
      * @return      True if tag has replaced.
