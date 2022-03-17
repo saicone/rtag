@@ -1,6 +1,7 @@
 package com.saicone.rtag;
 
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.OptionalType;
 
 import java.util.Map;
 
@@ -84,6 +85,25 @@ public abstract class RtagEditor<T> {
      */
     public boolean hasTag(Object... path) {
         return getExact(path) != null;
+    }
+
+    /**
+     * Same has {@link #hasTag()} but with inverted result.
+     *
+     * @return True if tag is null.
+     */
+    public boolean notHasTag() {
+        return !hasTag();
+    }
+
+    /**
+     * Same has {@link #hasTag(Object...)} but with inverted result.
+     *
+     * @param path Final value path to get.
+     * @return     True if final value is null.
+     */
+    public boolean notHasTag(Object... path) {
+        return !hasTag(path);
     }
 
     /**
@@ -177,6 +197,23 @@ public abstract class RtagEditor<T> {
             t.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Same has {@link #get(Object...)} but save the value into {@link OptionalType}.
+     *
+     * @param path Final value path to get.
+     * @return     The value assigned to specified path has {@link OptionalType}.
+     */
+    public OptionalType getOptional(Object... path) {
+        Object value;
+        try {
+            value = rtag.fromTagExact(rtag.getExact(tag, path));
+        } catch (Throwable t) {
+            t.printStackTrace();
+            value = null;
+        }
+        return OptionalType.of(value);
     }
 
     /**
