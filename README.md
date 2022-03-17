@@ -32,11 +32,12 @@ itemTag.add((short) 3, "list", "path");
 
 // Get values
 String value = itemTag.get("deep", "path");
-Integer intValue = itemTag.get("somekey");
+// Safe get
+int intValue = itemTag.getOptional("somekey").or(-1);
 String name = itemTag.get("display", "name");
 List<Short> list = itemTag.get("list", "path");
 // List value at index 0
-Short listValue = itemTag.get("list", "path", 0);
+short listValue = itemTag.get("list", "path", 0).or((short) 0);
 
 // Remove values
 itemTag.remove("deep", "path");
