@@ -22,6 +22,8 @@ public class TagBase {
     private static final Map<Class<?>, ThrowableFunction<Object, Object>> newTagFunction = new HashMap<>();
     private static final Map<Class<?>, ThrowableFunction<Object, Object>> getValueFunction = new HashMap<>();
 
+    private static final MethodHandle getTypeId;
+
     private static final MethodHandle tagByte;
     private static final MethodHandle asByte;
 
@@ -54,92 +56,124 @@ public class TagBase {
     private static final MethodHandle asString;
 
     static {
-        // Constructors
-        MethodHandle m1 = null, m2 = null, m3 = null, m4 = null, m5 = null, m6 = null, m7 = null, m8 = null, m9 = null, m10 = null;
-        // Methods
-        MethodHandle m11 = null, m12 = null, m13 = null, m14 = null, m15 = null, m16 = null, m17 = null, m18 = null, m19 = null, m20 = null;
+        // TagBase Methods
+        MethodHandle method$getTypeId = null;
+        // TagBase Constructors
+        MethodHandle new$Byte = null;
+        MethodHandle new$ByteArray = null;
+        MethodHandle new$Double = null;
+        MethodHandle new$Float = null;
+        MethodHandle new$Int = null;
+        MethodHandle new$IntArray = null;
+        MethodHandle new$Long = null;
+        MethodHandle new$LongArray = null;
+        MethodHandle new$Short = null;
+        MethodHandle new$String = null;
+        // TagBase Getters
+        MethodHandle get$Byte = null;
+        MethodHandle get$ByteArray = null;
+        MethodHandle get$Double = null;
+        MethodHandle get$Float = null;
+        MethodHandle get$Int = null;
+        MethodHandle get$IntArray = null;
+        MethodHandle get$Long = null;
+        MethodHandle get$LongArray = null;
+        MethodHandle get$Short = null;
+        MethodHandle get$String = null;
         try {
             // Old names
-            String data = "data", asByte = data, asDouble = data, asFloat = data, asLongArray = "b", asString = data;
+            String getTypeId = "getTypeId";
+            String data = "data";
+            String asByte = data;
+            String asDouble = data;
+            String asFloat = data;
+            String asLongArray = "b";
+            String asString = data;
+
             // New names
             if (ServerInstance.isUniversal) {
+                if (ServerInstance.verNumber >= 18) {
+                    getTypeId = "a";
+                    asLongArray = "f";
+                }
                 data = "c";
                 asByte = "x";
                 asDouble = "w";
                 asFloat = "w";
                 asString = "A";
-            }
-            if (ServerInstance.verNumber >= 18) {
-                asLongArray = "f";
             } else if (ServerInstance.verNumber >= 14) {
                 asLongArray = "getLongs";
             } else if (ServerInstance.verNumber >= 13) {
                 asLongArray = "d";
             }
 
+            method$getTypeId = EasyLookup.method("NBTBase", getTypeId, byte.class);
+
             // Unreflect reason:
             // Method names change a lot across versions
             // Fields and constructors are private in all versions
-            m1 = EasyLookup.unreflectConstructor("NBTTagByte", byte.class);
-            m11 = EasyLookup.unreflectGetter("NBTTagByte", asByte);
+            new$Byte = EasyLookup.unreflectConstructor("NBTTagByte", byte.class);
+            get$Byte = EasyLookup.unreflectGetter("NBTTagByte", asByte);
 
-            m2 = EasyLookup.unreflectConstructor("NBTTagByteArray", byte[].class);
-            m12 = EasyLookup.unreflectGetter("NBTTagByteArray", data);
+            new$ByteArray = EasyLookup.unreflectConstructor("NBTTagByteArray", byte[].class);
+            get$ByteArray = EasyLookup.unreflectGetter("NBTTagByteArray", data);
 
-            m3 = EasyLookup.unreflectConstructor("NBTTagDouble", double.class);
-            m13 = EasyLookup.unreflectGetter("NBTTagDouble", asDouble);
+            new$Double = EasyLookup.unreflectConstructor("NBTTagDouble", double.class);
+            get$Double = EasyLookup.unreflectGetter("NBTTagDouble", asDouble);
 
-            m4 = EasyLookup.unreflectConstructor("NBTTagFloat", float.class);
-            m14 = EasyLookup.unreflectGetter("NBTTagFloat", asFloat);
+            new$Float = EasyLookup.unreflectConstructor("NBTTagFloat", float.class);
+            get$Float = EasyLookup.unreflectGetter("NBTTagFloat", asFloat);
 
-            m5 = EasyLookup.unreflectConstructor("NBTTagInt", int.class);
-            m15 = EasyLookup.unreflectGetter("NBTTagInt", data);
+            new$Int = EasyLookup.unreflectConstructor("NBTTagInt", int.class);
+            get$Int = EasyLookup.unreflectGetter("NBTTagInt", data);
 
-            m6 = EasyLookup.unreflectConstructor("NBTTagIntArray", "int[]");
-            m16 = EasyLookup.unreflectGetter("NBTTagIntArray", data);
+            new$IntArray = EasyLookup.unreflectConstructor("NBTTagIntArray", "int[]");
+            get$IntArray = EasyLookup.unreflectGetter("NBTTagIntArray", data);
 
-            m7 = EasyLookup.unreflectConstructor("NBTTagLong", long.class);
-            m17 = EasyLookup.unreflectGetter("NBTTagLong", data);
+            new$Long = EasyLookup.unreflectConstructor("NBTTagLong", long.class);
+            get$Long = EasyLookup.unreflectGetter("NBTTagLong", data);
 
             if (ServerInstance.verNumber >= 12) {
-                m8 = EasyLookup.unreflectConstructor("NBTTagLongArray", "long[]");
+                new$LongArray = EasyLookup.unreflectConstructor("NBTTagLongArray", "long[]");
                 if (ServerInstance.verNumber >= 13) {
-                    m18 = EasyLookup.method("NBTTagLongArray", asLongArray, "long[]");
+                    get$LongArray = EasyLookup.method("NBTTagLongArray", asLongArray, "long[]");
                 } else {
                     // 1.12 only by getter
-                    m18 = EasyLookup.unreflectGetter("NBTTagLongArray", asLongArray);
+                    get$LongArray = EasyLookup.unreflectGetter("NBTTagLongArray", asLongArray);
                 }
             }
 
-            m9 = EasyLookup.unreflectConstructor("NBTTagShort", short.class);
-            m19 = EasyLookup.unreflectGetter("NBTTagShort", data);
+            new$Short = EasyLookup.unreflectConstructor("NBTTagShort", short.class);
+            get$Short = EasyLookup.unreflectGetter("NBTTagShort", data);
 
-            m10 = EasyLookup.unreflectConstructor("NBTTagString", String.class);
-            m20 = EasyLookup.unreflectGetter("NBTTagString", asString);
+            new$String = EasyLookup.unreflectConstructor("NBTTagString", String.class);
+            get$String = EasyLookup.unreflectGetter("NBTTagString", asString);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        tagByte = m1;
-        tagByteArray = m2;
-        tagDouble = m3;
-        tagFloat = m4;
-        tagInt = m5;
-        tagIntArray = m6;
-        tagLong = m7;
-        tagLongArray = m8;
-        tagShort = m9;
-        tagString = m10;
+        getTypeId = method$getTypeId;
 
-        asByte = m11;
-        asByteArray = m12;
-        asDouble = m13;
-        asFloat = m14;
-        asInt = m15;
-        asIntArray = m16;
-        asLong = m17;
-        asLongArray = m18;
-        asShort = m19;
-        asString = m20;
+        tagByte = new$Byte;
+        tagByteArray = new$ByteArray;
+        tagDouble = new$Double;
+        tagFloat = new$Float;
+        tagInt = new$Int;
+        tagIntArray = new$IntArray;
+        tagLong = new$Long;
+        tagLongArray = new$LongArray;
+        tagShort = new$Short;
+        tagString = new$String;
+
+        asByte = get$Byte;
+        asByteArray = get$ByteArray;
+        asDouble = get$Double;
+        asFloat = get$Float;
+        asInt = get$Int;
+        asIntArray = get$IntArray;
+        asLong = get$Long;
+        asLongArray = get$LongArray;
+        asShort = get$Short;
+        asString = get$String;
 
         newFunction(tagByte::invoke, byte.class, Byte.class);
         getValueFunction.put(EasyLookup.classById("NBTTagByte"), asByte::invoke);
@@ -197,6 +231,19 @@ public class TagBase {
      */
     public static Object newTag(Object object) throws Throwable {
         return object == null ? null : newTagFunction.getOrDefault(object.getClass(), DEFAULT_FUNCTION).apply(object);
+    }
+
+    /**
+     * Get current tag type ID.<br>
+     * Byte = 1 | Short = 2 | Int = 3 | Long = 4 | Float = 5 | Double = 6 |
+     * ByteArray = 7 | String = 8 | List = 9 | Compound = 10 | IntArray = 11 | LongArray = 12
+     *
+     * @param tag TagBase instance to get the ID.
+     * @return    An ID that represents the tag type.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public static byte getTypeId(Object tag) throws Throwable {
+        return (byte) getTypeId.invoke(tag);
     }
 
     /**
