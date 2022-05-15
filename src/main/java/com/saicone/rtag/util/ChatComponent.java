@@ -15,33 +15,38 @@ public class ChatComponent {
     private static final MethodHandle toJson;
 
     static {
-        MethodHandle m1 = null, m2 = null, m3 = null, m4 = null;
+        // CraftChatMessage util class
+        MethodHandle method$fromString = null;
+        MethodHandle method$fromComponent = null;
+        // ChatSerializer MC class
+        MethodHandle method$fromJson = null;
+        MethodHandle method$toJson = null;
         try {
             Class<?> clazz = EasyLookup.addNMSClass("network.chat.IChatBaseComponent");
             EasyLookup.addClass("ChatSerializer", clazz.getDeclaredClasses()[0]);
             EasyLookup.addOBCClass("util.CraftChatMessage");
 
             if (ServerInstance.verNumber >= 13) {
-                m1 = EasyLookup.staticMethod("CraftChatMessage", "fromStringOrNull", "IChatBaseComponent", String.class);
+                method$fromString = EasyLookup.staticMethod("CraftChatMessage", "fromStringOrNull", "IChatBaseComponent", String.class);
             } else {
                 // Unreflect reason:
                 // Return IChatBaseComponent array
-                m1 = EasyLookup.unreflectMethod("CraftChatMessage", "fromString", String.class);
+                method$fromString = EasyLookup.unreflectMethod("CraftChatMessage", "fromString", String.class);
             }
-            m2 = EasyLookup.staticMethod("CraftChatMessage", "fromComponent", String.class, "IChatBaseComponent");
+            method$fromComponent = EasyLookup.staticMethod("CraftChatMessage", "fromComponent", String.class, "IChatBaseComponent");
 
             // Unreflect reason:
             // (1.8 - 1.15) return IChatBaseComponent
             // Other versions return IChatMutableComponent
-            m3 = EasyLookup.unreflectMethod("ChatSerializer", "a", String.class);
-            m4 = EasyLookup.staticMethod("ChatSerializer", "a", String.class, "IChatBaseComponent");
+            method$fromJson = EasyLookup.unreflectMethod("ChatSerializer", "a", String.class);
+            method$toJson = EasyLookup.staticMethod("ChatSerializer", "a", String.class, "IChatBaseComponent");
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        fromString = m1;
-        fromComponent = m2;
-        fromJson = m3;
-        toJson = m4;
+        fromString = method$fromString;
+        fromComponent = method$fromComponent;
+        fromJson = method$fromJson;
+        toJson = method$toJson;
     }
 
     ChatComponent() {
