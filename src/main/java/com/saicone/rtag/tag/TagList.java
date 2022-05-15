@@ -24,25 +24,41 @@ public class TagList {
     private static final MethodHandle remove;
     private static final MethodHandle set;
     private static final MethodHandle get;
-    private static final MethodHandle getTypeId;
     private static final MethodHandle isTypeId;
     private static final MethodHandle typeField;
     private static final MethodHandle setListField;
     private static final MethodHandle getListField;
 
     static {
-        MethodHandle m1 = null, m2 = null, m3 = null, m4 = null, m5 = null, m6 = null, m7 = null, m8 = null, m9 = null, m10 = null, m11 = null, m12 = null;
+        // Constructors
+        MethodHandle new$EmptyList = null;
+        MethodHandle new$List = null;
+        // Methods
+        MethodHandle method$size = null;
+        MethodHandle method$add = null;
+        MethodHandle method$remove = null;
+        MethodHandle method$set = null;
+        MethodHandle method$get = null;
+        MethodHandle method$isTypeId = null;
+        // Getters
+        MethodHandle get$type = null;
+        MethodHandle get$list = null;
+        // Setters
+        MethodHandle set$list = null;
         try {
-            Class<?> base = EasyLookup.classById("NBTBase");
             // Old names
-            String size = "size", add = "add", remove = "a", set = "a", get = "g", getTypeId = "getTypeId", list = "list";
+            String size = "size";
+            String add = "add";
+            String remove = "a";
+            String set = "a";
+            String get = "g";
+            String list = "list";
             // New names
             if (ServerInstance.verNumber >= 18) {
                 add = "c";
                 remove = "c";
                 set = "d";
                 get = "k";
-                getTypeId = "a";
             } else if (ServerInstance.verNumber >= 9) {
                 remove = "remove";
                 if (ServerInstance.verNumber >= 13) {
@@ -58,50 +74,49 @@ public class TagList {
                 list = "c";
             }
 
-            m1 = EasyLookup.constructor(nbtList);
+            new$EmptyList = EasyLookup.constructor(nbtList);
+            method$size = EasyLookup.method(nbtList, size, int.class);
+            method$remove = EasyLookup.method(nbtList, remove, "NBTBase", int.class);
+            // Unreflect reason:
+            // (1.8 -  1.12) void method
+            // Other versions return NBTBase
+            method$set = EasyLookup.unreflectMethod(nbtList, set, int.class, "NBTBase");
+            method$get = EasyLookup.method(nbtList, get, "NBTBase", int.class);
+            // Private field
+            set$list = EasyLookup.unreflectGetter(nbtList, list);
+
             if (ServerInstance.verNumber >= 15) {
                 // Private constructor
-                m2 = EasyLookup.unreflectConstructor(nbtList, List.class, byte.class);
+                new$List = EasyLookup.unreflectConstructor(nbtList, List.class, byte.class);
             } else {
                 // Private fields
-                m10 = EasyLookup.unreflectSetter(nbtList, "type");
-                m11 = EasyLookup.unreflectSetter(nbtList, list);
+                get$type = EasyLookup.unreflectSetter(nbtList, "type");
+                get$list = EasyLookup.unreflectSetter(nbtList, list);
             }
-            m3 = EasyLookup.method(nbtList, size, int.class);
             if (ServerInstance.verNumber >= 14) {
-                m4 = EasyLookup.method(nbtList, add, void.class, int.class, base);
+                method$add = EasyLookup.method(nbtList, add, void.class, int.class, "NBTBase");
                 // Private method
-                m9 = EasyLookup.unreflectMethod(nbtList, "a", base);
+                method$isTypeId = EasyLookup.unreflectMethod(nbtList, "a", "NBTBase");
             } else {
                 // Unreflect reason:
                 // (1.12 - 1.13) return boolean
                 // Void method in other versions
-                m4 = EasyLookup.unreflectMethod(nbtList, add, base);
+                method$add = EasyLookup.unreflectMethod(nbtList, add, "NBTBase");
             }
-            m5 = EasyLookup.method(nbtList, remove, base, int.class);
-            // Unreflect reason:
-            // (1.8 -  1.12) void method
-            // Other versions return NBTBase
-            m6 = EasyLookup.unreflectMethod(nbtList, set, int.class, base);
-            m7 = EasyLookup.method(nbtList, get, base, int.class);
-            m8 = EasyLookup.method(base, getTypeId, byte.class);
-            // Private field
-            m12 = EasyLookup.unreflectGetter(nbtList, list);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        newEmpty = m1;
-        newList = m2;
-        size = m3;
-        add = m4;
-        remove = m5;
-        set = m6;
-        get = m7;
-        getTypeId = m8;
-        isTypeId = m9;
-        typeField = m10;
-        setListField = m11;
-        getListField = m12;
+        newEmpty = new$EmptyList;
+        newList = new$List;
+        size = method$size;
+        add = method$add;
+        remove = method$remove;
+        set = method$set;
+        get = method$get;
+        isTypeId = method$isTypeId;
+        typeField = get$type;
+        setListField = set$list;
+        getListField = get$list;
     }
 
     TagList() {
@@ -126,7 +141,7 @@ public class TagList {
      */
     public static Object newTag(List<Object> list) throws Throwable {
         if (list.isEmpty()) return newEmpty.invoke();
-        byte type = (byte) getTypeId.invoke(list.get(0));
+        byte type = TagBase.getTypeId(list.get(0));
         if (ServerInstance.verNumber >= 15) {
             return newList.invoke(list, type);
         } else {
@@ -145,7 +160,7 @@ public class TagList {
      * @param list List with objects.
      * @return     New NBTTagList instance.
      */
-    public static Object newTag(Rtag rtag, List<Object> list) {
+    public static Object newTag(Rtag rtag, List<?> list) {
         Object finalObject = null;
         try {
             if (list.isEmpty()) {
