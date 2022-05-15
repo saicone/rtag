@@ -176,6 +176,8 @@ public class TagBase {
         asString = get$String;
 
         newFunction(tagByte::invoke, byte.class, Byte.class);
+        // Boolean -> Byte compatibility
+        newFunction((bool) -> tagByte.invoke((Boolean) bool ? (byte) 1 : (byte) 0), boolean.class, Boolean.class);
         getValueFunction.put(EasyLookup.classById("NBTTagByte"), asByte::invoke);
 
         newTagFunction.put(EasyLookup.classById("byte[]"), tagByteArray::invoke);

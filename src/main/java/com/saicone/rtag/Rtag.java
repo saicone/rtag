@@ -3,6 +3,8 @@ package com.saicone.rtag;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.OptionalType;
+import com.saicone.rtag.util.ThrowableFunction;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -253,11 +255,14 @@ public class Rtag {
      * @return              The value assigned to specified path or null.
      * @throws Throwable    if any error occurs on reflected method invoking.
      */
+    @SuppressWarnings("unchecked")
     public Object getExactOrCreate(Object tag, Object[] path, BiPredicate<Integer, Object[]> listPredicate) throws Throwable {
         Object finalTag = tag;
         for (int i = 0; i < path.length; i++) {
             Object key = path[i];
-            if (key instanceof Integer && tagList.isInstance(finalTag)) {
+            if (key instanceof ThrowableFunction) {
+                finalTag = ((ThrowableFunction<Object, Object>) key).apply(finalTag);
+            } else if (key instanceof Integer && tagList.isInstance(finalTag)) {
                 if (TagList.size(finalTag) >= (int) key) {
                     finalTag = TagList.get(finalTag, (int) key);
                 } else {
@@ -311,13 +316,8 @@ public class Rtag {
      * @param <T> Object type to cast the value.
      * @return    Converted value, null if any error occurs.
      */
-    @SuppressWarnings("unchecked")
     public <T> T fromTag(Object tag) {
-        try {
-            return (T) fromTagExact(tag);
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return OptionalType.cast(fromTagExact(tag));
     }
 
     /**

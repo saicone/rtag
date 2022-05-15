@@ -10,9 +10,42 @@ package com.saicone.rtag.util;
 public class OptionalType {
 
     private static final OptionalType BLANK = new OptionalType(null);
+    private static final Object BOOLEAN = true;
 
+    /**
+     * Get current OptionalType from object value.
+     *
+     * @param value Saved value, can be null.
+     * @return      An OptionalType with object value.
+     */
     public static OptionalType of(Object value) {
         return value != null ? new OptionalType(value) : BLANK;
+    }
+
+    /**
+     * Cast any object to required type, including
+     * compatibility with Byte as Boolean.
+     *
+     * @param object Object to cast.
+     * @return       The object as required type or null;
+     * @param <T>    Required type to cast the object.
+     */
+    @SuppressWarnings("unused")
+    public static <T> T cast(Object object) {
+        if (object instanceof Byte) {
+            try {
+                // Check if type is equals to boolean
+                T bool = (T) BOOLEAN;
+                // So convert byte to boolean
+                Object obj = (Byte) object != 0;
+                return (T) obj;
+            } catch (ClassCastException ignored) { }
+        }
+        try {
+            return (T) object;
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 
     private final Object value;
@@ -71,11 +104,7 @@ public class OptionalType {
      * @return    Actual value or null if cast fails.
      */
     public <T> T value() {
-        try {
-            return (T) value;
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return cast(value);
     }
 
     /**
