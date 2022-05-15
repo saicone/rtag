@@ -42,11 +42,27 @@ public class TagCompound {
     private static final MethodHandle getKeys;
 
     static {
-        MethodHandle m1 = null, m2 = null, m3 = null, m4 = null, m5 = null, m6 = null, m7 = null, m8 = null, m9 = null;
+        // Constructors
+        MethodHandle new$EmptyCompound = null;
+        MethodHandle new$Compound = null;
+        // Setters
+        MethodHandle set$Map = null;
+        // Methods
+        MethodHandle method$clone = null;
+        MethodHandle method$hasKey = null;
+        MethodHandle method$remove = null;
+        MethodHandle method$set = null;
+        MethodHandle method$get = null;
+        MethodHandle method$getKeys = null;
         try {
             Class<?> base = EasyLookup.classById("NBTBase");
             // Old names
-            String clone = "clone", hasKey = "hasKey", remove = "remove", set = "set", get = "get", getKeys = "c";
+            String clone = "clone";
+            String hasKey = "hasKey";
+            String remove = "remove";
+            String set = "set";
+            String get = "get";
+            String getKeys = "c";
             // New names
             if (ServerInstance.verNumber >= 18) {
                 clone = "g";
@@ -61,38 +77,38 @@ public class TagCompound {
                 clone = "g";
             }
 
-            m1 = EasyLookup.constructor(nbtCompound);
+            new$EmptyCompound = EasyLookup.constructor(nbtCompound);
             if (ServerInstance.verNumber >= 15) {
                 // Private method
-                m2 = EasyLookup.unreflectConstructor(nbtCompound, Map.class);
+                new$Compound = EasyLookup.unreflectConstructor(nbtCompound, Map.class);
             } else {
                 // Private field
-                m3 = EasyLookup.unreflectSetter(nbtCompound, "map");
+                set$Map = EasyLookup.unreflectSetter(nbtCompound, "map");
             }
             // Unreflect reason:
             // (1.8 -  1.9) return NBTBase
             // Other versions return NBTTagCompound
-            m4 = EasyLookup.unreflectMethod(nbtCompound, clone);
-            m5 = EasyLookup.method(nbtCompound, hasKey, boolean.class, String.class);
-            m6 = EasyLookup.method(nbtCompound, remove, void.class, String.class);
+            method$clone = EasyLookup.unreflectMethod(nbtCompound, clone);
+            method$hasKey = EasyLookup.method(nbtCompound, hasKey, boolean.class, String.class);
+            method$remove = EasyLookup.method(nbtCompound, remove, void.class, String.class);
             // Unreflect reason:
             // (1.8 -  1.13) void method
             // Other versions return NBTBase
-            m7 = EasyLookup.unreflectMethod(nbtCompound, set, String.class, base);
-            m8 = EasyLookup.method(nbtCompound, get, base, String.class);
-            m9 = EasyLookup.method(nbtCompound, getKeys, Set.class);
+            method$set = EasyLookup.unreflectMethod(nbtCompound, set, String.class, base);
+            method$get = EasyLookup.method(nbtCompound, get, base, String.class);
+            method$getKeys = EasyLookup.method(nbtCompound, getKeys, Set.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        newEmpty = m1;
-        newCompound = m2;
-        mapField = m3;
-        clone = m4;
-        hasKey = m5;
-        remove = m6;
-        set = m7;
-        get = m8;
-        getKeys = m9;
+        newEmpty = new$EmptyCompound;
+        newCompound = new$Compound;
+        mapField = set$Map;
+        clone = method$clone;
+        hasKey = method$hasKey;
+        remove = method$remove;
+        set = method$set;
+        get = method$get;
+        getKeys = method$getKeys;
     }
 
     TagCompound() {
@@ -232,10 +248,12 @@ public class TagCompound {
      * @param tag   NBTTagCompound instance.
      * @param key   Value key.
      * @param value Value to put.
+     * @return      The value that was set.
      * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void set(Object tag, String key, Object value) throws Throwable {
+    public static Object set(Object tag, String key, Object value) throws Throwable {
         set.invoke(tag, key, value);
+        return value;
     }
 
     /**
