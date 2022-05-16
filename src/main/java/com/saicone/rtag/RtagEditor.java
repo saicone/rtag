@@ -131,7 +131,7 @@ public abstract class RtagEditor<T> {
      * @return      True if tag has replaced.
      */
     public boolean set(Object value) {
-        Object tag = rtag.toTag(value);
+        Object tag = rtag.newTag(value);
         if (tagCompound.isInstance(tag)) {
             this.tag = tag;
             return true;
@@ -178,7 +178,7 @@ public abstract class RtagEditor<T> {
      * @return A Map with objects converted by Rtag parent.
      */
     public Map<String, Object> get() {
-        return rtag.fromTag(tag);
+        return OptionalType.cast(tag);
     }
 
     /**
@@ -208,7 +208,7 @@ public abstract class RtagEditor<T> {
     public OptionalType getOptional(Object... path) {
         Object value;
         try {
-            value = rtag.fromTagExact(rtag.getExact(tag, path));
+            value = rtag.getTagValue(rtag.getExact(tag, path));
         } catch (Throwable t) {
             t.printStackTrace();
             value = null;

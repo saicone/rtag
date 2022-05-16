@@ -1,6 +1,6 @@
 package com.saicone.rtag.tag;
 
-import com.saicone.rtag.Rtag;
+import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
 
@@ -41,9 +41,9 @@ public class TagList {
         MethodHandle method$get = null;
         MethodHandle method$isTypeId = null;
         // Getters
-        MethodHandle get$type = null;
         MethodHandle get$list = null;
         // Setters
+        MethodHandle set$type = null;
         MethodHandle set$list = null;
         try {
             // Old names
@@ -83,15 +83,15 @@ public class TagList {
             method$set = EasyLookup.unreflectMethod(nbtList, set, int.class, "NBTBase");
             method$get = EasyLookup.method(nbtList, get, "NBTBase", int.class);
             // Private field
-            set$list = EasyLookup.unreflectGetter(nbtList, list);
+            get$list = EasyLookup.unreflectGetter(nbtList, list);
 
             if (ServerInstance.verNumber >= 15) {
                 // Private constructor
                 new$List = EasyLookup.unreflectConstructor(nbtList, List.class, byte.class);
             } else {
                 // Private fields
-                get$type = EasyLookup.unreflectSetter(nbtList, "type");
-                get$list = EasyLookup.unreflectSetter(nbtList, list);
+                set$type = EasyLookup.unreflectSetter(nbtList, "type");
+                set$list = EasyLookup.unreflectSetter(nbtList, list);
             }
             if (ServerInstance.verNumber >= 14) {
                 method$add = EasyLookup.method(nbtList, add, void.class, int.class, "NBTBase");
@@ -114,7 +114,7 @@ public class TagList {
         set = method$set;
         get = method$get;
         isTypeId = method$isTypeId;
-        typeField = get$type;
+        typeField = set$type;
         setListField = set$list;
         getListField = get$list;
     }
@@ -154,13 +154,13 @@ public class TagList {
 
     /**
      * Constructs and NBTTagList with provided List of NBTBase
-     * and required {@link Rtag} to convert Objects.
+     * and required {@link RtagMirror} to convert Objects.
      *
-     * @param rtag Rtag parent to convert objects into tags.
-     * @param list List with objects.
-     * @return     New NBTTagList instance.
+     * @param mirror RtagMirror to convert objects into tags.
+     * @param list   List with objects.
+     * @return       New NBTTagList instance.
      */
-    public static Object newTag(Rtag rtag, List<?> list) {
+    public static Object newTag(RtagMirror mirror, List<?> list) {
         Object finalObject = null;
         try {
             if (list.isEmpty()) {
@@ -168,7 +168,7 @@ public class TagList {
             } else {
                 List<Object> tags = new ArrayList<>();
                 for (Object value : list) {
-                    tags.add(rtag.toTag(value));
+                    tags.add(mirror.newTag(value));
                 }
                 finalObject = newTag(tags);
             }
@@ -181,17 +181,31 @@ public class TagList {
     /**
      * Get current tag list.
      *
-     * @param rtag Rtag parent to convert tags.
-     * @param tag  NBTTagList instance.
-     * @return     A list of objects.
+     * @param tag NBTTagList instance.
+     * @return    A list of NBTBase objects.
+     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static List<Object> getValue(Rtag rtag, Object tag) {
+    @SuppressWarnings("unchecked")
+    public static List<Object> getValue(Object tag) throws Throwable {
+        return (List<Object>) getListField.invoke(tag);
+    }
+
+    /**
+     * Get current tag list with values converted.
+     *
+     * @see #getValue(Object)
+     *
+     * @param mirror RtagMirror to convert tags.
+     * @param tag    NBTTagList instance.
+     * @return       A list of objects.
+     */
+    public static List<Object> getValue(RtagMirror mirror, Object tag) {
         List<Object> list = new ArrayList<>();
         if (tag != null) {
             try {
                 int length = (int) size.invoke(tag);
                 for (int i = 0; i < length; i++) {
-                    list.add(rtag.fromTagExact(get.invoke(tag, i)));
+                    list.add(mirror.getTagValue(get.invoke(tag, i)));
                 }
             } catch (Throwable t) {
                 t.printStackTrace();
@@ -212,17 +226,28 @@ public class TagList {
     }
 
     /**
+     * Check if current NBTTagList value contains NBTBase object.
+     *
+     * @param listTag NBTTagList instance.
+     * @param tag     NBTBase object.
+     * @return        true if the list contains the NBTBase object.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public static boolean contains(Object listTag, Object tag) throws Throwable {
+        return getValue(listTag).contains(tag);
+    }
+
+    /**
      * Add NBTBase tag.
      *
      * @param listTag NBTTagList instance.
      * @param tag     NBTBase tag to add.
      * @throws Throwable if any error occurs on reflected method invoking.
      */
-    @SuppressWarnings("unchecked")
     public static void add(Object listTag, Object tag) throws Throwable {
         if (ServerInstance.verNumber >= 14) {
             if ((boolean) isTypeId.invoke(listTag, tag)) {
-                ((List<Object>) getListField.invoke(listTag)).add(tag);
+                getValue(listTag).add(tag);
             }
         } else {
             add.invoke(listTag, tag);

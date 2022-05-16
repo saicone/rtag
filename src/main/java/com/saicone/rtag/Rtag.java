@@ -17,7 +17,7 @@ import java.util.function.BiPredicate;
  * instead of creating multiple classes for deep-tags.<br></p>
  *
  * <h2>Object conversion</h2>
- * <p>The Rtag instance uses a {@link RtagMirror} to convert
+ * <p>The Rtag instance extends {@link RtagMirror} to convert
  * objects between TagBase &lt;-&gt; Object.<br>
  * By default it's only compatible with regular Java
  * objects like String, Short, Integer, Double, Float,
@@ -33,7 +33,7 @@ import java.util.function.BiPredicate;
  *
  * @author Rubenicos
  */
-public class Rtag {
+public class Rtag extends RtagMirror {
 
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
     private static final Class<?> tagList = EasyLookup.classById("NBTTagList");
@@ -45,38 +45,23 @@ public class Rtag {
      */
     public static final Rtag INSTANCE = new Rtag();
 
-    private final RtagMirror mirror;
     private final Map<String, RtagDeserializer<Object>> deserializers = new HashMap<>();
     private final Map<Class<?>, RtagSerializer<Object>> serializers = new HashMap<>();
 
-    /**
-     * Constructs an simple Rtag with default {@link RtagMirror} object.
-     */
     public Rtag() {
-        this(null);
     }
 
-    /**
-     * Constructs an Rtag with specified mirror.
-     *
-     * @param mirror Mirror to convert objects.
-     */
+    @Deprecated
     public Rtag(RtagMirror mirror) {
-        this.mirror = mirror == null ? new RtagMirror() : mirror;
-        this.mirror.setRtag(this);
     }
 
-    /**
-     * Get current {@link RtagMirror} instance.
-     *
-     * @return A RtagMirror instance.
-     */
+    @Deprecated
     public RtagMirror getMirror() {
-        return mirror;
+        return this;
     }
 
     /**
-     * Register an {@link RtagDeserializer} for {@link #fromTag(Object)} operations.
+     * Register an {@link RtagDeserializer} for {@link #getTagValue(Object)} operations.
      *
      * @param deserializer Deserializer instance.
      * @param <T>          Deserializable object type.
@@ -89,7 +74,7 @@ public class Rtag {
     }
 
     /**
-     * Register an {@link RtagSerializer} for {@link #toTag(Object)} operations.
+     * Register an {@link RtagSerializer} for {@link #newTag(Object)} operations.
      *
      * @param type       Serializable object class that match with Serializer.
      * @param serializer Serializer instance.
@@ -120,7 +105,7 @@ public class Rtag {
         }
         Object finalTag = getExactOrCreate(tag, path, addPredicate);
         if (tagList.isInstance(finalTag)) {
-            Object valueTag = toTag(value);
+            Object valueTag = newTag(value);
             if (valueTag != null) {
                 TagList.add(finalTag, valueTag);
                 return true;
@@ -170,13 +155,13 @@ public class Rtag {
      */
     public boolean setExact(Object tag, Object value, Object key) throws Throwable {
         if (key instanceof Integer && tagList.isInstance(tag)) {
-            Object valueTag = toTag(value);
+            Object valueTag = newTag(value);
             if (valueTag != null) {
                 TagList.set(tag, (int) key, valueTag);
                 return true;
             }
         } else if (tagCompound.isInstance(tag)) {
-            Object valueTag = toTag(value);
+            Object valueTag = newTag(value);
             if (valueTag != null) {
                 TagCompound.set(tag, String.valueOf(key), valueTag);
                 return true;
@@ -229,7 +214,7 @@ public class Rtag {
      * @throws Throwable if any error occurs on reflected method invoking.
      */
     public <T> T get(Object tag, Object... path) throws Throwable {
-        return fromTag(getExact(tag, path));
+        return OptionalType.cast(getExact(tag, path));
     }
 
     /**
@@ -292,38 +277,6 @@ public class Rtag {
     }
 
     /**
-     * Convert any object to NBTBase tag.<br>
-     * This method first check for any serializer an then use the current {@link RtagMirror}.
-     *
-     * @param object Object to convert.
-     * @return       Converted object instance of NBTBase or null.
-     */
-    public Object toTag(Object object) {
-        if (object == null) {
-            return null;
-        } else if (serializers.containsKey(object.getClass())) {
-            RtagSerializer<Object> serializer = serializers.get(object.getClass());
-            Map<String, Object> map = serializer.serialize(object);
-            map.put("rtag==", serializer.getInID());
-            return toTag(map);
-        } else {
-            return getMirror().toTag(object);
-        }
-    }
-
-    /**
-     * Convert any NBTBase tag to regular Java object or custom by deserializer.<br>
-     * This method will cast the object to the type you looking for.
-     *
-     * @param tag NBTBase tag.
-     * @param <T> Object type to cast the value.
-     * @return    Converted value, null if any error occurs.
-     */
-    public <T> T fromTag(Object tag) {
-        return OptionalType.cast(fromTagExact(tag));
-    }
-
-    /**
      * Convert any NBTBase tag to exact regular Java object
      * or custom by deserializer without any cast.
      *
@@ -331,8 +284,9 @@ public class Rtag {
      * @return    Converted value or null.
      */
     @SuppressWarnings("unchecked")
-    public Object fromTagExact(Object tag) {
-        Object object = getMirror().fromTag(tag);
+    @Override
+    public Object getTagValue(Object tag) {
+        Object object = super.getTagValue(tag);
         if (object instanceof Map) {
             Object type = ((Map<String, Object>) object).get("rtag==");
             if (type instanceof String && deserializers.containsKey((String) type)) {
@@ -340,5 +294,58 @@ public class Rtag {
             }
         }
         return object;
+    }
+
+    /**
+     * Convert any object to NBTBase tag.<br>
+     * This method first check for any serializer and then use the current {@link RtagMirror}.
+     *
+     * @param object Object to convert.
+     * @return       Converted object instance of NBTBase or null.
+     */
+    @Override
+    public Object newTag(Object object) {
+        if (object == null) {
+            return null;
+        } else if (serializers.containsKey(object.getClass())) {
+            RtagSerializer<Object> serializer = serializers.get(object.getClass());
+            Map<String, Object> map = serializer.serialize(object);
+            map.put("rtag==", serializer.getInID());
+            return newTag(map);
+        } else {
+            return super.newTag(object);
+        }
+    }
+
+    /**
+     * @see #newTag(Object)
+     */
+    @Deprecated
+    public Object toTag(Object object) {
+        return newTag(object);
+    }
+
+    /**
+     * Convert any NBTBase tag to regular Java object or custom by deserializer.<br>
+     * This method will cast the object to the type you're looking for.
+     *
+     * @see #getTagValue(Object)
+     * @see OptionalType#cast(Object) 
+     * 
+     * @param tag NBTBase tag.
+     * @param <T> Object type to cast the value.
+     * @return    Converted value, null if any error occurs.
+     */
+    @Deprecated
+    public <T> T fromTag(Object tag) {
+        return OptionalType.cast(getTagValue(tag));
+    }
+
+    /**
+     * @see #getTagValue(Object)
+     */
+    @Deprecated
+    public Object fromTagExact(Object tag) {
+        return getTagValue(tag);
     }
 }

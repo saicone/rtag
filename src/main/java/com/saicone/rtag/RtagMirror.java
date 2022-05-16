@@ -17,48 +17,11 @@ import java.util.Map;
  *
  * @author Rubenicos
  */
-public class RtagMirror {
+public abstract class RtagMirror {
 
-    private static final Class<?> nbtBase = EasyLookup.classById("NBTBase");
-    private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
-    private static final Class<?> tagList = EasyLookup.classById("NBTTagList");
-
-    private Rtag rtag;
-
-    /**
-     * Constructs an RtagMirror without Rtag parent.
-     * Not compatible with NBTTagCompound or NBTTagList.
-     */
-    public RtagMirror() {
-        this(null);
-    }
-
-    /**
-     * Constructs an RtagMirror with specified Rtag parent.
-     *
-     * @param rtag Rtag parent.
-     */
-    public RtagMirror(Rtag rtag) {
-        this.rtag = rtag;
-    }
-
-    /**
-     * Get current {@link Rtag} parent.
-     *
-     * @return A Rtag instance.
-     */
-    public Rtag getRtag() {
-        return rtag;
-    }
-
-    /**
-     * Set current {@link Rtag} parent.
-     *
-     * @param rtag Rtag to set.
-     */
-    public void setRtag(Rtag rtag) {
-        this.rtag = rtag;
-    }
+    protected static final Class<?> TAG_BASE = EasyLookup.classById("NBTBase");
+    protected static final Class<?> TAG_COMPOUND = EasyLookup.classById("NBTTagCompound");
+    protected static final Class<?> TAG_LIST = EasyLookup.classById("NBTTagList");
 
     /**
      * Convert any object to NBTBase tag.
@@ -67,21 +30,20 @@ public class RtagMirror {
      * @return       Converted NBTBase or null;
      */
     @SuppressWarnings("unchecked")
-    public Object toTag(Object object) {
-        if (nbtBase.isInstance(object)) {
+    public Object newTag(Object object) {
+        if (TAG_BASE.isInstance(object)) {
             return object;
-        } else if (getRtag() != null) {
-            if (object instanceof Map) {
-                return TagCompound.newTag(getRtag(), (Map<String, Object>) object);
-            } else if (object instanceof List) {
-                return TagList.newTag(getRtag(), (List<Object>) object);
+        } else if (object instanceof Map) {
+            return TagCompound.newTag(this, (Map<String, Object>) object);
+        } else if (object instanceof List) {
+            return TagList.newTag(this, (List<Object>) object);
+        } else {
+            try {
+                return TagBase.newTag(object);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return null;
             }
-        }
-        try {
-            return TagBase.newTag(object);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
         }
     }
 
@@ -91,19 +53,18 @@ public class RtagMirror {
      * @param tag Tag to convert.
      * @return    Converted object.
      */
-    public Object fromTag(Object tag) {
-        if (getRtag() != null) {
-            if (tagCompound.isInstance(tag)) {
-                return TagCompound.getValue(getRtag(), tag);
-            } else if (tagList.isInstance(tag)) {
-                return TagList.getValue(getRtag(), tag);
+    public Object getTagValue(Object tag) {
+        if (TAG_COMPOUND.isInstance(tag)) {
+            return TagCompound.getValue(this, tag);
+        } else if (TAG_LIST.isInstance(tag)) {
+            return TagList.getValue(this, tag);
+        } else {
+            try {
+                return TagBase.getValue(tag);
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return null;
             }
-        }
-        try {
-            return TagBase.getValue(tag);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
         }
     }
 }

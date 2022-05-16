@@ -1,6 +1,6 @@
 package com.saicone.rtag.tag;
 
-import com.saicone.rtag.Rtag;
+import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
@@ -33,7 +33,8 @@ public class TagCompound {
 
     private static final MethodHandle newEmpty;
     private static final MethodHandle newCompound;
-    private static final MethodHandle mapField;
+    private static final MethodHandle setMapField;
+    private static final MethodHandle getMapField;
     private static final MethodHandle clone;
     private static final MethodHandle hasKey;
     private static final MethodHandle remove;
@@ -45,8 +46,10 @@ public class TagCompound {
         // Constructors
         MethodHandle new$EmptyCompound = null;
         MethodHandle new$Compound = null;
+        // Getters
+        MethodHandle get$map = null;
         // Setters
-        MethodHandle set$Map = null;
+        MethodHandle set$map = null;
         // Methods
         MethodHandle method$clone = null;
         MethodHandle method$hasKey = null;
@@ -83,8 +86,10 @@ public class TagCompound {
                 new$Compound = EasyLookup.unreflectConstructor(nbtCompound, Map.class);
             } else {
                 // Private field
-                set$Map = EasyLookup.unreflectSetter(nbtCompound, "map");
+                set$map = EasyLookup.unreflectSetter(nbtCompound, "map");
             }
+            // Private field
+            get$map = EasyLookup.unreflectGetter(nbtCompound, "map");
             // Unreflect reason:
             // (1.8 -  1.9) return NBTBase
             // Other versions return NBTTagCompound
@@ -102,7 +107,8 @@ public class TagCompound {
         }
         newEmpty = new$EmptyCompound;
         newCompound = new$Compound;
-        mapField = set$Map;
+        setMapField = set$map;
+        getMapField = get$map;
         clone = method$clone;
         hasKey = method$hasKey;
         remove = method$remove;
@@ -137,27 +143,27 @@ public class TagCompound {
             return newCompound.invoke(map);
         } else {
             Object tag = newEmpty.invoke();
-            mapField.invoke(tag, map);
+            setMapField.invoke(tag, map);
             return tag;
         }
     }
 
     /**
      * Constructs an NBTTagCompound with provided Map of Objects
-     * and required {@link Rtag} to convert Objects.
+     * and required {@link RtagMirror} to convert Objects.
      *
-     * @param rtag Rtag parent to convert objects into tags.
-     * @param map  Map with objects.
-     * @return     New NBTTagCompound instance.
+     * @param mirror RtagMirror to convert objects into tags.
+     * @param map    Map with objects.
+     * @return       New NBTTagCompound instance.
      */
-    public static Object newTag(Rtag rtag, Map<String, Object> map) {
+    public static Object newTag(RtagMirror mirror, Map<String, Object> map) {
         Object finalObject = null;
         try {
             if (map.isEmpty()) {
                 finalObject = newEmpty.invoke();
             } else {
                 Map<String, Object> tags = new HashMap<>();
-                map.forEach((key, value) -> tags.put(key, rtag.toTag(value)));
+                map.forEach((key, value) -> tags.put(key, mirror.newTag(value)));
                 finalObject = newTag(tags);
             }
         } catch (Throwable t) {
@@ -169,16 +175,28 @@ public class TagCompound {
     /**
      * Get current tag map.
      *
-     * @param rtag Rtag parent to convert tags.
-     * @param tag  NBTTagCompound instance.
-     * @return     A Map of Objects.
+     * @param tag NBTTagCompound instance.
+     * @return    A Map of NBTBase Objects.
+     * @throws Throwable if any error occurs on reflected method invoking.
      */
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> getValue(Rtag rtag, Object tag) {
+    public static Map<String, Object> getValue(Object tag) throws Throwable {
+        return (Map<String, Object>) getMapField.invoke(tag);
+    }
+
+    /**
+     * Get current tag map with converted values.
+     *
+     * @param mirror RtagMirror to convert tags.
+     * @param tag    NBTTagCompound instance.
+     * @return       A Map of Objects.
+     */
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> getValue(RtagMirror mirror, Object tag) {
         Map<String, Object> map = new HashMap<>();
         try {
             for (String key : (Set<String>) getKeys.invoke(tag)) {
-                map.put(key, rtag.fromTagExact(get.invoke(tag, key)));
+                map.put(key, mirror.getTagValue(get.invoke(tag, key)));
             }
         } catch (Throwable t) {
             t.printStackTrace();
