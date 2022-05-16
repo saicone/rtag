@@ -262,6 +262,9 @@ public class Rtag {
             Object key = path[i];
             if (key instanceof ThrowableFunction) {
                 finalTag = ((ThrowableFunction<Object, Object>) key).apply(finalTag);
+                if (finalTag == null) {
+                    return null;
+                }
             } else if (key instanceof Integer && tagList.isInstance(finalTag)) {
                 if (TagList.size(finalTag) >= (int) key) {
                     finalTag = TagList.get(finalTag, (int) key);

@@ -1148,8 +1148,7 @@ public enum ItemMaterialTag {
     ZOMBIFIED_PIGLIN_SPAWN_EGG(16, Map.of("ZOMBIE_PIGMAN_SPAWN_EGG", 13, "SPAWN_EGG=zombie_pigman", 11, "SPAWN_EGG=PigZombie", 9, "SPAWN_EGG:57", 8), "MONSTER_EGG");
 
     /**
-     * Cached values of {@link ItemMaterialTag#values()} with
-     * legacy SPAWN_EGG names fixed.
+     * Cached values of {@link ItemMaterialTag#values()}
      */
     public static final ItemMaterialTag[] VALUES = values();
     /**
@@ -1172,11 +1171,9 @@ public enum ItemMaterialTag {
                 }
             }
             for (Integer version : names.descendingKeySet()) {
-                if (version <= ServerInstance.verNumber) {
-                    if (materialExistFor(tag)) {
-                        fixed.put("minecraft:" + changeNameCase(names.get(version), false), tag);
-                        break;
-                    }
+                if (version <= ServerInstance.verNumber && materialExistFor(tag)) {
+                    fixed.put("minecraft:" + changeNameCase(names.get(version), false), tag);
+                    break;
                 }
             }
         }

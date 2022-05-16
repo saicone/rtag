@@ -19,15 +19,16 @@ public class TStreamTools {
     private static final MethodHandle writeNBT;
 
     static {
-        MethodHandle m1 = null, m2 = null;
+        MethodHandle method$read = null;
+        MethodHandle method$write = null;
         try {
-            m1 = EasyLookup.staticMethod("NBTCompressedStreamTools", "a", "NBTTagCompound", ServerInstance.verNumber >= 16 ? DataInput.class : DataInputStream.class);
-            m2 = EasyLookup.staticMethod("NBTCompressedStreamTools", "a", void.class, "NBTTagCompound", DataOutput.class);
+            method$read = EasyLookup.staticMethod("NBTCompressedStreamTools", "a", "NBTTagCompound", ServerInstance.verNumber >= 16 ? DataInput.class : DataInputStream.class);
+            method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", "a", void.class, "NBTTagCompound", DataOutput.class);
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        readNBT = m1;
-        writeNBT = m2;
+        readNBT = method$read;
+        writeNBT = method$write;
     }
 
     TStreamTools() {

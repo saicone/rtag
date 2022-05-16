@@ -54,7 +54,6 @@ public class EasyLookup {
             // Bukkit Server
             addOBCClass("CraftServer");
             addOBCClass("inventory.CraftItemStack");
-            addOBCClass("inventory.CraftMetaSkull");
             addOBCClass("entity.CraftEntity");
             addOBCClass("block.CraftBlockState");
             addOBCClass("CraftWorld");
