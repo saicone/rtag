@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * @author Rubenicos
  *
- * @param <T> Object type to return after load changes.
+ * @param <T> Parent object type.
  */
 public abstract class RtagEditor<T> {
 
@@ -48,7 +48,7 @@ public abstract class RtagEditor<T> {
     /**
      * Get current object instance.
      *
-     * @return A object with NBTTagCompound inside.
+     * @return An object with NBTTagCompound inside.
      */
     public Object getObject() {
         return object;

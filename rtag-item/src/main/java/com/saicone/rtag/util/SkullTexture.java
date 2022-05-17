@@ -81,7 +81,7 @@ public class SkullTexture {
      * @param texture Texture ID, URL, Base64, Player name or UUID.
      * @return        A ItemStack that represent the textured head.
      */
-    public static ItemStack getTextureHead(String texture) {
+    public static ItemStack getTexturedHead(String texture) {
         return cache.computeIfAbsent(texture, SkullTexture::buildHead);
     }
 
@@ -121,15 +121,7 @@ public class SkullTexture {
         }
     }
 
-    /**
-     * Get Base64 texture from online player, or compute textured head
-     * via making a request to Mojang API.
-     *
-     * @param key    Map key to put
-     * @param player A player, can be offline.
-     * @return       A Base64 encoded text.
-     */
-    public static String getPlayerTexture(String key, OfflinePlayer player) {
+    private static String getPlayerTexture(String key, OfflinePlayer player) {
         if (player.isOnline()) {
             try {
                 GameProfile profile = ((GameProfile) getProfile.invoke(player));

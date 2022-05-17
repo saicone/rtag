@@ -2,7 +2,6 @@ package com.saicone.rtag;
 
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.OptionalType;
 import com.saicone.rtag.util.ThrowableFunction;
 
@@ -35,8 +34,6 @@ import java.util.function.BiPredicate;
  */
 public class Rtag extends RtagMirror {
 
-    private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
-    private static final Class<?> tagList = EasyLookup.classById("NBTTagList");
     private static final BiPredicate<Integer, Object[]> addPredicate = (index, path) -> path.length == index || path[index] instanceof Integer;
     private static final BiPredicate<Integer, Object[]> setPredicate = (index, path) -> path.length > index && path[index] instanceof Integer;
 
@@ -104,7 +101,7 @@ public class Rtag extends RtagMirror {
             return false;
         }
         Object finalTag = getExactOrCreate(tag, path, addPredicate);
-        if (tagList.isInstance(finalTag)) {
+        if (TAG_LIST.isInstance(finalTag)) {
             Object valueTag = newTag(value);
             if (valueTag != null) {
                 TagList.add(finalTag, valueTag);
@@ -154,13 +151,13 @@ public class Rtag extends RtagMirror {
      * @throws Throwable if any error occurs on reflected method invoking.
      */
     public boolean setExact(Object tag, Object value, Object key) throws Throwable {
-        if (key instanceof Integer && tagList.isInstance(tag)) {
+        if (key instanceof Integer && TAG_LIST.isInstance(tag)) {
             Object valueTag = newTag(value);
             if (valueTag != null) {
                 TagList.set(tag, (int) key, valueTag);
                 return true;
             }
-        } else if (tagCompound.isInstance(tag)) {
+        } else if (TAG_COMPOUND.isInstance(tag)) {
             Object valueTag = newTag(value);
             if (valueTag != null) {
                 TagCompound.set(tag, String.valueOf(key), valueTag);
@@ -180,9 +177,9 @@ public class Rtag extends RtagMirror {
      * @throws Throwable if any error occurs on reflected method invoking.
      */
     public boolean removeExact(Object tag, Object key) throws Throwable {
-        if (key instanceof Integer && tagList.isInstance(tag)) {
+        if (key instanceof Integer && TAG_LIST.isInstance(tag)) {
             TagList.remove(tag, (int) key);
-        } else if (tagCompound.isInstance(tag)) {
+        } else if (TAG_COMPOUND.isInstance(tag)) {
             TagCompound.remove(tag, String.valueOf(key));
         } else {
             // Incompatible tag
@@ -250,14 +247,14 @@ public class Rtag extends RtagMirror {
                 if (finalTag == null) {
                     return null;
                 }
-            } else if (key instanceof Integer && tagList.isInstance(finalTag)) {
+            } else if (key instanceof Integer && TAG_LIST.isInstance(finalTag)) {
                 if (TagList.size(finalTag) >= (int) key) {
                     finalTag = TagList.get(finalTag, (int) key);
                 } else {
                     // Out of bounds
                     return null;
                 }
-            } else if (tagCompound.isInstance(finalTag)) {
+            } else if (TAG_COMPOUND.isInstance(finalTag)) {
                 String keyString = String.valueOf(key);
                 // Create tag if not exists
                 if (listPredicate != null && TagCompound.notHasKey(finalTag, keyString)) {

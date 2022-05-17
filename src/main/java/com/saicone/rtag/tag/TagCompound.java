@@ -60,6 +60,7 @@ public class TagCompound {
         try {
             Class<?> base = EasyLookup.classById("NBTBase");
             // Old names
+            String map = "map";
             String clone = "clone";
             String hasKey = "hasKey";
             String remove = "remove";
@@ -79,6 +80,9 @@ public class TagCompound {
             } else if (ServerInstance.verNumber >= 10) {
                 clone = "g";
             }
+            if (ServerInstance.isUniversal) {
+                map = "x";
+            }
 
             new$EmptyCompound = EasyLookup.constructor(nbtCompound);
             if (ServerInstance.verNumber >= 15) {
@@ -86,10 +90,10 @@ public class TagCompound {
                 new$Compound = EasyLookup.unreflectConstructor(nbtCompound, Map.class);
             } else {
                 // Private field
-                set$map = EasyLookup.unreflectSetter(nbtCompound, "map");
+                set$map = EasyLookup.unreflectSetter(nbtCompound, map);
             }
             // Private field
-            get$map = EasyLookup.unreflectGetter(nbtCompound, "map");
+            get$map = EasyLookup.unreflectGetter(nbtCompound, map);
             // Unreflect reason:
             // (1.8 -  1.9) return NBTBase
             // Other versions return NBTTagCompound

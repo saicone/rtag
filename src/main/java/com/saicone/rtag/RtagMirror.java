@@ -17,7 +17,7 @@ import java.util.Map;
  *
  * @author Rubenicos
  */
-public abstract class RtagMirror {
+public class RtagMirror {
 
     protected static final Class<?> TAG_BASE = EasyLookup.classById("NBTBase");
     protected static final Class<?> TAG_COMPOUND = EasyLookup.classById("NBTTagCompound");
