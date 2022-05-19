@@ -37,7 +37,7 @@ int intValue = itemTag.getOptional("somekey").or(-1);
 String name = itemTag.get("display", "name");
 List<Short> list = itemTag.get("list", "path");
 // List value at index 0
-short listValue = itemTag.get("list", "path", 0).or((short) 0);
+short listValue = itemTag.getOptional("list", "path", 0).or((short) 0);
 
 // Remove values
 itemTag.remove("deep", "path");
@@ -174,8 +174,8 @@ public class MyObjectSerializer implements RtagSerializer<MyObject>, RtagDeseria
     }
     
     @Override
-    public deserialize(Map<String, Object> compound) {
-        // Convert compount into you custom object
+    public MyObject deserialize(Map<String, Object> compound) {
+        // Convert compound into you custom object
     }
 }
 ```
@@ -196,10 +196,18 @@ ItemStack sameItem = tag.fromBase64(string)[0];
 ## Additional utilities
 
 ### Textured heads
-With SkullTexture class you can get textures heads from base64, url or texture ID.
+With SkullTexture class you can get textured heads from base64, url, texture ID, player name or uuid.
 ```java
-// Example with texture ID
-ItemStack head = SkullTexture.getTextureHead("6e2aaebaa1a9ead536edc79ddfade46cf50b4c40c83c102fb63d84d53c76d68f");
+// Base64
+ItemStack head = SkullTexture.getTexturedHead("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmVkZmEyZTBmZGVhMGMwNDIzODA0Y2RiNWI2MmFkMDVhNmU5MTRjMDQ2YzRhM2I3ZTM1NWJmODEyNjkxMjVmZCJ9fQ==");
+// URL
+ItemStack head = SkullTexture.getTexturedHead("http://textures.minecraft.net/texture/fedfa2e0fdea0c0423804cdb5b62ad05a6e914c046c4a3b7e355bf81269125fd");
+// Texture ID
+ItemStack head = SkullTexture.getTexturedHead("fedfa2e0fdea0c0423804cdb5b62ad05a6e914c046c4a3b7e355bf81269125fd");
+// Player name
+ItemStack head = SkullTexture.getTexturedHead("Rubenicos");
+// Player UUID
+ItemStack head = SkullTexture.getTexturedHead("7ca003dc-175f-4f1f-b490-5651045311ad");
 ```
 
 ### Chat Component

@@ -19,6 +19,7 @@ public class TagList {
 
     private static final MethodHandle newEmpty;
     private static final MethodHandle newList;
+    private static final MethodHandle clone;
     private static final MethodHandle size;
     private static final MethodHandle add;
     private static final MethodHandle remove;
@@ -34,6 +35,7 @@ public class TagList {
         MethodHandle new$EmptyList = null;
         MethodHandle new$List = null;
         // Methods
+        MethodHandle method$clone = null;
         MethodHandle method$size = null;
         MethodHandle method$add = null;
         MethodHandle method$remove = null;
@@ -47,6 +49,7 @@ public class TagList {
         MethodHandle set$list = null;
         try {
             // Old names
+            String clone = "clone";
             String size = "size";
             String add = "add";
             String remove = "a";
@@ -55,6 +58,7 @@ public class TagList {
             String list = "list";
             // New names
             if (ServerInstance.verNumber >= 18) {
+                clone = "d";
                 add = "c";
                 remove = "c";
                 set = "d";
@@ -64,17 +68,24 @@ public class TagList {
                 if (ServerInstance.verNumber >= 13) {
                     set = "set";
                     get = "get";
+                    if (ServerInstance.isUniversal) {
+                        list = "c";
+                    }
                 } else if (ServerInstance.verNumber >= 12) {
                     get = "i";
                 } else {
                     get = "h";
                 }
-            }
-            if (ServerInstance.isUniversal) {
-                list = "c";
+                if (ServerInstance.verNumber >= 10) {
+                    clone = "d";
+                }
             }
 
             new$EmptyList = EasyLookup.constructor(nbtList);
+            // Unreflect reason:
+            // (1.8 -  1.9) return NBTBase
+            // Other versions return NBTTagList
+            method$clone = EasyLookup.unreflectMethod(nbtList, clone);
             method$size = EasyLookup.method(nbtList, size, int.class);
             method$remove = EasyLookup.method(nbtList, remove, "NBTBase", int.class);
             // Unreflect reason:
@@ -108,6 +119,7 @@ public class TagList {
         }
         newEmpty = new$EmptyList;
         newList = new$List;
+        clone = method$clone;
         size = method$size;
         add = method$add;
         remove = method$remove;
@@ -176,6 +188,17 @@ public class TagList {
             t.printStackTrace();
         }
         return finalObject;
+    }
+
+    /**
+     * Copy provided NBTTagList into new one.
+     *
+     * @param tag NBTTagList instance.
+     * @return    A copy of original NBTTagList.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public static Object clone(Object tag) throws Throwable {
+        return clone.invoke(tag);
     }
 
     /**

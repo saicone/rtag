@@ -1,6 +1,6 @@
 package com.saicone.rtag.tag;
 
-import com.saicone.rtag.Rtag;
+import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
 import com.saicone.rtag.util.ThrowableFunction;
@@ -236,6 +236,17 @@ public class TagBase {
     }
 
     /**
+     * Copy provided NBTBase object into new one.
+     *
+     * @param tag Tag to copy.
+     * @return    A NBTBase tag with the same value.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public static Object clone(Object tag) throws Throwable {
+        return newTag(getValue(tag));
+    }
+
+    /**
      * Get current tag type ID.<br>
      * Byte = 1 | Short = 2 | Int = 3 | Long = 4 | Float = 5 | Double = 6 |
      * ByteArray = 7 | String = 8 | List = 9 | Compound = 10 | IntArray = 11 | LongArray = 12
@@ -252,8 +263,8 @@ public class TagBase {
      * Get Java value of NBTBase tag.<br>
      * For example NBTTagString -&gt; String.
      *
-     * @see TagCompound#getValue(Rtag, Object) 
-     * @see TagList#getValue(Rtag, Object) 
+     * @see TagCompound#getValue(RtagMirror, Object)
+     * @see TagList#getValue(RtagMirror, Object)
      *
      * @param tag Tag to extract value.
      * @return    A java object inside NBTBase tag.

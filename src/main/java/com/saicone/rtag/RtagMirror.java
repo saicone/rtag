@@ -48,6 +48,31 @@ public class RtagMirror {
     }
 
     /**
+     * Copy any NBTBase object into new one.
+     *
+     * @param tag Tag to copy.
+     * @return    A NBTBase tag with the same value.
+     */
+    public Object clone(Object tag) {
+        if (TAG_BASE.isInstance(tag)) {
+            try {
+                if (TAG_COMPOUND.isInstance(tag)) {
+                    return TagCompound.clone(tag);
+                } else if (TAG_LIST.isInstance(tag)) {
+                    return TagList.clone(tag);
+                } else {
+                    return TagBase.clone(tag);
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return null;
+            }
+        } else {
+            return tag == null ? null : newTag(tag);
+        }
+    }
+
+    /**
      * Convert any NBTBase tag to regular Java object.
      *
      * @param tag Tag to convert.
