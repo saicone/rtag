@@ -1,7 +1,6 @@
 package com.saicone.rtag;
 
-import com.saicone.rtag.entity.EntityBridge;
-import com.saicone.rtag.entity.EntityTag;
+import com.saicone.rtag.entity.EntityObject;
 import org.bukkit.entity.Entity;
 
 /**
@@ -11,18 +10,9 @@ import org.bukkit.entity.Entity;
  */
 public class RtagEntity extends RtagEditor<Entity> {
 
-    private static Object asMinecraft(Entity entity) {
-        try {
-            return EntityBridge.asMinecraft(entity);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
     private static Object getTag(Object entity) {
         try {
-            return EntityTag.saveTag(entity);
+            return EntityObject.save(entity);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;
@@ -46,7 +36,7 @@ public class RtagEntity extends RtagEditor<Entity> {
      * @param entity Entity to edit.
      */
     public RtagEntity(Rtag rtag, Entity entity) {
-        this(rtag, asMinecraft(entity));
+        this(rtag, EntityObject.getHandle(entity));
     }
 
     /**
@@ -77,7 +67,7 @@ public class RtagEntity extends RtagEditor<Entity> {
      */
     public void load() {
         try {
-            EntityTag.loadTag(getObject(), getTag());
+            EntityObject.load(getObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }

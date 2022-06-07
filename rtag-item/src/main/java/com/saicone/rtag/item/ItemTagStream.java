@@ -112,7 +112,7 @@ public class ItemTagStream extends TStream<ItemStack> {
     @Override
     public Object extract(ItemStack object) {
         try {
-            Object compound = ItemTag.saveTag(ItemBridge.asMinecraft(object));
+            Object compound = ItemObject.save(ItemObject.asNMSCopy(object));
             onSave(compound);
             return compound;
         } catch (Throwable t) {
@@ -125,7 +125,7 @@ public class ItemTagStream extends TStream<ItemStack> {
     public ItemStack build(Object compound) {
         try {
             onLoad(compound);
-            return ItemBridge.asBukkit(ItemTag.createStack(compound));
+            return ItemObject.asBukkitCopy(ItemObject.newItem(compound));
         } catch (Throwable t) {
             t.printStackTrace();
             return null;

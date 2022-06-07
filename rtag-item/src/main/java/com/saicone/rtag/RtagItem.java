@@ -1,7 +1,6 @@
 package com.saicone.rtag;
 
-import com.saicone.rtag.item.ItemBridge;
-import com.saicone.rtag.item.ItemTag;
+import com.saicone.rtag.item.ItemObject;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -10,24 +9,6 @@ import org.bukkit.inventory.ItemStack;
  * @author Rubenicos
  */
 public class RtagItem extends RtagEditor<ItemStack> {
-
-    private static Object asMinecraft(ItemStack item) {
-        try {
-            return ItemBridge.asMinecraft(item);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    private static Object getTag(Object item) {
-        try {
-            return ItemTag.getTag(item);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
 
     private final ItemStack item;
 
@@ -48,7 +29,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * @param item Item to edit.
      */
     public RtagItem(Rtag rtag, ItemStack item) {
-        this(rtag, item, asMinecraft(item));
+        this(rtag, item, ItemObject.asNMSCopy(item));
     }
 
     /**
@@ -60,7 +41,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * @param object NMS item to edit.
      */
     public RtagItem(Rtag rtag, ItemStack item, Object object) {
-        this(rtag, item, object, getTag(object));
+        this(rtag, item, object, ItemObject.getTag(object));
     }
 
     /**
@@ -90,11 +71,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * Load changes into item instance.
      */
     public void load() {
-        try {
-            ItemBridge.setHandle(item, getObject());
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        ItemObject.setHandle(item, getObject());
     }
 
     /**
@@ -103,12 +80,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * @return Copy of the original item with changes loaded.
      */
     public ItemStack loadCopy() {
-        try {
-            return ItemBridge.asBukkit(getObject());
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
+        return ItemObject.asBukkitCopy(getObject());
     }
 
     /**
@@ -121,7 +93,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
     public boolean set(Object value) {
         if (super.set(value)) {
             try {
-                ItemTag.setTag(getObject(), getTag());
+                ItemObject.setTag(getObject(), getTag());
             } catch (Throwable t) {
                 t.printStackTrace();
             }

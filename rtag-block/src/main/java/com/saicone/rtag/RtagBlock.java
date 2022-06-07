@@ -1,7 +1,6 @@
 package com.saicone.rtag;
 
-import com.saicone.rtag.block.TileBridge;
-import com.saicone.rtag.block.TileTag;
+import com.saicone.rtag.block.BlockObject;
 import org.bukkit.block.Block;
 
 /**
@@ -11,18 +10,9 @@ import org.bukkit.block.Block;
  */
 public class RtagBlock extends RtagEditor<Block> {
 
-    private static Object asMinecraft(Block block) {
-        try {
-            return TileBridge.asMinecraft(block);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
     private static Object getTag(Object block) {
         try {
-            return TileTag.saveTag(block);
+            return BlockObject.save(block);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;
@@ -46,7 +36,7 @@ public class RtagBlock extends RtagEditor<Block> {
      * @param block Block to edit.
      */
     public RtagBlock(Rtag rtag, Block block) {
-        this(rtag, asMinecraft(block));
+        this(rtag, BlockObject.getTileEntity(block));
     }
 
     /**
@@ -77,7 +67,7 @@ public class RtagBlock extends RtagEditor<Block> {
      */
     public void load() {
         try {
-            TileTag.loadTag(getObject(), getTag());
+            BlockObject.load(getObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }
