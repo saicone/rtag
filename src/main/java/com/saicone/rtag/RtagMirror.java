@@ -24,6 +24,34 @@ public class RtagMirror {
     protected static final Class<?> TAG_LIST = EasyLookup.classById("NBTTagList");
 
     /**
+     * RtagMirror public instance only compatible with regular Java objects.
+     */
+    public static final RtagMirror INSTANCE = new RtagMirror();
+
+    /**
+     * Constructs an RtagMirror only compatible with regular Java objects.
+     */
+    public RtagMirror() {
+    }
+
+    @Deprecated
+    public RtagMirror(Rtag rtag) {
+    }
+
+    @Deprecated
+    public Rtag getRtag() {
+        if (this instanceof Rtag) {
+            return (Rtag) this;
+        } else {
+            return null;
+        }
+    }
+
+    @Deprecated
+    public void setRtag(Rtag rtag) {
+    }
+
+    /**
      * Convert any object to NBTBase tag.
      *
      * @param object Object to convert.

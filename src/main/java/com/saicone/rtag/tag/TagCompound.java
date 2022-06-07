@@ -1,11 +1,14 @@
 package com.saicone.rtag.tag;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +38,7 @@ public class TagCompound {
     private static final MethodHandle newCompound;
     private static final MethodHandle setMapField;
     private static final MethodHandle getMapField;
+    private static final MethodHandle parse;
     private static final MethodHandle clone;
     private static final MethodHandle hasKey;
     private static final MethodHandle remove;
@@ -51,6 +55,7 @@ public class TagCompound {
         // Setters
         MethodHandle set$map = null;
         // Methods
+        MethodHandle method$parse = null;
         MethodHandle method$clone = null;
         MethodHandle method$hasKey = null;
         MethodHandle method$remove = null;
@@ -58,9 +63,10 @@ public class TagCompound {
         MethodHandle method$get = null;
         MethodHandle method$getKeys = null;
         try {
-            Class<?> base = EasyLookup.classById("NBTBase");
+            EasyLookup.addNMSClass("nbt.MojangsonParser");
             // Old names
             String map = "map";
+            String parse = "parse";
             String clone = "clone";
             String hasKey = "hasKey";
             String remove = "remove";
@@ -69,6 +75,7 @@ public class TagCompound {
             String getKeys = "c";
             // New names
             if (ServerInstance.verNumber >= 18) {
+                parse = "a";
                 clone = "g";
                 hasKey = "e";
                 remove = "r";
@@ -94,6 +101,7 @@ public class TagCompound {
             }
             // Private field
             get$map = EasyLookup.unreflectGetter(nbtCompound, map);
+            method$parse = EasyLookup.staticMethod("MojangsonParser", parse, nbtCompound, String.class);
             // Unreflect reason:
             // (1.8 -  1.9) return NBTBase
             // Other versions return NBTTagCompound
@@ -103,16 +111,17 @@ public class TagCompound {
             // Unreflect reason:
             // (1.8 -  1.13) void method
             // Other versions return NBTBase
-            method$set = EasyLookup.unreflectMethod(nbtCompound, set, String.class, base);
-            method$get = EasyLookup.method(nbtCompound, get, base, String.class);
+            method$set = EasyLookup.unreflectMethod(nbtCompound, set, String.class, "NBTBase");
+            method$get = EasyLookup.method(nbtCompound, get, "NBTBase", String.class);
             method$getKeys = EasyLookup.method(nbtCompound, getKeys, Set.class);
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         newEmpty = new$EmptyCompound;
         newCompound = new$Compound;
         setMapField = set$map;
         getMapField = get$map;
+        parse = method$parse;
         clone = method$clone;
         hasKey = method$hasKey;
         remove = method$remove;
@@ -132,6 +141,17 @@ public class TagCompound {
      */
     public static Object newTag() throws Throwable {
         return newEmpty.invoke();
+    }
+
+    /**
+     * Constructs an NBTTagCompound with provided NBT string.
+     *
+     * @param snbt NBT String with data.
+     * @return     New NBTTagCompound instance.
+     * @throws Throwable if any error occurs on reflected method invoking.
+     */
+    public static Object newTag(String snbt) throws Throwable {
+        return parse.invoke(snbt);
     }
 
     /**
@@ -206,6 +226,18 @@ public class TagCompound {
             t.printStackTrace();
         }
         return map;
+    }
+
+    /**
+     * Get the provided NBTTagCompound as Json string.
+     *
+     * @param tag NBTTagCompound instance.
+     * @return    A Json string.
+     */
+    @SuppressWarnings("all")
+    public static String getJson(Object tag) {
+        Type type = new TypeToken(){}.getType();
+        return new Gson().toJson(getValue(RtagMirror.INSTANCE, tag), type);
     }
 
     /**
