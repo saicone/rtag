@@ -211,7 +211,7 @@ public class Rtag extends RtagMirror {
      * @throws Throwable if any error occurs on reflected method invoking.
      */
     public <T> T get(Object tag, Object... path) throws Throwable {
-        return OptionalType.cast(getExact(tag, path));
+        return OptionalType.cast(getTagValue(getExact(tag, path)));
     }
 
     /**

@@ -29,11 +29,11 @@ public class RtagPlugin extends JavaPlugin {
         // Stream
         loadRtagClass("stream.TStream", "stream.TStreamTools");
         // Block
-        loadRtagClass("block.TileBridge", "block.TileTag");
+        loadRtagClass("block.BlockObject");
         // Entity
-        loadRtagClass("entity.EntityBridge", "entity.EntityTag");
+        loadRtagClass("entity.EntityObject");
         // Item
-        loadRtagClass("item.ItemBridge", "item.ItemTag", "item.ItemTagStream");
+        loadRtagClass("item.ItemObject", "item.ItemTagStream");
     }
 
     private void loadRtagClass(String... names) {

@@ -93,7 +93,7 @@ public class TagCompound {
 
             new$EmptyCompound = EasyLookup.constructor(nbtCompound);
             if (ServerInstance.verNumber >= 15) {
-                // Private method
+                // Protected method
                 new$Compound = EasyLookup.unreflectConstructor(nbtCompound, Map.class);
             } else {
                 // Private field

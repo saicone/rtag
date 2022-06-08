@@ -63,6 +63,9 @@ public class TagList {
                 remove = "c";
                 set = "d";
                 get = "k";
+                if (ServerInstance.verNumber >= 19) {
+                    list = "c";
+                }
             } else if (ServerInstance.verNumber >= 9) {
                 remove = "remove";
                 if (ServerInstance.verNumber >= 13) {
