@@ -95,6 +95,8 @@ public class TagBase {
                 if (ServerInstance.verNumber >= 18) {
                     getTypeId = "a";
                     asLongArray = "f";
+                } else {
+                    asLongArray = "getLongs";
                 }
                 data = "c";
                 asByte = "x";
