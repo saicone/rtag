@@ -7,46 +7,66 @@
         <img src="https://www.codefactor.io/repository/github/saicone/rtag/badge?style=flat-square"/>
     </a>
     <a href="https://github.com/saicone/rtag">
-        <img src="https://img.shields.io/github/languages/code-size/saicone/rtag?style=flat-square"/>
+        <img src="https://img.shields.io/github/languages/code-size/saicone/rtag?logo=github&logoColor=white?style=flat-square"/>
     </a>
     <a href="https://github.com/saicone/rtag">
-        <img src="https://img.shields.io/tokei/lines/github/saicone/rtag?style=flat-square"/>
+        <img src="https://img.shields.io/tokei/lines/github/saicone/rtag?logo=github&logoColor=white?style=flat-square"/>
     </a>
     <a href="https://jitpack.io/#com.saicone/rtag">
         <img src="https://jitpack.io/v/com.saicone/rtag.svg?style=flat-square"/>
+    </a>
+    <a href="https://docs.saicone.com/rtag/">
+        <img src="https://img.shields.io/badge/Saicone-Rtag%20Wiki-3b3bb0?logo=github&logoColor=white?style=flat-square"/>
     </a>
 </p>
 
 Rtag convert NBT tags to known objects and viceversa for better readability.
 
 ```java
-RtagItem itemTag = new RtagItem(item);
+// Using Item
+RtagItem tag = new RtagItem(item);
+// Using Entity
+RtagEntity tag = new RtagEntity(entity);
+// Using block
+RtagBlock tag = new RtagBlock(block);
 
-// Set values
-itemTag.set("CustomValue", "deep", "path");
-itemTag.set(40, "somekey");
-itemTag.set("Item name!", "display", "name");
-itemTag.set(new ArrayList(), "list", "path");
-// Add value to list
-itemTag.add((short) 3, "list", "path");
 
-// Get values
-String value = itemTag.get("deep", "path");
-// Safe get
-int intValue = itemTag.getOptional("somekey").or(-1);
-String name = itemTag.get("display", "name");
-List<Short> list = itemTag.get("list", "path");
-// List value at index 0
-short listValue = itemTag.getOptional("list", "path", 0).or((short) 0);
+// --- Put values
+// value = "Custom Text"
+// path = "deep" -> "path"
+tag.set("Custom Text", "deep", "path");
+tag.set(40, "somekey");
+tag.set("Item name!", "display", "name");
 
-// Remove values
-itemTag.remove("deep", "path");
-String newValue = itemTag.get("deep", "path"); // return null
+// You can add lists
+tag.set(new ArrayList(), "list", "path");
+// And add values into list
+tag.add((short) 3, "list", "path");
+// Or replace the values of existing list
+tag.set((short) 5, "list", "path", 0); // index 0
 
-// Get item copy with changes
-ItemStack newItem = itemTag.loadCopy();
-// Or load changes into original item
-itemTag.load();
+// --- Get values
+// Value from path "deep" -> "path"
+String text = tag.get("deep", "path");
+String name = tag.get("display", "name");
+
+// Safe value get
+// Value from path "somekey", or -1 by default
+int intValue = tag.getOptional("somekey").or(-1);
+
+// Get lists
+List<Short> list = tag.get("list", "path");
+// Get list value from index
+short listValue = tag.get("list", "path", 0); // index 0
+
+// Get the entire object tag as Map
+Map<String, Object> map = tag.get();
+
+// --- Load changes into object
+// Load changes into original object
+tag.load();
+// RtagItem as the option to create an item copy with changes loaded
+ItemStack itemCopy = tag.loadCopy();
 ```
 
 ## Get Rtag
