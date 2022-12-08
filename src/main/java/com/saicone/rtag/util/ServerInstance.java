@@ -14,6 +14,13 @@ public class ServerInstance {
      */
     public static final String version;
     /**
+     * Current server version number formatted, for example:<br>
+     * v1_9_R2 -&gt; 10902<br>
+     * v1_13_R1 -&gt; 11301<br>
+     * v1_19_R2 -&gt; 11902
+     */
+    public static final int fullVersion;
+    /**
      * Current server version number simplified, for example:<br>
      * 1.8 -&gt; 8<br>
      * 1.12.2 -&gt; 12<br>
@@ -38,19 +45,32 @@ public class ServerInstance {
     public static final boolean isUniversal;
     /**
      * Return true if server instance is a SpigotMC server.<br>
-     * https://www.spigotmc.org/
+     * <a href="https://www.spigotmc.org/">SpigotMC.org</a>
      */
     public static final boolean isSpigot;
     /**
      * Return true if server instance is a PaperMC server.<br>
-     * https://papermc.io/
+     * <a href="https://papermc.io/">PaperMC.io</a>
      */
     public static final boolean isPaper;
 
     static {
         version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-        verNumber = Integer.parseInt(version.split("_")[1]);
-        release = Integer.parseInt(version.split("_")[2].substring(1));
+        final String[] split = version.split("_");
+        verNumber = Integer.parseInt(split[1]);
+        // R1 -> 1  |  R2 - 2
+        split[2] = split[2].substring(1);
+        release = Integer.parseInt(split[2]);
+        // v1 -> 1
+        split[0] = split[0].substring(1);
+        // 8 -> 08  |  9 -> 09
+        if (split[1].length() <= 1) {
+            split[1] = '0' + split[1];
+        }
+        if (split[2].length() <= 1) {
+            split[2] = '0' + split[2];
+        }
+        fullVersion = Integer.parseInt(String.join("", split));
         isLegacy = verNumber <= 12;
         isUniversal = verNumber >= 17;
         boolean spigot = false;

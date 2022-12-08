@@ -20,6 +20,7 @@ public enum ItemMaterialTag {
     ACACIA_DOOR(8, "ACACIA_DOOR_ITEM"),
     ACACIA_FENCE(8),
     ACACIA_FENCE_GATE(8),
+    ACACIA_HANGING_SIGN(11902),
     ACACIA_LEAVES(13, "LEAVES2", 8, "LEAVES_2"),
     ACACIA_LOG(13, "LOG2", 8, "LOG_2"),
     ACACIA_PLANKS(13, "PLANKS:4", 8, "WOOD"),
@@ -52,6 +53,23 @@ public enum ItemMaterialTag {
     AZURE_BLUET(13, "RED_FLOWER:3", 8, "RED_ROSE"),
     BAKED_POTATO(8),
     BAMBOO(14),
+    BAMBOO_BLOCK(11902),
+    BAMBOO_BUTTON(11902),
+    BAMBOO_CHEST_RAFT(11902),
+    BAMBOO_DOOR(11902),
+    BAMBOO_FENCE(11902),
+    BAMBOO_FENCE_GATE(11902),
+    BAMBOO_HANGING_SIGN(11902),
+    BAMBOO_MOSAIC(11902),
+    BAMBOO_MOSAIC_SLAB(11902),
+    BAMBOO_MOSAIC_STAIRS(11902),
+    BAMBOO_PLANKS(11902),
+    BAMBOO_PRESSURE_PLATE(11902),
+    BAMBOO_RAFT(11902),
+    BAMBOO_SIGN(11902),
+    BAMBOO_SLAB(11902),
+    BAMBOO_STAIRS(11902),
+    BAMBOO_TRAPDOOR(11902),
     BARREL(14),
     BARRIER(8),
     BASALT(16),
@@ -73,6 +91,7 @@ public enum ItemMaterialTag {
     BIRCH_DOOR(8, "BIRCH_DOOR_ITEM"),
     BIRCH_FENCE(8),
     BIRCH_FENCE_GATE(8),
+    BIRCH_HANGING_SIGN(11902),
     BIRCH_LEAVES(13, "LEAVES:2", 8),
     BIRCH_LOG(13, "LOG:2", 8),
     BIRCH_PLANKS(13, "PLANKS:2", 8, "WOOD"),
@@ -160,6 +179,7 @@ public enum ItemMaterialTag {
     CACTUS(8),
     CAKE(8),
     CALCITE(17),
+    CAMEL_SPAWN_EGG(11902),
     CAMPFIRE(14),
     CANDLE(17),
     CARROT(8, "CARROT_ITEM"),
@@ -181,6 +201,7 @@ public enum ItemMaterialTag {
     CHICKEN(8, "RAW_CHICKEN"),
     CHICKEN_SPAWN_EGG(13, "SPAWN_EGG=Chicken", 9, "SPAWN_EGG:93", 8, "MONSTER_EGG"),
     CHIPPED_ANVIL(13, "ANVIL:1", 8),
+    CHISELED_BOOKSHELF(11902),
     CHISELED_DEEPSLATE(17),
     CHISELED_NETHER_BRICKS(16),
     CHISELED_POLISHED_BLACKSTONE(16),
@@ -245,6 +266,7 @@ public enum ItemMaterialTag {
     CRIMSON_FENCE(16),
     CRIMSON_FENCE_GATE(16),
     CRIMSON_FUNGUS(16),
+    CRIMSON_HANGING_SIGN(11902),
     CRIMSON_HYPHAE(16),
     CRIMSON_NYLIUM(16),
     CRIMSON_PLANKS(16),
@@ -285,6 +307,7 @@ public enum ItemMaterialTag {
     DARK_OAK_DOOR(8, "DARK_OAK_DOOR_ITEM"),
     DARK_OAK_FENCE(8),
     DARK_OAK_FENCE_GATE(8),
+    DARK_OAK_HANGING_SIGN(11902),
     DARK_OAK_LEAVES(13, "LEAVES2:1", 8, "LEAVES_2"),
     DARK_OAK_LOG(13, "LOG2:1", 8, "LOG_2"),
     DARK_OAK_PLANKS(13, "PLANKS:5", 8, "WOOD"),
@@ -380,6 +403,7 @@ public enum ItemMaterialTag {
     ENDERMAN_SPAWN_EGG(13, "SPAWN_EGG=Enderman", 9, "SPAWN_EGG:58", 8, "MONSTER_EGG"),
     ENDERMITE_SPAWN_EGG(13, "SPAWN_EGG=Endermite", 9, "SPAWN_EGG:67", 8, "MONSTER_EGG"),
     ENDER_CHEST(8),
+    ENDER_DRAGON_SPAWN_EGG(11902),
     ENDER_EYE(8, "EYE_OF_ENDER"),
     ENDER_PEARL(8),
     END_CRYSTAL(9),
@@ -525,6 +549,7 @@ public enum ItemMaterialTag {
     IRON_BOOTS(8),
     IRON_CHESTPLATE(8),
     IRON_DOOR(8),
+    IRON_GOLEM_SPAWN_EGG(11902),
     IRON_HELMET(8),
     IRON_HOE(8),
     IRON_HORSE_ARMOR(8, "IRON_BARDING"),
@@ -547,6 +572,7 @@ public enum ItemMaterialTag {
     JUNGLE_DOOR(8, "JUNGLE_DOOR_ITEM"),
     JUNGLE_FENCE(8),
     JUNGLE_FENCE_GATE(8),
+    JUNGLE_HANGING_SIGN(11902),
     JUNGLE_LEAVES(13, "LEAVES:3", 8),
     JUNGLE_LOG(13, "LOG:3", 8),
     JUNGLE_PLANKS(13, "PLANKS:3", 8, "WOOD"),
@@ -650,6 +676,7 @@ public enum ItemMaterialTag {
     MANGROVE_DOOR(19),
     MANGROVE_FENCE(19),
     MANGROVE_FENCE_GATE(19),
+    MANGROVE_HANGING_SIGN(11902),
     MANGROVE_LEAVES(19),
     MANGROVE_LOG(19),
     MANGROVE_PLANKS(19),
@@ -751,6 +778,7 @@ public enum ItemMaterialTag {
     OAK_DOOR(13, "WOODEN_DOOR", 8, "WOOD_DOOR"),
     OAK_FENCE(13, "FENCE", 8),
     OAK_FENCE_GATE(13, "FENCE_GATE", 8),
+    OAK_HANGING_SIGN(11902),
     OAK_LEAVES(13, "LEAVES", 8),
     OAK_LOG(13, "LOG", 8),
     OAK_PLANKS(13, "PLANKS", 8, "WOOD"),
@@ -797,6 +825,7 @@ public enum ItemMaterialTag {
     PHANTOM_SPAWN_EGG(13),
     PIGLIN_BANNER_PATTERN(16),
     PIGLIN_BRUTE_SPAWN_EGG(16),
+    PIGLIN_HEAD(11902),
     PIGLIN_SPAWN_EGG(16),
     PIG_SPAWN_EGG(13, "SPAWN_EGG=Pig", 9, "SPAWN_EGG:90", 8, "MONSTER_EGG"),
     PILLAGER_SPAWN_EGG(14),
@@ -1001,6 +1030,7 @@ public enum ItemMaterialTag {
     SNOW(13, "SNOW_LAYER", 8),
     SNOWBALL(8, "SNOW_BALL"),
     SNOW_BLOCK(13, "SNOW", 8),
+    SNOW_GOLEM_SPAWN_EGG(11902),
     SOUL_CAMPFIRE(16),
     SOUL_LANTERN(16),
     SOUL_SAND(8),
@@ -1019,6 +1049,7 @@ public enum ItemMaterialTag {
     SPRUCE_DOOR(8, "SPRUCE_DOOR_ITEM"),
     SPRUCE_FENCE(8),
     SPRUCE_FENCE_GATE(8),
+    SPRUCE_HANGING_SIGN(11902),
     SPRUCE_LEAVES(13, "LEAVES:1", 8),
     SPRUCE_LOG(13, "LOG:1", 8),
     SPRUCE_PLANKS(13, "PLANKS:1", 8, "WOOD"),
@@ -1053,6 +1084,7 @@ public enum ItemMaterialTag {
     STRING(8),
     STRIPPED_ACACIA_LOG(13),
     STRIPPED_ACACIA_WOOD(13),
+    STRIPPED_BAMBOO_BLOCK(11902),
     STRIPPED_BIRCH_LOG(13),
     STRIPPED_BIRCH_WOOD(13),
     STRIPPED_CRIMSON_HYPHAE(16),
@@ -1116,6 +1148,7 @@ public enum ItemMaterialTag {
     WARPED_FENCE_GATE(16),
     WARPED_FUNGUS(16),
     WARPED_FUNGUS_ON_A_STICK(16),
+    WARPED_HANGING_SIGN(11902),
     WARPED_HYPHAE(16),
     WARPED_NYLIUM(16),
     WARPED_PLANKS(16),
@@ -1170,6 +1203,7 @@ public enum ItemMaterialTag {
     WITHER_ROSE(14),
     WITHER_SKELETON_SKULL(13, "SKULL:1", 8, "SKULL_ITEM"),
     WITHER_SKELETON_SPAWN_EGG(13, "SPAWN_EGG=wither_skeleton", 11, "MONSTER_EGG"),
+    WITHER_SPAWN_EGG(11902),
     WOLF_SPAWN_EGG(13, "SPAWN_EGG=Wolf", 9, "SPAWN_EGG:95", 8, "MONSTER_EGG"),
     WOODEN_AXE(8, "WOOD_AXE"),
     WOODEN_HOE(8, "WOOD_HOE"),
@@ -1209,47 +1243,24 @@ public enum ItemMaterialTag {
     public static final Map<String, ItemMaterialTag> SERVER_VALUES;
 
     static {
-        Map<String, ItemMaterialTag> fixed = new HashMap<>();
+        final Map<String, ItemMaterialTag> compatible = new HashMap<>();
         for (ItemMaterialTag tag : VALUES) {
-            TreeMap<Integer, String> names = tag.getNames();
+            final TreeMap<Integer, String> names = tag.getNames();
             // Fix legacy SPAWN_EGG entity name for MC 1.11 & 1.12
             if (tag.name().contains("SPAWN_EGG") && names.size() > 1) {
-                int version = names.containsKey(11) ? 11 : names.containsKey(10) ? 10 : names.containsKey(9) ? 9 : 0;
+                final int version = names.containsKey(11) ? 11 : names.containsKey(10) ? 10 : names.containsKey(9) ? 9 : 0;
                 if (version != 0) {
                     String entity = names.get(version).split("=", 2)[1].toLowerCase();
                     names.put(11, "SPAWN_EGG=minecraft:" + entity);
                     names.put(12, "SPAWN_EGG=" + entity);
                 }
             }
-            for (Integer version : names.descendingKeySet()) {
-                if (version <= ServerInstance.verNumber && materialExistFor(tag)) {
-                    fixed.put("minecraft:" + changeNameCase(names.get(version), false), tag);
-                    break;
-                }
+            final String name = tag.getValidMaterial();
+            if (name != null) {
+                compatible.put("minecraft:" + changeNameCase(name, false), tag);
             }
         }
-        SERVER_VALUES = fixed;
-    }
-
-    /**
-     * Checks if some ItemMaterialTag is valid for current server version
-     * by trying to find an existing Bukkit {@link Material}.
-     *
-     * @param tag ItemMaterialTag instance.
-     * @return    True if is valid.
-     */
-    public static boolean materialExistFor(ItemMaterialTag tag) {
-        for (String name : tag.getNames().values()) {
-            if (Material.getMaterial(name.split("=", 2)[0].split(":", 2)[0]) != null) {
-                return true;
-            }
-        }
-        for (String alias : tag.getAliases()) {
-            if (Material.getMaterial(alias) != null) {
-                return true;
-            }
-        }
-        return false;
+        SERVER_VALUES = compatible;
     }
 
     /**
@@ -1303,9 +1314,49 @@ public enum ItemMaterialTag {
     /**
      * Get current material aliases.
      *
-     * @return A array of material aliases.
+     * @return An array of material aliases.
      */
     public String[] getAliases() {
         return aliases;
+    }
+
+    /**
+     * Get valid material name for current server version or null
+     * if we cannot find the required material.
+     *
+     * @return A material name or null.
+     */
+    public String getValidMaterial() {
+        for (Integer version : names.descendingKeySet()) {
+            // Found valid version
+            if (version <= (version >= 10000 ? ServerInstance.fullVersion : ServerInstance.verNumber)) {
+                final String s = names.get(version);
+                // Find valid material using minecraft names as aliases
+                for (String name : names.values()) {
+                    if (Material.getMaterial(name.split("=", 2)[0].split(":", 2)[0]) != null) {
+                        return s;
+                    }
+                }
+                // Find valid material using aliases
+                for (String alias : aliases) {
+                    if (Material.getMaterial(alias) != null) {
+                        return s;
+                    }
+                }
+                // There's not a valid material found (Maybe Rtag version is too old for the current server?)
+                break;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks if this ItemMaterialTag is valid for current server version
+     * by trying to find an existing Bukkit {@link Material}.
+     *
+     * @return True if is valid.
+     */
+    public boolean isValid() {
+        return getValidMaterial() != null;
     }
 }

@@ -81,7 +81,11 @@ public class TagCompound {
                 remove = "r";
                 set = "a";
                 get = "c";
-                getKeys = "d";
+                if (ServerInstance.fullVersion >= 11902) { // v1_19_R2
+                    getKeys = "e";
+                } else {
+                    getKeys = "d";
+                }
             } else if (ServerInstance.verNumber >= 13) {
                 getKeys = "getKeys";
             } else if (ServerInstance.verNumber >= 10) {

@@ -93,8 +93,13 @@ public class TagBase {
             // New names
             if (ServerInstance.isUniversal) {
                 if (ServerInstance.verNumber >= 18) {
-                    getTypeId = "a";
-                    asLongArray = "f";
+                    if (ServerInstance.fullVersion >= 11902) { // v1_19_R2
+                        getTypeId = "b";
+                        asLongArray = "g";
+                    } else {
+                        getTypeId = "a";
+                        asLongArray = "f";
+                    }
                 } else {
                     asLongArray = "getLongs";
                 }
