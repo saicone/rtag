@@ -3,10 +3,9 @@ allprojects {
     apply plugin: 'maven-publish'
 
     repositories {
-        maven {
-            url 'http://ptms.ink:8081/repository/releases/'
-            allowInsecureProtocol true
-        }
+        maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/central' }
         mavenCentral()
     }
 
@@ -39,18 +38,7 @@ subprojects {
 }
 
 dependencies {
-    compileOnly 'ink.ptms.core:v11900:11900:universal'
-    //compileOnly 'ink.ptms.core:v11802:11802:mapped'
-    //compileOnly 'ink.ptms.core:v11802:11802:universal'
-    compileOnly 'ink.ptms.core:v11701:11701:universal'
-    //compileOnly 'ink.ptms.core:v11605:11605'
-    //compileOnly 'ink.ptms.core:v11500:11500'
-    //compileOnly 'ink.ptms.core:v11400:11400'
-    //compileOnly 'ink.ptms.core:v11300:11300'
-    //compileOnly 'ink.ptms.core:v11200:11200'
-    //compileOnly 'ink.ptms.core:v11100:11100'
-    //compileOnly 'ink.ptms.core:v11000:11000'
-    //compileOnly 'ink.ptms.core:v10900:10900'
+    compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'

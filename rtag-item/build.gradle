@@ -1,3 +1,8 @@
+repositories {
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
+}
+
 dependencies {
-    compileOnly 'ink.ptms.core:v11701:11701:universal'
+    compileOnly 'org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT'
+    compileOnly 'com.mojang:authlib:1.5.26' // 3.11.50
 }
