@@ -38,20 +38,39 @@ public class Rtag extends RtagMirror {
     private static final BiPredicate<Integer, Object[]> setPredicate = (index, path) -> path.length > index && path[index] instanceof Integer;
 
     /**
-     * Rtag public instance only compatible with regular Java objects.
+     * {@link Rtag} public instance only compatible with regular Java objects.
      */
     public static final Rtag INSTANCE = new Rtag();
 
     private final Map<String, RtagDeserializer<Object>> deserializers = new HashMap<>();
     private final Map<Class<?>, RtagSerializer<Object>> serializers = new HashMap<>();
 
+    /**
+     * Create new {@link Rtag} instance.
+     */
     public Rtag() {
     }
 
+    /**
+     * Create new {@link Rtag} instance without use mirror parameter,
+     * because the class extends {@link RtagMirror} itself.
+     *
+     * @deprecated {@link Rtag} extends {@link RtagMirror}.
+     *
+     * @param mirror Mirror instance.
+     */
     @Deprecated
+    @SuppressWarnings("unused")
     public Rtag(RtagMirror mirror) {
     }
 
+    /**
+     * Get this object as {@link RtagMirror} instance.
+     *
+     * @deprecated {@link Rtag} extends {@link RtagMirror}.
+     *
+     * @return The Rtag itself.
+     */
     @Deprecated
     public RtagMirror getMirror() {
         return this;
@@ -315,7 +334,13 @@ public class Rtag extends RtagMirror {
     }
 
     /**
+     * Convert any object to NBTBase tag.
+     *
+     * @deprecated To create tag object use {@link #newTag(Object)} instead.
      * @see #newTag(Object)
+     *
+     * @param object Object to convert.
+     * @return       NBTBase tag or null.
      */
     @Deprecated
     public Object toTag(Object object) {
@@ -339,7 +364,13 @@ public class Rtag extends RtagMirror {
     }
 
     /**
+     * Convert any NBTBase tag to regular Java object.
+     *
+     * @deprecated To get tag value without conversion use {@link #getTagValue(Object)} instead.
      * @see #getTagValue(Object)
+     *
+     * @param tag Tag to convert.
+     * @return    Converted object.
      */
     @Deprecated
     public Object fromTagExact(Object tag) {
