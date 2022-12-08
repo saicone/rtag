@@ -63,11 +63,15 @@ public class TagList {
                 remove = "c";
                 set = "d";
                 get = "k";
-                if (ServerInstance.verNumber >= 19) {
-                    list = "c";
-                }
+                list = "c";
             } else if (ServerInstance.verNumber >= 9) {
+                // Clone
+                if (ServerInstance.verNumber >= 10 && ServerInstance.verNumber <= 13) {
+                    clone = "d";
+                }
+                // Remove
                 remove = "remove";
+                // Set & Get
                 if (ServerInstance.verNumber >= 13) {
                     set = "set";
                     get = "get";
@@ -78,9 +82,6 @@ public class TagList {
                     get = "i";
                 } else {
                     get = "h";
-                }
-                if (ServerInstance.verNumber >= 10) {
-                    clone = "d";
                 }
             }
 
