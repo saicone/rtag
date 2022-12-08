@@ -47,3 +47,16 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+def javadocProjects= [
+        ':',
+        ':rtag-block',
+        ':rtag-entity',
+        ':rtag-item'
+]
+
+task allJavadoc(type: Javadoc) {
+    source javadocProjects.collect { project(it).sourceSets.main.allJava }
+    classpath = files(javadocProjects.collect { project(it).sourceSets.main.compileClasspath })
+    destinationDir = file(project.buildDir.path + '/docs/all-javadoc')
+}
