@@ -7,16 +7,19 @@
         <img src="https://www.codefactor.io/repository/github/saicone/rtag/badge?style=flat-square"/>
     </a>
     <a href="https://github.com/saicone/rtag">
-        <img src="https://img.shields.io/github/languages/code-size/saicone/rtag?logo=github&logoColor=white?style=flat-square"/>
+        <img src="https://img.shields.io/github/languages/code-size/saicone/rtag?logo=github&logoColor=white&style=flat-square"/>
     </a>
     <a href="https://github.com/saicone/rtag">
-        <img src="https://img.shields.io/tokei/lines/github/saicone/rtag?logo=github&logoColor=white?style=flat-square"/>
+        <img src="https://img.shields.io/tokei/lines/github/saicone/rtag?logo=github&logoColor=white&style=flat-square"/>
     </a>
     <a href="https://jitpack.io/#com.saicone/rtag">
         <img src="https://jitpack.io/v/com.saicone/rtag.svg?style=flat-square"/>
     </a>
+    <a href="https://javadoc.saicone.com/rtag/">
+        <img src="https://img.shields.io/badge/JavaDoc-Online-green?style=flat-square"/>
+    </a>
     <a href="https://docs.saicone.com/rtag/">
-        <img src="https://img.shields.io/badge/Saicone-Rtag%20Wiki-3b3bb0?logo=github&logoColor=white?style=flat-square"/>
+        <img src="https://img.shields.io/badge/Saicone-Rtag%20Wiki-3b3bb0?logo=github&logoColor=white&style=flat-square"/>
     </a>
 </p>
 
