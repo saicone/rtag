@@ -1,0 +1,35 @@
+name: Deploy Javadoc
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  javadoc:
+    if: ${{ github.repository_owner == 'saicone' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: adopt
+          java-version: 11
+
+      - name: Build javadoc with Gradle
+        run: gradle allJavadoc
+        shell: bash
+
+      - name: Deploy javadoc to Github repository
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          folder: build/docs/all-javadoc
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          git-config-name: github-actions[bot]
+          git-config-email: 41898282+github-actions[bot]@users.noreply.github.com
+          repository-name: saicone/javadoc
+          branch: gh-pages
+          target-folder: rtag
+          clean: false
