@@ -68,9 +68,8 @@ public class EntityObject {
      * @param entity Entity to convert.
      * @return       A Bukkit Entity.
      * @throws IllegalArgumentException if entity is not a Minecraft Entity.
-     * @throws RuntimeException if any error occurs on reflected method invoking.
      */
-    public static Entity getEntity(Object entity) throws IllegalArgumentException, RuntimeException {
+    public static Entity getEntity(Object entity) throws IllegalArgumentException {
         if (MC_ENTITY.isInstance(entity)) {
             try {
                 return (Entity) getEntity.invoke(Bukkit.getServer(), entity);
@@ -87,9 +86,8 @@ public class EntityObject {
      *
      * @param entity Entity to convert.
      * @return       A Minecraft Entity.
-     * @throws RuntimeException if any error occurs on reflected method invoking.
      */
-    public static Object getHandle(Entity entity) throws RuntimeException {
+    public static Object getHandle(Entity entity) {
         try {
             return getHandle.invoke(entity);
         } catch (Throwable t) {
@@ -102,15 +100,18 @@ public class EntityObject {
      *
      * @param entity Entity instance.
      * @return       A NBTTagCompound that represent the tile.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object save(Object entity) throws Throwable {
-        if (ServerInstance.verNumber >= 9) {
-            return save.invoke(entity, TagCompound.newTag());
-        } else {
-            Object tag = TagCompound.newTag();
-            save.invoke(entity, tag);
-            return tag;
+    public static Object save(Object entity) {
+        try {
+            if (ServerInstance.verNumber >= 9) {
+                return save.invoke(entity, TagCompound.newTag());
+            } else {
+                Object tag = TagCompound.newTag();
+                save.invoke(entity, tag);
+                return tag;
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
@@ -119,9 +120,12 @@ public class EntityObject {
      *
      * @param entity Entity instance.
      * @param tag    The NBTTagCompound to load.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void load(Object entity, Object tag) throws Throwable {
-        load.invoke(entity, tag);
+    public static void load(Object entity, Object tag) {
+        try {
+            load.invoke(entity, tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 }

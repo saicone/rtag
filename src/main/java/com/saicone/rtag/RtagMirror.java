@@ -66,12 +66,7 @@ public class RtagMirror {
         } else if (object instanceof List) {
             return TagList.newTag(this, (List<Object>) object);
         } else {
-            try {
-                return TagBase.newTag(object);
-            } catch (Throwable t) {
-                t.printStackTrace();
-                return null;
-            }
+            return TagBase.newTag(object);
         }
     }
 
@@ -83,17 +78,12 @@ public class RtagMirror {
      */
     public Object clone(Object tag) {
         if (TAG_BASE.isInstance(tag)) {
-            try {
-                if (TAG_COMPOUND.isInstance(tag)) {
-                    return TagCompound.clone(tag);
-                } else if (TAG_LIST.isInstance(tag)) {
-                    return TagList.clone(tag);
-                } else {
-                    return TagBase.clone(tag);
-                }
-            } catch (Throwable t) {
-                t.printStackTrace();
-                return null;
+            if (TAG_COMPOUND.isInstance(tag)) {
+                return TagCompound.clone(tag);
+            } else if (TAG_LIST.isInstance(tag)) {
+                return TagList.clone(tag);
+            } else {
+                return TagBase.clone(tag);
             }
         } else {
             return tag == null ? null : newTag(tag);
@@ -112,12 +102,7 @@ public class RtagMirror {
         } else if (TAG_LIST.isInstance(tag)) {
             return TagList.getValue(this, tag);
         } else {
-            try {
-                return TagBase.getValue(tag);
-            } catch (Throwable t) {
-                t.printStackTrace();
-                return null;
-            }
+            return TagBase.getValue(tag);
         }
     }
 }

@@ -31,14 +31,14 @@ public class IBundleMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void upgrade(Object compound, String id, Object tag, int from, int to) {
         if (id.equals("minecraft:bundle")) {
             processTag(tag, from, to);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void downgrade(Object compound, String id, Object tag, int from, int to) {
         if (id.equals("minecraft:bundle")) {
             processTag(tag, from, to);
         }
@@ -49,9 +49,8 @@ public class IBundleMirror implements ItemMirror {
      * @param tag  ItemStack tag.
      * @param from Version specified in compound.
      * @param to   Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void processTag(Object tag, int from, int to) throws Throwable {
+    public void processTag(Object tag, int from, int to) {
         Object items = TagCompound.get(tag, "Items");
         if (items != null) {
             int size = TagList.size(items);

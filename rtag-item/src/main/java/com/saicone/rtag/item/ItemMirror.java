@@ -35,9 +35,8 @@ public interface ItemMirror {
      * @param id       Item material identifier.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    default void upgrade(Object compound, String id, int from, int to) throws Throwable { }
+    default void upgrade(Object compound, String id, int from, int to) { }
 
     /**
      * Upgrade current NBTTagCompound from lower version.
@@ -47,9 +46,8 @@ public interface ItemMirror {
      * @param tag      Item tag.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    default void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable { }
+    default void upgrade(Object compound, String id, Object tag, int from, int to) { }
 
     /**
      * Downgrade current NBTTagCompound from upper version.
@@ -58,9 +56,8 @@ public interface ItemMirror {
      * @param id       Item material identifier.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    default void downgrade(Object compound, String id, int from, int to) throws Throwable { }
+    default void downgrade(Object compound, String id, int from, int to) { }
 
     /**
      * Downgrade current NBTTagCompound from upper version.
@@ -70,7 +67,6 @@ public interface ItemMirror {
      * @param tag      Item tag.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    default void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable { }
+    default void downgrade(Object compound, String id, Object tag, int from, int to) { }
 }

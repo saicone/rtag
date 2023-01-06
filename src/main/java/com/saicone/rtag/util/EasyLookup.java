@@ -66,38 +66,6 @@ public class EasyLookup {
     }
 
     /**
-     * Invoke {@link MethodHandle} without exception.
-     *
-     * @param method MethodHandle to invoke.
-     * @param arg    Single argument
-     * @return       MethodHandle result.
-     */
-    public static Object safeInvoke(MethodHandle method, Object arg) {
-        try {
-            return method.invoke(arg);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Invoke {@link MethodHandle} without exception.
-     *
-     * @param method MethodHandle to invoke.
-     * @param args   Arguments.
-     * @return       MethodHandle result.
-     */
-    public static Object safeInvoke(MethodHandle method, Object... args) {
-        try {
-            return method.invoke(args);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * Get previously saved class by it ID.
      *
      * @param id Class ID.

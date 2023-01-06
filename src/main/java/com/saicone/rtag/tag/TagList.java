@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class TagList {
 
-    private static final Class<?> nbtList = EasyLookup.classById("NBTTagList");
+    private static final Class<?> NBT_LIST = EasyLookup.classById("NBTTagList");
 
     private static final MethodHandle newEmpty;
     private static final MethodHandle newList;
@@ -85,38 +85,38 @@ public class TagList {
                 }
             }
 
-            new$EmptyList = EasyLookup.constructor(nbtList);
+            new$EmptyList = EasyLookup.constructor(NBT_LIST);
             // Unreflect reason:
             // (1.8 -  1.9) return NBTBase
             // Other versions return NBTTagList
-            method$clone = EasyLookup.unreflectMethod(nbtList, clone);
-            method$size = EasyLookup.method(nbtList, size, int.class);
-            method$remove = EasyLookup.method(nbtList, remove, "NBTBase", int.class);
+            method$clone = EasyLookup.unreflectMethod(NBT_LIST, clone);
+            method$size = EasyLookup.method(NBT_LIST, size, int.class);
+            method$remove = EasyLookup.method(NBT_LIST, remove, "NBTBase", int.class);
             // Unreflect reason:
             // (1.8 -  1.12) void method
             // Other versions return NBTBase
-            method$set = EasyLookup.unreflectMethod(nbtList, set, int.class, "NBTBase");
-            method$get = EasyLookup.method(nbtList, get, "NBTBase", int.class);
+            method$set = EasyLookup.unreflectMethod(NBT_LIST, set, int.class, "NBTBase");
+            method$get = EasyLookup.method(NBT_LIST, get, "NBTBase", int.class);
             // Private field
-            get$list = EasyLookup.unreflectGetter(nbtList, list);
+            get$list = EasyLookup.unreflectGetter(NBT_LIST, list);
 
             if (ServerInstance.verNumber >= 15) {
                 // Private constructor
-                new$List = EasyLookup.unreflectConstructor(nbtList, List.class, byte.class);
+                new$List = EasyLookup.unreflectConstructor(NBT_LIST, List.class, byte.class);
             } else {
                 // Private fields
-                set$type = EasyLookup.unreflectSetter(nbtList, "type");
-                set$list = EasyLookup.unreflectSetter(nbtList, list);
+                set$type = EasyLookup.unreflectSetter(NBT_LIST, "type");
+                set$list = EasyLookup.unreflectSetter(NBT_LIST, list);
             }
             if (ServerInstance.verNumber >= 14) {
-                method$add = EasyLookup.method(nbtList, add, void.class, int.class, "NBTBase");
+                method$add = EasyLookup.method(NBT_LIST, add, void.class, int.class, "NBTBase");
                 // Private method
-                method$isTypeId = EasyLookup.unreflectMethod(nbtList, "a", "NBTBase");
+                method$isTypeId = EasyLookup.unreflectMethod(NBT_LIST, "a", "NBTBase");
             } else {
                 // Unreflect reason:
                 // (1.12 - 1.13) return boolean
                 // Void method in other versions
-                method$add = EasyLookup.unreflectMethod(nbtList, add, "NBTBase");
+                method$add = EasyLookup.unreflectMethod(NBT_LIST, add, "NBTBase");
             }
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
@@ -142,10 +142,13 @@ public class TagList {
      * Constructs an empty NBTTagList.
      *
      * @return New NBTTagList instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object newTag() throws Throwable {
-        return newEmpty.invoke();
+    public static Object newTag() {
+        try {
+            return newEmpty.invoke();
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -153,23 +156,28 @@ public class TagList {
      *
      * @param list List with NBTBase values.
      * @return     New NBTTagList instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object newTag(List<Object> list) throws Throwable {
-        if (list.isEmpty()) return newEmpty.invoke();
-        byte type = TagBase.getTypeId(list.get(0));
-        if (ServerInstance.verNumber >= 15) {
-            return newList.invoke(list, type);
-        } else {
-            Object tag = newTag();
-            typeField.invoke(tag, type);
-            setListField.invoke(tag, list);
-            return tag;
+    public static Object newTag(List<?> list) {
+        if (list == null || list.isEmpty()) {
+            return newTag();
+        }
+        final byte type = TagBase.getTypeId(list.get(0));
+        try {
+            if (ServerInstance.verNumber >= 15) {
+                return newList.invoke(list, type);
+            } else {
+                Object tag = newTag();
+                typeField.invoke(tag, type);
+                setListField.invoke(tag, list);
+                return tag;
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
     /**
-     * Constructs and NBTTagList with provided List of NBTBase
+     * Constructs an NBTTagList with provided List of any type
      * and required {@link RtagMirror} to convert Objects.
      *
      * @param mirror RtagMirror to convert objects into tags.
@@ -177,21 +185,24 @@ public class TagList {
      * @return       New NBTTagList instance.
      */
     public static Object newTag(RtagMirror mirror, List<?> list) {
-        Object finalObject = null;
-        try {
-            if (list.isEmpty()) {
-                finalObject = newEmpty.invoke();
-            } else {
-                List<Object> tags = new ArrayList<>();
-                for (Object value : list) {
-                    tags.add(mirror.newTag(value));
-                }
-                finalObject = newTag(tags);
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
+        if (list == null || list.isEmpty()) {
+            return newTag();
         }
-        return finalObject;
+        final List<Object> tags = new ArrayList<>();
+        for (Object value : list) {
+            tags.add(mirror.newTag(value));
+        }
+        return newTag(tags);
+    }
+
+    /**
+     * Check if the provided object is instance of NBTTagList class.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of NBTTagList class.
+     */
+    public static boolean isTagList(Object object) {
+        return NBT_LIST.isInstance(object);
     }
 
     /**
@@ -199,10 +210,13 @@ public class TagList {
      *
      * @param tag NBTTagList instance.
      * @return    A copy of original NBTTagList.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object clone(Object tag) throws Throwable {
-        return clone.invoke(tag);
+    public static Object clone(Object tag) {
+        try {
+            return clone.invoke(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -210,11 +224,14 @@ public class TagList {
      *
      * @param tag NBTTagList instance.
      * @return    A list of NBTBase objects.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
     @SuppressWarnings("unchecked")
-    public static List<Object> getValue(Object tag) throws Throwable {
-        return (List<Object>) getListField.invoke(tag);
+    public static List<Object> getValue(Object tag) {
+        try {
+            return (List<Object>) getListField.invoke(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -235,7 +252,7 @@ public class TagList {
                     list.add(mirror.getTagValue(get.invoke(tag, i)));
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                throw new RuntimeException(t);
             }
         }
         return list;
@@ -246,10 +263,13 @@ public class TagList {
      *
      * @param tag NBTTagList instance.
      * @return    Size of list inside.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static int size(Object tag) throws Throwable {
-        return (int) size.invoke(tag);
+    public static int size(Object tag) {
+        try {
+            return (int) size.invoke(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -258,9 +278,8 @@ public class TagList {
      * @param listTag NBTTagList instance.
      * @param tag     NBTBase object.
      * @return        true if the list contains the NBTBase object.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static boolean contains(Object listTag, Object tag) throws Throwable {
+    public static boolean contains(Object listTag, Object tag) {
         return getValue(listTag).contains(tag);
     }
 
@@ -269,15 +288,22 @@ public class TagList {
      *
      * @param listTag NBTTagList instance.
      * @param tag     NBTBase tag to add.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void add(Object listTag, Object tag) throws Throwable {
+    public static void add(Object listTag, Object tag) {
         if (ServerInstance.verNumber >= 14) {
-            if ((boolean) isTypeId.invoke(listTag, tag)) {
-                getValue(listTag).add(tag);
+            try {
+                if ((boolean) isTypeId.invoke(listTag, tag)) {
+                    getValue(listTag).add(tag);
+                }
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
             }
         } else {
-            add.invoke(listTag, tag);
+            try {
+                add.invoke(listTag, tag);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
         }
     }
 
@@ -286,9 +312,8 @@ public class TagList {
      *
      * @param listTag NBTTagList instance.
      * @param tags    NBTBase tags to add.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void add(Object listTag, Object... tags) throws Throwable {
+    public static void add(Object listTag, Object... tags) {
         for (Object tag : tags) {
             add(listTag, tag);
         }
@@ -300,10 +325,13 @@ public class TagList {
      * @param tag   NBTTagList instance.
      * @param index The index of the tag to be removed
      * @return      Removed tag.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object remove(Object tag, int index) throws Throwable {
-        return remove.invoke(tag, index);
+    public static Object remove(Object tag, int index) {
+        try {
+            return remove.invoke(tag, index);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -312,10 +340,13 @@ public class TagList {
      * @param listTag NBTTagList instance.
      * @param index   Index of element to replace.
      * @param tag     Tag value to set.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void set(Object listTag, int index, Object tag) throws Throwable {
-        set.invoke(listTag, index, tag);
+    public static void set(Object listTag, int index, Object tag) {
+        try {
+            set.invoke(listTag, index, tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -324,9 +355,12 @@ public class TagList {
      * @param tag   NBTTagList instance.
      * @param index Index of the tag to return.
      * @return      A NBTBase instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object get(Object tag, int index) throws Throwable {
-        return get.invoke(tag, index);
+    public static Object get(Object tag, int index) {
+        try {
+            return get.invoke(tag, index);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 }

@@ -10,15 +10,6 @@ import org.bukkit.entity.Entity;
  */
 public class RtagEntity extends RtagEditor<Entity> {
 
-    private static Object getTag(Object entity) {
-        try {
-            return EntityObject.save(entity);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
     /**
      * Constructs an RtagEntity with Entity to edit.
      *
@@ -47,7 +38,7 @@ public class RtagEntity extends RtagEditor<Entity> {
      * @param entity NMS entity to edit.
      */
     public RtagEntity(Rtag rtag, Object entity) {
-        this(rtag, entity, getTag(entity));
+        this(rtag, entity, EntityObject.save(entity));
     }
 
     /**

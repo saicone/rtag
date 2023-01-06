@@ -99,9 +99,8 @@ public class BlockObject {
      * @param block Block to convert.
      * @return      A Minecraft TileEntity.
      * @throws IllegalArgumentException if block state is not a CraftBlockState.
-     * @throws RuntimeException         if any error occurs on reflected method invoking.
      */
-    public static Object getTileEntity(Block block) throws IllegalArgumentException, RuntimeException {
+    public static Object getTileEntity(Block block) throws IllegalArgumentException {
         if (BLOCK_STATE.isInstance(block.getState())) {
             Location loc = block.getLocation();
             try {
@@ -119,17 +118,20 @@ public class BlockObject {
      *
      * @param tile TileEntity instance.
      * @return     A NBTTagCompound that represent the tile.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object save(Object tile) throws Throwable {
-        if (ServerInstance.verNumber >= 18) {
-            return save.invoke(tile);
-        } else if (ServerInstance.verNumber >= 9) {
-            return save.invoke(tile, TagCompound.newTag());
-        } else {
-            Object tag = TagCompound.newTag();
-            save.invoke(tile, tag);
-            return tag;
+    public static Object save(Object tile) {
+        try {
+            if (ServerInstance.verNumber >= 18) {
+                return save.invoke(tile);
+            } else if (ServerInstance.verNumber >= 9) {
+                return save.invoke(tile, TagCompound.newTag());
+            } else {
+                Object tag = TagCompound.newTag();
+                save.invoke(tile, tag);
+                return tag;
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
@@ -138,14 +140,17 @@ public class BlockObject {
      *
      * @param tile TileEntity instance.
      * @param tag  The NBTTagCompound to load.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void load(Object tile, Object tag) throws Throwable {
-        if (ServerInstance.verNumber == 16) {
-            Object blockData = getType.invoke(getWorld.invoke(tile), getPosition.invoke(tile));
-            load.invoke(tile, tag, blockData);
-        } else {
-            load.invoke(tile, tag);
+    public static void load(Object tile, Object tag) {
+        try {
+            if (ServerInstance.verNumber == 16) {
+                Object blockData = getType.invoke(getWorld.invoke(tile), getPosition.invoke(tile));
+                load.invoke(tile, tag, blockData);
+            } else {
+                load.invoke(tile, tag);
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 }

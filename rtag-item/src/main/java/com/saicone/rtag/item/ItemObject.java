@@ -67,24 +67,24 @@ public class ItemObject {
             }
 
             if (ServerInstance.verNumber >= 13 || ServerInstance.verNumber <= 10) {
-                new$ItemStack = EasyLookup.staticMethod("ItemStack", createStack, "ItemStack", "NBTTagCompound");
+                new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
             } else {
                 // (1.11 - 1.12) Only by public constructor
-                new$ItemStack = EasyLookup.constructor("ItemStack", "NBTTagCompound");
+                new$ItemStack = EasyLookup.constructor(MC_ITEM, "NBTTagCompound");
             }
 
             // Private field
-            get$handle = EasyLookup.unreflectGetter("CraftItemStack", "handle");
-            set$handle = EasyLookup.unreflectSetter("CraftItemStack", "handle");
+            get$handle = EasyLookup.unreflectGetter(CRAFT_ITEM, "handle");
+            set$handle = EasyLookup.unreflectSetter(CRAFT_ITEM, "handle");
 
-            method$save = EasyLookup.method("ItemStack", save, "NBTTagCompound", "NBTTagCompound");
+            method$save = EasyLookup.method(MC_ITEM, save, "NBTTagCompound", "NBTTagCompound");
             // Private method
-            method$load = EasyLookup.unreflectMethod("ItemStack", load, "NBTTagCompound");
-            method$getTag = EasyLookup.method("ItemStack", getTag, "NBTTagCompound");
-            method$setTag = EasyLookup.method("ItemStack", setTag, void.class, "NBTTagCompound");
-            method$asBukkitCopy = EasyLookup.staticMethod("CraftItemStack", "asBukkitCopy", ItemStack.class, "ItemStack");
+            method$load = EasyLookup.unreflectMethod(MC_ITEM, load, "NBTTagCompound");
+            method$getTag = EasyLookup.method(MC_ITEM, getTag, "NBTTagCompound");
+            method$setTag = EasyLookup.method(MC_ITEM, setTag, void.class, "NBTTagCompound");
+            method$asBukkitCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asBukkitCopy", ItemStack.class, "ItemStack");
             // Bukkit -> Minecraft
-            method$asNMSCopy = EasyLookup.staticMethod("CraftItemStack", "asNMSCopy", "ItemStack", ItemStack.class);
+            method$asNMSCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asNMSCopy", "ItemStack", ItemStack.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -107,10 +107,13 @@ public class ItemObject {
      *
      * @param compound NBTTagCompound that represent the item.
      * @return         A new ItemStack.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object newItem(Object compound) throws Throwable {
-        return newItem.invoke(compound);
+    public static Object newItem(Object compound) {
+        try {
+            return newItem.invoke(compound);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -118,11 +121,14 @@ public class ItemObject {
      *
      * @param item ItemStack instance.
      * @return     A NBTTagCompound that represent the item.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object save(Object item) throws Throwable {
-        Object compound =  TagCompound.newTag();
-        return item == null ? compound : save.invoke(item, compound);
+    public static Object save(Object item) {
+        final Object compound =  TagCompound.newTag();
+        try {
+            return item == null ? compound : save.invoke(item, compound);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -130,10 +136,13 @@ public class ItemObject {
      *
      * @param item     ItemStack instance.
      * @param compound The NBTTagCompound to load.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void load(Object item, Object compound) throws Throwable {
-        load.invoke(item, compound);
+    public static void load(Object item, Object compound) {
+        try {
+            load.invoke(item, compound);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -142,11 +151,14 @@ public class ItemObject {
      *
      * @param item Bukkit ItemStack.
      * @return     Minecraft ItemStack.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object getHandle(ItemStack item) throws Throwable {
+    public static Object getHandle(ItemStack item) {
         if (CRAFT_ITEM.isInstance(item)) {
-            return getHandleField.invoke(item);
+            try {
+                return getHandleField.invoke(item);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
         } else {
             return asNMSCopy(item);
         }
@@ -157,9 +169,8 @@ public class ItemObject {
      *
      * @param item ItemStack instance.
      * @return     The NBTTagCompound inside provided item.
-     * @throws RuntimeException if any error occurs on reflected method invoking.
      */
-    public static Object getTag(Object item) throws RuntimeException {
+    public static Object getTag(Object item) {
         try {
             return getTag.invoke(item);
         } catch (Throwable t) {
@@ -174,10 +185,9 @@ public class ItemObject {
      * @param item   Bukkit ItemStack.
      * @param handle Minecraft ItemStack.
      * @throws IllegalArgumentException if handle is not a Minecraft ItemStack.
-     * @throws RuntimeException         if any error occurs on reflected method invoking.
      */
     @SuppressWarnings("deprecation")
-    public static void setHandle(ItemStack item, Object handle) throws IllegalArgumentException, RuntimeException {
+    public static void setHandle(ItemStack item, Object handle) throws IllegalArgumentException {
         if (MC_ITEM.isInstance(handle)) {
             if (CRAFT_ITEM.isInstance(item)) {
                 try {
@@ -206,9 +216,8 @@ public class ItemObject {
      *
      * @param item ItemStack instance.
      * @param tag  NBTTagCompound to put into item.
-     * @throws RuntimeException if any error occurs on reflected method invoking.
      */
-    public static void setTag(Object item, Object tag) throws RuntimeException {
+    public static void setTag(Object item, Object tag) {
         try {
             setTag.invoke(item, tag);
         } catch (Throwable t) {
@@ -223,9 +232,8 @@ public class ItemObject {
      * @param item Minecraft ItemStack.
      * @return     Bukkit ItemStack.
      * @throws IllegalArgumentException if item is not a Minecraft ItemStack.
-     * @throws RuntimeException         if any error occurs on reflected method invoking.
      */
-    public static ItemStack asBukkitCopy(Object item) throws IllegalArgumentException, RuntimeException {
+    public static ItemStack asBukkitCopy(Object item) throws IllegalArgumentException {
         if (MC_ITEM.isInstance(item)) {
             try {
                 return (ItemStack) asBukkitCopy.invoke(item);
@@ -243,9 +251,8 @@ public class ItemObject {
      *
      * @param item Bukkit ItemStack.
      * @return     Minecraft ItemStack.
-     * @throws RuntimeException if any error occurs on reflected method invoking.
      */
-    public static Object asNMSCopy(ItemStack item) throws RuntimeException {
+    public static Object asNMSCopy(ItemStack item) {
         try {
             return asNMSCopy.invoke(item);
         } catch (Throwable t) {

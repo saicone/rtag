@@ -111,34 +111,31 @@ public class ItemTagStream extends TStream<ItemStack> {
 
     @Override
     public Object extract(ItemStack object) {
+        final Object compound = ItemObject.save(ItemObject.asNMSCopy(object));
         try {
-            Object compound = ItemObject.save(ItemObject.asNMSCopy(object));
             onSave(compound);
-            return compound;
         } catch (Throwable t) {
             t.printStackTrace();
-            return null;
         }
+        return compound;
     }
 
     @Override
     public ItemStack build(Object compound) {
         try {
             onLoad(compound);
-            return ItemObject.asBukkitCopy(ItemObject.newItem(compound));
         } catch (Throwable t) {
             t.printStackTrace();
-            return null;
         }
+        return ItemObject.asBukkitCopy(ItemObject.newItem(compound));
     }
 
     /**
      * Executed method when NBTTagCompound is extracted from item.
      *
      * @param compound NBTTagCompound with item information.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void onSave(Object compound) throws Throwable {
+    public void onSave(Object compound) {
         if (compound != null) {
             TagCompound.set(compound, getVersionKey(), TagBase.newTag(getVersion()));
         }
@@ -148,9 +145,8 @@ public class ItemTagStream extends TStream<ItemStack> {
      * Executed method when NBTTagCompound used tu build an item.
      *
      * @param compound NBTTagCompound with item information.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void onLoad(Object compound) throws Throwable {
+    public void onLoad(Object compound) {
         Integer version = (Integer) TagBase.getValue(TagCompound.get(compound, getVersionKey()));
         if (version != null && version != getVersion()) {
             onLoad(compound, version, getVersion());
@@ -163,9 +159,8 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param compound NBTTagCompound with item information.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void onLoad(Object compound, int from, int to) throws Throwable {
+    public void onLoad(Object compound, int from, int to) {
         String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
         if (id == null) return;
 

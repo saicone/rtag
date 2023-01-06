@@ -41,20 +41,20 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void upgrade(Object compound, String id, Object tag, int from, int to) {
         if (from <= 8 && id.equals("minecraft:potion")) {
             upgrade(compound);
         }
     }
 
     @Override
-    public void upgrade(Object compound, String id, int from, int to) throws Throwable {
+    public void upgrade(Object compound, String id, int from, int to) {
         if (from <= 8 && id.equals("minecraft:potion")) {
             upgrade(compound);
         }
     }
 
-    private void upgrade(Object compound) throws Throwable {
+    private void upgrade(Object compound) {
         Short damage = (Short) TagBase.getValue(TagCompound.get(compound, "Damage"));
         if (damage == null || damage == 0) return;
 
@@ -67,7 +67,7 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void downgrade(Object compound, String id, Object tag, int from, int to) {
         if (to <= 8 && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
             String potion = (String) TagBase.getValue(TagCompound.get(tag, "Potion"));
             if (potion == null || potion.equals("empty") || potion.equals("water")) return;

@@ -20,12 +20,12 @@ public class IDisplayMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void upgrade(Object compound, String id, Object tag, int from, int to) {
         processDisplay(tag, from, true);
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void downgrade(Object compound, String id, Object tag, int from, int to) {
         processDisplay(tag, to, false);
     }
 
@@ -35,9 +35,8 @@ public class IDisplayMirror implements ItemMirror {
      * @param tag     ItemStack tag.
      * @param version Version to convert.
      * @param toJson  True to convert texts into Json component.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void processDisplay(Object tag, int version, boolean toJson) throws Throwable {
+    public void processDisplay(Object tag, int version, boolean toJson) {
         if (version <= 13) {
             Object display = TagCompound.get(tag, "display");
             if (display == null) return;
@@ -58,9 +57,8 @@ public class IDisplayMirror implements ItemMirror {
      *
      * @param display Display tag.
      * @param toJson  True to convert texts into Json component.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void processLore(Object display, boolean toJson) throws Throwable {
+    public void processLore(Object display, boolean toJson) {
         Object displayLore = TagCompound.get(display, "Lore");
         if (displayLore != null) {
             int size = TagList.size(displayLore);
@@ -77,9 +75,8 @@ public class IDisplayMirror implements ItemMirror {
      * Process current display name tag.
      * @param display Display tag.
      * @param toJson  True to convert texts into Json component.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void processName(Object display, boolean toJson) throws Throwable {
+    public void processName(Object display, boolean toJson) {
         Object tag = processTag(TagCompound.get(display, "Name"), toJson);
         if (tag != null) {
             TagCompound.set(display, "Name", tag);
@@ -92,9 +89,8 @@ public class IDisplayMirror implements ItemMirror {
      * @param tag    NBTTagString instance.
      * @param toJson True to convert text into Json component.
      * @return       A new tag with converted text value.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public Object processTag(Object tag, boolean toJson) throws Throwable {
+    public Object processTag(Object tag, boolean toJson) {
         Object tagValue = TagBase.getValue(tag);
         if (tagValue != null) {
             String string = String.valueOf(tagValue);
@@ -111,9 +107,8 @@ public class IDisplayMirror implements ItemMirror {
      * @param string Text to convert.
      * @param toJson True to convert text into Json component.
      * @return       A new converted text.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public Object processString(String string, boolean toJson) throws Throwable {
+    public Object processString(String string, boolean toJson) {
         return toJson ? ChatComponent.toJsonOrNull(string) : ChatComponent.toString(string);
     }
 }

@@ -113,9 +113,8 @@ public class Rtag extends RtagMirror {
      * @param value Value to add.
      * @param path  Final list path to add the specified value.
      * @return      True if value is added.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public boolean add(Object tag, Object value, Object... path) throws Throwable {
+    public boolean add(Object tag, Object value, Object... path) {
         if (path.length == 0) {
             return false;
         }
@@ -142,9 +141,8 @@ public class Rtag extends RtagMirror {
      * @param value Value to set.
      * @param path  Final value path to set.
      * @return      True if the value is set.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public boolean set(Object tag, Object value, Object... path) throws Throwable {
+    public boolean set(Object tag, Object value, Object... path) {
         if (path.length == 0) {
             return false;
         } else {
@@ -167,9 +165,8 @@ public class Rtag extends RtagMirror {
      * @param value Value to set.
      * @param key   Key associated with value.
      * @return      True if the value is set.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public boolean setExact(Object tag, Object value, Object key) throws Throwable {
+    public boolean setExact(Object tag, Object value, Object key) {
         if (key instanceof Integer && TAG_LIST.isInstance(tag)) {
             Object valueTag = newTag(value);
             if (valueTag != null) {
@@ -193,9 +190,8 @@ public class Rtag extends RtagMirror {
      * @param tag Tag instance, can be NBTTagCompound or NBTTagList.
      * @param key Key associated with value.
      * @return    True if the value is removed (or don't exist).
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public boolean removeExact(Object tag, Object key) throws Throwable {
+    public boolean removeExact(Object tag, Object key) {
         if (key instanceof Integer && TAG_LIST.isInstance(tag)) {
             TagList.remove(tag, (int) key);
         } else if (TAG_COMPOUND.isInstance(tag)) {
@@ -227,9 +223,8 @@ public class Rtag extends RtagMirror {
      * @param <T>  Object type to cast the value.
      * @return     The value assigned to specified path, null if not
      *             exist or a ClassCastException occurs.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public <T> T get(Object tag, Object... path) throws Throwable {
+    public <T> T get(Object tag, Object... path) {
         return OptionalType.cast(getTagValue(getExact(tag, path)));
     }
 
@@ -240,9 +235,8 @@ public class Rtag extends RtagMirror {
      * @param tag  Tag instance, can be NBTTagCompound or NBTTagList.
      * @param path Final value path to get.
      * @return     The value assigned to specified path, null if not exist.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public Object getExact(Object tag, Object... path) throws Throwable {
+    public Object getExact(Object tag, Object... path) {
         return getExactOrCreate(tag, path, null);
     }
 
@@ -254,15 +248,18 @@ public class Rtag extends RtagMirror {
      * @param path          Final value path to get.
      * @param listPredicate Predicate to set new NBTTagList if NBTTagCompound doesn't contains key.
      * @return              The value assigned to specified path or null.
-     * @throws Throwable    if any error occurs on reflected method invoking.
      */
     @SuppressWarnings("unchecked")
-    public Object getExactOrCreate(Object tag, Object[] path, BiPredicate<Integer, Object[]> listPredicate) throws Throwable {
+    public Object getExactOrCreate(Object tag, Object[] path, BiPredicate<Integer, Object[]> listPredicate) {
         Object finalTag = tag;
         for (int i = 0; i < path.length; i++) {
             Object key = path[i];
             if (key instanceof ThrowableFunction) {
-                finalTag = ((ThrowableFunction<Object, Object>) key).apply(finalTag);
+                try {
+                    finalTag = ((ThrowableFunction<Object, Object>) key).apply(finalTag);
+                } catch (Throwable t) {
+                    return null;
+                }
                 if (finalTag == null) {
                     return null;
                 }

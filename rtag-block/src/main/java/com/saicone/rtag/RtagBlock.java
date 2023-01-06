@@ -10,15 +10,6 @@ import org.bukkit.block.Block;
  */
 public class RtagBlock extends RtagEditor<Block> {
 
-    private static Object getTag(Object block) {
-        try {
-            return BlockObject.save(block);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
     /**
      * Constructs an RtagBlock with Block to edit.
      *
@@ -47,7 +38,7 @@ public class RtagBlock extends RtagEditor<Block> {
      * @param object NMS block to edit.
      */
     public RtagBlock(Rtag rtag, Object object) {
-        this(rtag, object, getTag(object));
+        this(rtag, object, BlockObject.save(object));
     }
 
     /**

@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class TagBase {
 
-    private static final ThrowableFunction<Object, Object> DEFAULT_FUNCTION = (o) -> null;
+    private static final Class<?> NBT_BASE = EasyLookup.classById("NBTBase");
 
     private static final Map<Class<?>, ThrowableFunction<Object, Object>> newTagFunction = new HashMap<>();
     private static final Map<Class<?>, ThrowableFunction<Object, Object>> getValueFunction = new HashMap<>();
@@ -114,7 +114,7 @@ public class TagBase {
                 asLongArray = "d";
             }
 
-            method$getTypeId = EasyLookup.method("NBTBase", getTypeId, byte.class);
+            method$getTypeId = EasyLookup.method(NBT_BASE, getTypeId, byte.class);
 
             // Unreflect reason:
             // Method names change a lot across versions
@@ -236,10 +236,33 @@ public class TagBase {
      *
      * @param object Java object that exist in NBTBase tag.
      * @return       A NBTBase tag associated with provided object.
-     * @throws Throwable if any error occurs on reflected method invoking.
+     * @throws IllegalArgumentException if the object is not supported by this method.
      */
-    public static Object newTag(Object object) throws Throwable {
-        return object == null ? null : newTagFunction.getOrDefault(object.getClass(), DEFAULT_FUNCTION).apply(object);
+    public static Object newTag(Object object) throws IllegalArgumentException {
+        if (object == null) {
+            return null;
+        }
+
+        final ThrowableFunction<Object, Object> function = newTagFunction.get(object.getClass());
+        if (function == null) {
+            throw new IllegalArgumentException("The object type " + object.getClass().getName() + " cannot be used to create NBTBase tag using TagBase class");
+        }
+
+        try {
+            return function.apply(object);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot create NBTBase object from " + object.getClass().getName() + " object", t);
+        }
+    }
+
+    /**
+     * Check if the provided object is instance of NBTBase class.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of NBTBase class.
+     */
+    public static boolean isTag(Object object) {
+        return NBT_BASE.isInstance(object);
     }
 
     /**
@@ -247,9 +270,8 @@ public class TagBase {
      *
      * @param tag Tag to copy.
      * @return    A NBTBase tag with the same value.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object clone(Object tag) throws Throwable {
+    public static Object clone(Object tag) {
         return newTag(getValue(tag));
     }
 
@@ -260,10 +282,13 @@ public class TagBase {
      *
      * @param tag TagBase instance to get the ID.
      * @return    An ID that represents the tag type.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static byte getTypeId(Object tag) throws Throwable {
-        return (byte) getTypeId.invoke(tag);
+    public static byte getTypeId(Object tag) {
+        try {
+            return (byte) getTypeId.invoke(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -275,9 +300,20 @@ public class TagBase {
      *
      * @param tag Tag to extract value.
      * @return    A java object inside NBTBase tag.
-     * @throws Throwable if any error occurs on reflected method invoking.
+     * @throws IllegalArgumentException if tag is not supported by this class.
      */
-    public static Object getValue(Object tag) throws Throwable {
-        return tag == null ? null : getValueFunction.getOrDefault(tag.getClass(), DEFAULT_FUNCTION).apply(tag);
+    public static Object getValue(Object tag) throws IllegalArgumentException {
+        if (tag == null) return null;
+
+        final ThrowableFunction<Object, Object> function = getValueFunction.get(tag.getClass());
+        if (function == null) {
+            throw new IllegalArgumentException("The object type " + tag.getClass().getName() + " is not supported by TagBase class");
+        }
+
+        try {
+            return function.apply(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot get java object from " + tag.getClass().getName() + " class", t);
+        }
     }
 }

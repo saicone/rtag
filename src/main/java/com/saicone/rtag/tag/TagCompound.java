@@ -32,7 +32,7 @@ public class TagCompound {
         }
     };
 
-    private static final Class<?> nbtCompound = EasyLookup.classById("NBTTagCompound");
+    private static final Class<?> NBT_COMPOUND = EasyLookup.classById("NBTTagCompound");
 
     private static final MethodHandle newEmpty;
     private static final MethodHandle newCompound;
@@ -95,29 +95,29 @@ public class TagCompound {
                 map = "x";
             }
 
-            new$EmptyCompound = EasyLookup.constructor(nbtCompound);
+            new$EmptyCompound = EasyLookup.constructor(NBT_COMPOUND);
             if (ServerInstance.verNumber >= 15) {
                 // Protected method
-                new$Compound = EasyLookup.unreflectConstructor(nbtCompound, Map.class);
+                new$Compound = EasyLookup.unreflectConstructor(NBT_COMPOUND, Map.class);
             } else {
                 // Private field
-                set$map = EasyLookup.unreflectSetter(nbtCompound, map);
+                set$map = EasyLookup.unreflectSetter(NBT_COMPOUND, map);
             }
             // Private field
-            get$map = EasyLookup.unreflectGetter(nbtCompound, map);
-            method$parse = EasyLookup.staticMethod("MojangsonParser", parse, nbtCompound, String.class);
+            get$map = EasyLookup.unreflectGetter(NBT_COMPOUND, map);
+            method$parse = EasyLookup.staticMethod("MojangsonParser", parse, NBT_COMPOUND, String.class);
             // Unreflect reason:
             // (1.8 -  1.9) return NBTBase
             // Other versions return NBTTagCompound
-            method$clone = EasyLookup.unreflectMethod(nbtCompound, clone);
-            method$hasKey = EasyLookup.method(nbtCompound, hasKey, boolean.class, String.class);
-            method$remove = EasyLookup.method(nbtCompound, remove, void.class, String.class);
+            method$clone = EasyLookup.unreflectMethod(NBT_COMPOUND, clone);
+            method$hasKey = EasyLookup.method(NBT_COMPOUND, hasKey, boolean.class, String.class);
+            method$remove = EasyLookup.method(NBT_COMPOUND, remove, void.class, String.class);
             // Unreflect reason:
             // (1.8 -  1.13) void method
             // Other versions return NBTBase
-            method$set = EasyLookup.unreflectMethod(nbtCompound, set, String.class, "NBTBase");
-            method$get = EasyLookup.method(nbtCompound, get, "NBTBase", String.class);
-            method$getKeys = EasyLookup.method(nbtCompound, getKeys, Set.class);
+            method$set = EasyLookup.unreflectMethod(NBT_COMPOUND, set, String.class, "NBTBase");
+            method$get = EasyLookup.method(NBT_COMPOUND, get, "NBTBase", String.class);
+            method$getKeys = EasyLookup.method(NBT_COMPOUND, getKeys, Set.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -141,10 +141,13 @@ public class TagCompound {
      * Constructs an empty NBTTagCompound.
      *
      * @return New NBTTagCompound instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object newTag() throws Throwable {
-        return newEmpty.invoke();
+    public static Object newTag() {
+        try {
+            return newEmpty.invoke();
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -152,10 +155,13 @@ public class TagCompound {
      *
      * @param snbt NBT String with data.
      * @return     New NBTTagCompound instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object newTag(String snbt) throws Throwable {
-        return parse.invoke(snbt);
+    public static Object newTag(String snbt) {
+        try {
+            return parse.invoke(snbt);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -163,15 +169,24 @@ public class TagCompound {
      *
      * @param map Map with tags.
      * @return    New NBTTagCompound instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object newTag(Map<String, Object> map) throws Throwable {
-        if (map.isEmpty()) return newEmpty.invoke();
+    public static Object newTag(Map<String, Object> map) {
+        if (map.isEmpty()) {
+            return newTag();
+        }
         if (ServerInstance.verNumber >= 15) {
-            return newCompound.invoke(map);
+            try {
+                return newCompound.invoke(map);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
         } else {
-            Object tag = newEmpty.invoke();
-            setMapField.invoke(tag, map);
+            final Object tag = newTag();
+            try {
+                setMapField.invoke(tag, map);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
             return tag;
         }
     }
@@ -185,19 +200,54 @@ public class TagCompound {
      * @return       New NBTTagCompound instance.
      */
     public static Object newTag(RtagMirror mirror, Map<String, Object> map) {
-        Object finalObject = null;
+        if (map.isEmpty()) {
+            return newTag();
+        }
+
+        final Map<String, Object> tags = new HashMap<>();
+        for (var entry : map.entrySet()) {
+            tags.put(entry.getKey(), mirror.newTag(entry.getValue()));
+        }
+        return newTag(tags);
+    }
+
+    /**
+     * Check if the provided object is instance of NBTTagCompound class.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of NBTTagCompound class.
+     */
+    public static boolean isTagCompound(Object object) {
+        return NBT_COMPOUND.isInstance(object);
+    }
+
+    /**
+     * Copy provided NBTTagCompound into new one.
+     *
+     * @param tag NBTTagCompound instance.
+     * @return    A copy of original NBTTagCompound.
+     */
+    public static Object clone(Object tag) {
         try {
-            if (map.isEmpty()) {
-                finalObject = newEmpty.invoke();
-            } else {
-                Map<String, Object> tags = new HashMap<>();
-                map.forEach((key, value) -> tags.put(key, mirror.newTag(value)));
-                finalObject = newTag(tags);
-            }
+            return clone.invoke(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    /**
+     * Copy provided NBTTagCompound into new one without exceptions.
+     *
+     * @param tag NBTTagCompound instance.
+     * @return    A copy of original NBTTagCompound.
+     */
+    public static Object safeClone(Object tag) {
+        try {
+            return clone.invoke(tag);
         } catch (Throwable t) {
             t.printStackTrace();
+            return null;
         }
-        return finalObject;
     }
 
     /**
@@ -205,11 +255,14 @@ public class TagCompound {
      *
      * @param tag NBTTagCompound instance.
      * @return    A Map of NBTBase Objects.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> getValue(Object tag) throws Throwable {
-        return (Map<String, Object>) getMapField.invoke(tag);
+    public static Map<String, Object> getValue(Object tag) {
+        try {
+            return (Map<String, Object>) getMapField.invoke(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -221,13 +274,13 @@ public class TagCompound {
      */
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getValue(RtagMirror mirror, Object tag) {
-        Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
         try {
             for (String key : (Set<String>) getKeys.invoke(tag)) {
                 map.put(key, mirror.getTagValue(get.invoke(tag, key)));
             }
         } catch (Throwable t) {
-            t.printStackTrace();
+            throw new RuntimeException(t);
         }
         return map;
     }
@@ -240,29 +293,8 @@ public class TagCompound {
      */
     @SuppressWarnings("all")
     public static String getJson(Object tag) {
-        Type type = new TypeToken(){}.getType();
+        final Type type = new TypeToken(){}.getType();
         return new Gson().toJson(getValue(RtagMirror.INSTANCE, tag), type);
-    }
-
-    /**
-     * Copy provided NBTTagCompound into new one without exceptions.
-     *
-     * @param tag NBTTagCompound instance.
-     * @return    A copy of original NBTTagCompound.
-     */
-    public static Object safeClone(Object tag) {
-        return EasyLookup.safeInvoke(clone, tag);
-    }
-
-    /**
-     * Copy provided NBTTagCompound into new one.
-     *
-     * @param tag NBTTagCompound instance.
-     * @return    A copy of original NBTTagCompound.
-     * @throws Throwable if any error occurs on reflected method invoking.
-     */
-    public static Object clone(Object tag) throws Throwable {
-        return clone.invoke(tag);
     }
 
     /**
@@ -271,10 +303,13 @@ public class TagCompound {
      * @param tag NBTTagCompound instance.
      * @param key Key to find.
      * @return    True if key exist.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static boolean notHasKey(Object tag, String key) throws Throwable {
-        return !(boolean) hasKey.invoke(tag, key);
+    public static boolean notHasKey(Object tag, String key) {
+        try {
+            return !hasKey(tag, key);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -283,10 +318,13 @@ public class TagCompound {
      * @param tag NBTTagCompound instance.
      * @param key Key to find.
      * @return    True if key exist.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static boolean hasKey(Object tag, String key) throws Throwable {
-        return (boolean) hasKey.invoke(tag, key);
+    public static boolean hasKey(Object tag, String key) {
+        try {
+            return (boolean) hasKey.invoke(tag, key);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -294,10 +332,13 @@ public class TagCompound {
      *
      * @param tag NBTTagCompound instance.
      * @param key Key to remove.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static void remove(Object tag, String key) throws Throwable {
-        remove.invoke(tag, key);
+    public static void remove(Object tag, String key) {
+        try {
+            remove.invoke(tag, key);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -307,10 +348,13 @@ public class TagCompound {
      * @param key   Value key.
      * @param value Value to put.
      * @return      The value that was set.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object set(Object tag, String key, Object value) throws Throwable {
-        set.invoke(tag, key, value);
+    public static Object set(Object tag, String key, Object value) {
+        try {
+            set.invoke(tag, key, value);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
         return value;
     }
 
@@ -320,9 +364,12 @@ public class TagCompound {
      * @param tag NBTTagCompound instance.
      * @param key Value key.
      * @return    A NBTBase value if exist inside compound, null if not.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object get(Object tag, String key) throws Throwable {
-        return get.invoke(tag, key);
+    public static Object get(Object tag, String key) {
+        try {
+            return get.invoke(tag, key);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 }

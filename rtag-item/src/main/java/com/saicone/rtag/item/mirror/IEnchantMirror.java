@@ -73,14 +73,14 @@ public class IEnchantMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void upgrade(Object compound, String id, Object tag, int from, int to) {
         if (from <= 12) {
             processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void downgrade(Object compound, String id, Object tag, int from, int to) {
         if (from > 12) {
             processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
@@ -91,9 +91,8 @@ public class IEnchantMirror implements ItemMirror {
      *
      * @param tag  ItemStack tag.
      * @param book True if the tag is from enchanted book.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void processEnchants(Object tag, boolean book) throws Throwable {
+    public void processEnchants(Object tag, boolean book) {
         Object enchants = TagCompound.get(tag, book ? bookKey : fromKey);
         if (enchants != null) {
             int size = TagList.size(enchants);

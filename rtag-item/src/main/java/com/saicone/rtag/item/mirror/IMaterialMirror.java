@@ -52,17 +52,17 @@ public class IMaterialMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, int from, int to) throws Throwable {
+    public void upgrade(Object compound, String id, int from, int to) {
         resolveMaterial(compound, id, getDamage(compound, null, from), null, from, to);
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void upgrade(Object compound, String id, Object tag, int from, int to) {
         resolveSaved(compound, id, getDamage(compound, tag, from), tag, from, to);
     }
 
     @Override
-    public void downgrade(Object compound, String id, int from, int to) throws Throwable {
+    public void downgrade(Object compound, String id, int from, int to) {
         // Compatibility with IPotionMirror
         if (to <= 8 && id.equals("minecraft:potion")) {
             return;
@@ -71,7 +71,7 @@ public class IMaterialMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) throws Throwable {
+    public void downgrade(Object compound, String id, Object tag, int from, int to) {
         // Compatibility with IPotionMirror
         if (to <= 8 && id.equals("minecraft:potion")) {
             return;
@@ -88,9 +88,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param tag      Item tag.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void resolveSaved(Object compound, String id, int damage, Object tag, int from, int to) throws Throwable {
+    public void resolveSaved(Object compound, String id, int damage, Object tag, int from, int to) {
         String savedID = (String) TagBase.getValue(TagCompound.get(tag, "savedID"));
         if (savedID != null) {
             String material = translate(savedID, from, to);
@@ -112,9 +111,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param tag      Item tag.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void resolveMaterial(Object compound, String id, int damage, Object tag, int from, int to) throws Throwable {
+    public void resolveMaterial(Object compound, String id, int damage, Object tag, int from, int to) {
         String material;
         boolean isEgg;
         if ((isEgg = (from <= 12 && from >= 9) && id.equalsIgnoreCase("minecraft:spawn_egg"))) {
@@ -147,9 +145,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param tag      Item tag.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void resolveItem(Object compound, String material, Object tag, int from, int to) throws Throwable {
+    public void resolveItem(Object compound, String material, Object tag, int from, int to) {
         String[] split;
         if (material.startsWith("spawn_egg=")) {
             split = material.split("=", 2);
@@ -171,9 +168,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param damage   Damage amount to set.
      * @param from     Version specified in compound
      * @param to       Version to convert.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public void setDamage(Object compound, Object tag, int damage, int from, int to) throws Throwable {
+    public void setDamage(Object compound, Object tag, int damage, int from, int to) {
         if (to >= 13) {
             if (from <= 12) {
                 TagCompound.remove(compound, "Damage");
@@ -194,9 +190,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param tag      Item tag.
      * @param version  Version of the item.
      * @return         A integer representing item damage.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public int getDamage(Object compound, Object tag, int version) throws Throwable {
+    public int getDamage(Object compound, Object tag, int version) {
         Object damage = null;
         // On legacy versions "Damage" is outside tag
         if (version <= 12) {
@@ -226,9 +221,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param compound Item NBTTagCompound.
      * @param version  Item version
      * @return         A string representing entity id.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public String getEggEntity(Object compound, int version) throws Throwable {
+    public String getEggEntity(Object compound, int version) {
         String entity = Rtag.INSTANCE.get(compound, "EntityTag", "id");
         if (entity != null) {
             return entity;

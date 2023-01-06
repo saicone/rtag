@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandle;
  */
 public class ChatComponent {
 
+    private static final Class<?> CHAT_BASE_COMPONENT;
     private static final MethodHandle fromString;
     private static final MethodHandle fromComponent;
     private static final MethodHandle fromJson;
@@ -43,6 +44,7 @@ public class ChatComponent {
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
+        CHAT_BASE_COMPONENT = EasyLookup.classById("IChatBaseComponent");
         fromString = method$fromString;
         fromComponent = method$fromComponent;
         fromJson = method$fromJson;
@@ -57,10 +59,13 @@ public class ChatComponent {
      *
      * @param json Json to convert.
      * @return     A IChatBaseComponent instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object fromJson(String json) throws Throwable {
-        return json == null || json.isEmpty() ? null : fromJson.invoke(json);
+    public static Object fromJson(String json) {
+        try {
+            return json == null || json.isEmpty() ? null : fromJson.invoke(json);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -68,13 +73,16 @@ public class ChatComponent {
      *
      * @param string Json to convert.
      * @return       A IChatBaseComponent instance.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static Object fromString(String string) throws Throwable {
-        if (ServerInstance.verNumber >= 13) {
-            return fromString.invoke(string);
-        } else {
-            return string == null || string.isEmpty() ? null : ((Object[]) fromString.invoke(string))[0];
+    public static Object fromString(String string) {
+        try {
+            if (ServerInstance.verNumber >= 13) {
+                return fromString.invoke(string);
+            } else {
+                return string == null || string.isEmpty() ? null : ((Object[]) fromString.invoke(string))[0];
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
@@ -83,10 +91,17 @@ public class ChatComponent {
      *
      * @param component IChatBaseComponent to convert.
      * @return          A json component.
-     * @throws Throwable if any error occurs on reflected method invoking.
+     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
      */
-    public static String toJson(Object component) throws Throwable {
-        return (String) toJson.invoke(component);
+    public static String toJson(Object component) throws IllegalArgumentException {
+        if (!CHAT_BASE_COMPONENT.isInstance(component)) {
+            throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
+        }
+        try {
+            return (String) toJson.invoke(component);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -94,9 +109,8 @@ public class ChatComponent {
      *
      * @param string String to convert.
      * @return       A json component.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static String toJson(String string) throws Throwable {
+    public static String toJson(String string) {
         return toJson(fromString(string));
     }
 
@@ -105,9 +119,9 @@ public class ChatComponent {
      *
      * @param component IChatBaseComponent to convert.
      * @return          A json component or null.
-     * @throws Throwable if any error occurs on reflected method invoking.
+     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
      */
-    public static String toJsonOrNull(Object component) throws Throwable {
+    public static String toJsonOrNull(Object component) throws IllegalArgumentException {
         return component == null ? null : toJson(component);
     }
 
@@ -116,9 +130,8 @@ public class ChatComponent {
      *
      * @param string String to convert.
      * @return       A json component or null.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static String toJsonOrNull(String string) throws Throwable {
+    public static String toJsonOrNull(String string) {
         return toJsonOrNull(fromString(string));
     }
 
@@ -127,10 +140,17 @@ public class ChatComponent {
      *
      * @param component IChatBaseComponent to convert.
      * @return          A string with old format.
-     * @throws Throwable if any error occurs on reflected method invoking.
+     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
      */
-    public static String toString(Object component) throws Throwable {
-        return (String) fromComponent.invoke(component);
+    public static String toString(Object component) throws IllegalArgumentException {
+        if (!CHAT_BASE_COMPONENT.isInstance(component)) {
+            throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
+        }
+        try {
+            return (String) fromComponent.invoke(component);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -138,9 +158,8 @@ public class ChatComponent {
      *
      * @param json Json to convert.
      * @return     A string with old format.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static String toString(String json) throws Throwable {
+    public static String toString(String json) {
         return toString(fromJson(json));
     }
 
@@ -149,9 +168,9 @@ public class ChatComponent {
      *
      * @param component IChatBaseComponent to convert.
      * @return          A string with old format or null.
-     * @throws Throwable if any error occurs on reflected method invoking.
+     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
      */
-    public static String toStringOrNull(Object component) throws Throwable {
+    public static String toStringOrNull(Object component) throws IllegalArgumentException {
         return component == null ? null : toString(component);
     }
 
@@ -160,9 +179,8 @@ public class ChatComponent {
      *
      * @param json Json to convert.
      * @return     A string with old format or null.
-     * @throws Throwable if any error occurs on reflected method invoking.
      */
-    public static String toStringOrNull(String json) throws Throwable {
+    public static String toStringOrNull(String json) {
         return toStringOrNull(fromJson(json));
     }
 }
