@@ -45,10 +45,8 @@ public class EntityObject {
 
             method$getEntity = EasyLookup.staticMethod("CraftEntity", "getEntity", "CraftEntity", "CraftServer", "Entity");
             method$getHandle = EasyLookup.method("CraftEntity", "getHandle", "Entity");
-            // Unreflect reason:
             // (1.8) void method
-            // Other versions return NBTTagCompound
-            method$save = EasyLookup.unreflectMethod("Entity", save, "NBTTagCompound");
+            method$save = EasyLookup.method("Entity", save, "NBTTagCompound", "NBTTagCompound");
             method$load = EasyLookup.method("Entity", load, void.class, "NBTTagCompound");
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();

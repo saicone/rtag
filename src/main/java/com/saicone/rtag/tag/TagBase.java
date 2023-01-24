@@ -92,26 +92,19 @@ public class TagBase {
 
             // New names
             if (ServerInstance.isUniversal) {
-                if (ServerInstance.verNumber >= 18) {
-                    if (ServerInstance.fullVersion >= 11902) { // v1_19_R2
-                        getTypeId = "b";
-                        asLongArray = "g";
-                    } else {
-                        getTypeId = "a";
-                        asLongArray = "f";
-                    }
-                } else {
-                    asLongArray = "getLongs";
+                if (ServerInstance.fullVersion >= 11902) { // v1_19_R2
+                    getTypeId = "b";
+                } else if (ServerInstance.verNumber >= 18) {
+                    getTypeId = "a";
                 }
                 data = "c";
                 asByte = "x";
                 asDouble = "w";
                 asFloat = "w";
+                asLongArray = "c";
                 asString = "A";
-            } else if (ServerInstance.verNumber >= 14) {
-                asLongArray = "getLongs";
-            } else if (ServerInstance.verNumber >= 13) {
-                asLongArray = "d";
+            } else if (ServerInstance.verNumber == 13 || ServerInstance.verNumber == 14) {
+                asLongArray = "f";
             }
 
             method$getTypeId = EasyLookup.method(NBT_BASE, getTypeId, byte.class);
@@ -120,41 +113,36 @@ public class TagBase {
             // Method names change a lot across versions
             // Fields and constructors are private in all versions
             new$Byte = EasyLookup.unreflectConstructor("NBTTagByte", byte.class);
-            get$Byte = EasyLookup.unreflectGetter("NBTTagByte", asByte);
+            get$Byte = EasyLookup.getter("NBTTagByte", asByte, byte.class);
 
             new$ByteArray = EasyLookup.unreflectConstructor("NBTTagByteArray", byte[].class);
-            get$ByteArray = EasyLookup.unreflectGetter("NBTTagByteArray", data);
+            get$ByteArray = EasyLookup.getter("NBTTagByteArray", data, byte[].class);
 
             new$Double = EasyLookup.unreflectConstructor("NBTTagDouble", double.class);
-            get$Double = EasyLookup.unreflectGetter("NBTTagDouble", asDouble);
+            get$Double = EasyLookup.getter("NBTTagDouble", asDouble, double.class);
 
             new$Float = EasyLookup.unreflectConstructor("NBTTagFloat", float.class);
-            get$Float = EasyLookup.unreflectGetter("NBTTagFloat", asFloat);
+            get$Float = EasyLookup.getter("NBTTagFloat", asFloat, float.class);
 
             new$Int = EasyLookup.unreflectConstructor("NBTTagInt", int.class);
-            get$Int = EasyLookup.unreflectGetter("NBTTagInt", data);
+            get$Int = EasyLookup.getter("NBTTagInt", data, int.class);
 
             new$IntArray = EasyLookup.unreflectConstructor("NBTTagIntArray", "int[]");
-            get$IntArray = EasyLookup.unreflectGetter("NBTTagIntArray", data);
+            get$IntArray = EasyLookup.getter("NBTTagIntArray", data, "int[]");
 
             new$Long = EasyLookup.unreflectConstructor("NBTTagLong", long.class);
-            get$Long = EasyLookup.unreflectGetter("NBTTagLong", data);
+            get$Long = EasyLookup.getter("NBTTagLong", data, long.class);
 
             if (ServerInstance.verNumber >= 12) {
                 new$LongArray = EasyLookup.unreflectConstructor("NBTTagLongArray", "long[]");
-                if (ServerInstance.verNumber >= 13) {
-                    get$LongArray = EasyLookup.method("NBTTagLongArray", asLongArray, "long[]");
-                } else {
-                    // 1.12 only by getter
-                    get$LongArray = EasyLookup.unreflectGetter("NBTTagLongArray", asLongArray);
-                }
+                get$LongArray = EasyLookup.getter("NBTTagLongArray", asLongArray, "long[]");
             }
 
             new$Short = EasyLookup.unreflectConstructor("NBTTagShort", short.class);
-            get$Short = EasyLookup.unreflectGetter("NBTTagShort", data);
+            get$Short = EasyLookup.getter("NBTTagShort", data, short.class);
 
             new$String = EasyLookup.unreflectConstructor("NBTTagString", String.class);
-            get$String = EasyLookup.unreflectGetter("NBTTagString", asString);
+            get$String = EasyLookup.getter("NBTTagString", asString, String.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
@@ -263,6 +251,28 @@ public class TagBase {
      */
     public static boolean isTag(Object object) {
         return NBT_BASE.isInstance(object);
+    }
+
+    /**
+     * Check if NBTBase object type is equals to provided type.
+     *
+     * @param tag  the NBTBase object to check.
+     * @param type the nbt type.
+     * @return     true if NBTBase type is equals.
+     */
+    public static boolean isTypeOf(Object tag, byte type) {
+        return getTypeId(tag) == type;
+    }
+
+    /**
+     * Check if two NBTBase objects has the same type.
+     *
+     * @param tag1 the first NBTBase object to check.
+     * @param tag2 the second NBTBase object to check.
+     * @return     true if the two NBTBase type are equals.
+     */
+    public static boolean isTypeOf(Object tag1, Object tag2) {
+        return getTypeId(tag1) == getTypeId(tag2);
     }
 
     /**

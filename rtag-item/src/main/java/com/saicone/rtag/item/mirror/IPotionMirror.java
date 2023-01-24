@@ -24,7 +24,8 @@ public class IPotionMirror implements ItemMirror {
     private static final Object SPLASH_POTION;
 
     static {
-        Object potion = null, splash = null;
+        Object potion = null;
+        Object splash = null;
         try {
             potion = TagBase.newTag("minecraft:potion");
             splash = TagBase.newTag("minecraft:splash_potion");

@@ -74,12 +74,12 @@ public class ItemObject {
             }
 
             // Private field
-            get$handle = EasyLookup.unreflectGetter(CRAFT_ITEM, "handle");
-            set$handle = EasyLookup.unreflectSetter(CRAFT_ITEM, "handle");
+            get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
+            set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
             method$save = EasyLookup.method(MC_ITEM, save, "NBTTagCompound", "NBTTagCompound");
             // Private method
-            method$load = EasyLookup.unreflectMethod(MC_ITEM, load, "NBTTagCompound");
+            method$load = EasyLookup.method(MC_ITEM, load, void.class, "NBTTagCompound");
             method$getTag = EasyLookup.method(MC_ITEM, getTag, "NBTTagCompound");
             method$setTag = EasyLookup.method(MC_ITEM, setTag, void.class, "NBTTagCompound");
             method$asBukkitCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asBukkitCopy", ItemStack.class, "ItemStack");

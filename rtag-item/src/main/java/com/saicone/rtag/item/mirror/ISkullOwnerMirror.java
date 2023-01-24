@@ -76,11 +76,11 @@ public class ISkullOwnerMirror implements ItemMirror {
      * @return     Int array containing the UUID or null.
      */
     public static int[] getIntArrayUUID(String uuid) {
-        int[] array = new int[4];
-        uuid = uuid.replace("-", "");
+        final int[] array = new int[4];
+        final String rawUUID = uuid.replace("-", "");
         try {
             for (int i = 0; i < 32; i = i + 8) {
-                array[i / 8] = new BigInteger(uuid.substring(i, i + 8), 16).intValue();
+                array[i / 8] = new BigInteger(rawUUID.substring(i, i + 8), 16).intValue();
             }
         } catch (Throwable t) {
             return null;

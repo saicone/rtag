@@ -62,10 +62,8 @@ public class BlockObject {
             if (ServerInstance.verNumber >= 18) {
                 method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound");
             } else {
-                // Unreflect reason:
                 // (1.8) void method
-                // Other versions return NBTTagCompound
-                method$save = EasyLookup.unreflectMethod("TileEntity", save, "NBTTagCompound");
+                method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound", "NBTTagCompound");
             }
 
             if (ServerInstance.verNumber == 16) {
