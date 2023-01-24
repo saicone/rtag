@@ -11,7 +11,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Class to invoke NBTTagCompound methods across versions.
@@ -40,11 +39,6 @@ public class TagCompound {
     private static final MethodHandle getMapField;
     private static final MethodHandle parse;
     private static final MethodHandle clone;
-    private static final MethodHandle hasKey;
-    private static final MethodHandle remove;
-    private static final MethodHandle set;
-    private static final MethodHandle get;
-    private static final MethodHandle getKeys;
 
     static {
         // Constructors
@@ -57,67 +51,36 @@ public class TagCompound {
         // Methods
         MethodHandle method$parse = null;
         MethodHandle method$clone = null;
-        MethodHandle method$hasKey = null;
-        MethodHandle method$remove = null;
-        MethodHandle method$set = null;
-        MethodHandle method$get = null;
-        MethodHandle method$getKeys = null;
         try {
             EasyLookup.addNMSClass("nbt.MojangsonParser");
             // Old names
             String map = "map";
             String parse = "parse";
             String clone = "clone";
-            String hasKey = "hasKey";
-            String remove = "remove";
-            String set = "set";
-            String get = "get";
-            String getKeys = "c";
             // New names
-            if (ServerInstance.verNumber >= 18) {
-                parse = "a";
-                clone = "g";
-                hasKey = "e";
-                remove = "r";
-                set = "a";
-                get = "c";
-                if (ServerInstance.fullVersion >= 11902) { // v1_19_R2
-                    getKeys = "e";
-                } else {
-                    getKeys = "d";
-                }
-            } else if (ServerInstance.verNumber >= 13) {
-                getKeys = "getKeys";
-            } else if (ServerInstance.verNumber >= 10) {
-                clone = "g";
-            }
             if (ServerInstance.isUniversal) {
                 map = "x";
+                if (ServerInstance.verNumber >= 18) {
+                    parse = "a";
+                    clone = "g";
+                }
+            } else if (ServerInstance.verNumber >= 10) {
+                clone = "g";
             }
 
             new$EmptyCompound = EasyLookup.constructor(NBT_COMPOUND);
             if (ServerInstance.verNumber >= 15) {
                 // Protected method
-                new$Compound = EasyLookup.unreflectConstructor(NBT_COMPOUND, Map.class);
-            } else {
-                // Private field
-                set$map = EasyLookup.unreflectSetter(NBT_COMPOUND, map);
+                new$Compound = EasyLookup.constructor(NBT_COMPOUND, Map.class);
             }
+
             // Private field
-            get$map = EasyLookup.unreflectGetter(NBT_COMPOUND, map);
+            get$map = EasyLookup.getter(NBT_COMPOUND, map, Map.class);
+            set$map = EasyLookup.setter(NBT_COMPOUND, map, Map.class);
+
             method$parse = EasyLookup.staticMethod("MojangsonParser", parse, NBT_COMPOUND, String.class);
-            // Unreflect reason:
             // (1.8 -  1.9) return NBTBase
-            // Other versions return NBTTagCompound
-            method$clone = EasyLookup.unreflectMethod(NBT_COMPOUND, clone);
-            method$hasKey = EasyLookup.method(NBT_COMPOUND, hasKey, boolean.class, String.class);
-            method$remove = EasyLookup.method(NBT_COMPOUND, remove, void.class, String.class);
-            // Unreflect reason:
-            // (1.8 -  1.13) void method
-            // Other versions return NBTBase
-            method$set = EasyLookup.unreflectMethod(NBT_COMPOUND, set, String.class, "NBTBase");
-            method$get = EasyLookup.method(NBT_COMPOUND, get, "NBTBase", String.class);
-            method$getKeys = EasyLookup.method(NBT_COMPOUND, getKeys, Set.class);
+            method$clone = EasyLookup.method(NBT_COMPOUND, clone, NBT_COMPOUND);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -127,11 +90,6 @@ public class TagCompound {
         getMapField = get$map;
         parse = method$parse;
         clone = method$clone;
-        hasKey = method$hasKey;
-        remove = method$remove;
-        set = method$set;
-        get = method$get;
-        getKeys = method$getKeys;
     }
 
     TagCompound() {
@@ -272,15 +230,10 @@ public class TagCompound {
      * @param tag    NBTTagCompound instance.
      * @return       A Map of Objects.
      */
-    @SuppressWarnings("unchecked")
     public static Map<String, Object> getValue(RtagMirror mirror, Object tag) {
         final Map<String, Object> map = new HashMap<>();
-        try {
-            for (String key : (Set<String>) getKeys.invoke(tag)) {
-                map.put(key, mirror.getTagValue(get.invoke(tag, key)));
-            }
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
+        for (var entry : getValue(tag).entrySet()) {
+            map.put(entry.getKey(), mirror.getTagValue(entry.getValue()));
         }
         return map;
     }
@@ -320,11 +273,7 @@ public class TagCompound {
      * @return    True if key exist.
      */
     public static boolean hasKey(Object tag, String key) {
-        try {
-            return (boolean) hasKey.invoke(tag, key);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        return getValue(tag).containsKey(key);
     }
 
     /**
@@ -332,13 +281,10 @@ public class TagCompound {
      *
      * @param tag NBTTagCompound instance.
      * @param key Key to remove.
+     * @return    The previous value associated with key, or null if there was no mapping for key.
      */
-    public static void remove(Object tag, String key) {
-        try {
-            remove.invoke(tag, key);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+    public static Object remove(Object tag, String key) {
+        return getValue(tag).remove(key);
     }
 
     /**
@@ -347,15 +293,10 @@ public class TagCompound {
      * @param tag   NBTTagCompound instance.
      * @param key   Value key.
      * @param value Value to put.
-     * @return      The value that was set.
+     * @return      The previous value associated with key, or null if there was no mapping for key.
      */
     public static Object set(Object tag, String key, Object value) {
-        try {
-            set.invoke(tag, key, value);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        return value;
+        return getValue(tag).put(key, value);
     }
 
     /**
@@ -366,10 +307,6 @@ public class TagCompound {
      * @return    A NBTBase value if exist inside compound, null if not.
      */
     public static Object get(Object tag, String key) {
-        try {
-            return get.invoke(tag, key);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        return getValue(tag).get(key);
     }
 }

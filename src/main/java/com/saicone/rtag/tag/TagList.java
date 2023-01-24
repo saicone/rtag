@@ -20,13 +20,8 @@ public class TagList {
     private static final MethodHandle newEmpty;
     private static final MethodHandle newList;
     private static final MethodHandle clone;
-    private static final MethodHandle size;
-    private static final MethodHandle add;
-    private static final MethodHandle remove;
-    private static final MethodHandle set;
-    private static final MethodHandle get;
-    private static final MethodHandle isTypeId;
-    private static final MethodHandle typeField;
+    private static final MethodHandle getTypeField;
+    private static final MethodHandle setTypeField;
     private static final MethodHandle setListField;
     private static final MethodHandle getListField;
 
@@ -36,13 +31,8 @@ public class TagList {
         MethodHandle new$List = null;
         // Methods
         MethodHandle method$clone = null;
-        MethodHandle method$size = null;
-        MethodHandle method$add = null;
-        MethodHandle method$remove = null;
-        MethodHandle method$set = null;
-        MethodHandle method$get = null;
-        MethodHandle method$isTypeId = null;
         // Getters
+        MethodHandle get$type = null;
         MethodHandle get$list = null;
         // Setters
         MethodHandle set$type = null;
@@ -50,87 +40,39 @@ public class TagList {
         try {
             // Old names
             String clone = "clone";
-            String size = "size";
-            String add = "add";
-            String remove = "a";
-            String set = "a";
-            String get = "g";
+            String type = "type";
             String list = "list";
             // New names
-            if (ServerInstance.verNumber >= 18) {
-                clone = "d";
-                add = "c";
-                remove = "c";
-                set = "d";
-                get = "k";
+            if (ServerInstance.isUniversal) {
                 list = "c";
-            } else if (ServerInstance.verNumber >= 9) {
-                // Clone
-                if (ServerInstance.verNumber >= 10 && ServerInstance.verNumber <= 13) {
+                type = "w";
+                if (ServerInstance.verNumber >= 18) {
                     clone = "d";
                 }
-                // Remove
-                remove = "remove";
-                // Set & Get
-                if (ServerInstance.verNumber >= 13) {
-                    set = "set";
-                    get = "get";
-                    if (ServerInstance.isUniversal) {
-                        list = "c";
-                    }
-                } else if (ServerInstance.verNumber >= 12) {
-                    get = "i";
-                } else {
-                    get = "h";
-                }
+            } else if (ServerInstance.verNumber >= 10 && ServerInstance.verNumber <= 13) {
+                clone = "d";
             }
 
             new$EmptyList = EasyLookup.constructor(NBT_LIST);
-            // Unreflect reason:
-            // (1.8 -  1.9) return NBTBase
-            // Other versions return NBTTagList
-            method$clone = EasyLookup.unreflectMethod(NBT_LIST, clone);
-            method$size = EasyLookup.method(NBT_LIST, size, int.class);
-            method$remove = EasyLookup.method(NBT_LIST, remove, "NBTBase", int.class);
-            // Unreflect reason:
-            // (1.8 -  1.12) void method
-            // Other versions return NBTBase
-            method$set = EasyLookup.unreflectMethod(NBT_LIST, set, int.class, "NBTBase");
-            method$get = EasyLookup.method(NBT_LIST, get, "NBTBase", int.class);
-            // Private field
-            get$list = EasyLookup.unreflectGetter(NBT_LIST, list);
-
             if (ServerInstance.verNumber >= 15) {
                 // Private constructor
-                new$List = EasyLookup.unreflectConstructor(NBT_LIST, List.class, byte.class);
-            } else {
-                // Private fields
-                set$type = EasyLookup.unreflectSetter(NBT_LIST, "type");
-                set$list = EasyLookup.unreflectSetter(NBT_LIST, list);
+                new$List = EasyLookup.constructor(NBT_LIST, List.class, byte.class);
             }
-            if (ServerInstance.verNumber >= 14) {
-                method$add = EasyLookup.method(NBT_LIST, add, void.class, int.class, "NBTBase");
-                // Private method
-                method$isTypeId = EasyLookup.unreflectMethod(NBT_LIST, "a", "NBTBase");
-            } else {
-                // Unreflect reason:
-                // (1.12 - 1.13) return boolean
-                // Void method in other versions
-                method$add = EasyLookup.unreflectMethod(NBT_LIST, add, "NBTBase");
-            }
+            // (1.8 -  1.9) return NBTBase
+            method$clone = EasyLookup.method(NBT_LIST, clone, NBT_LIST);
+            // Private fields
+            get$type = EasyLookup.getter(NBT_LIST, type, byte.class);
+            set$type = EasyLookup.setter(NBT_LIST, type, byte.class);
+            get$list = EasyLookup.getter(NBT_LIST, list, List.class);
+            set$list = EasyLookup.setter(NBT_LIST, list, List.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
         newEmpty = new$EmptyList;
         newList = new$List;
         clone = method$clone;
-        size = method$size;
-        add = method$add;
-        remove = method$remove;
-        set = method$set;
-        get = method$get;
-        isTypeId = method$isTypeId;
-        typeField = set$type;
+        setTypeField = set$type;
+        getTypeField = get$type;
         setListField = set$list;
         getListField = get$list;
     }
@@ -157,7 +99,7 @@ public class TagList {
      * @param list List with NBTBase values.
      * @return     New NBTTagList instance.
      */
-    public static Object newTag(List<?> list) {
+    public static <T> Object newTag(List<T> list) {
         if (list == null || list.isEmpty()) {
             return newTag();
         }
@@ -167,7 +109,7 @@ public class TagList {
                 return newList.invoke(list, type);
             } else {
                 Object tag = newTag();
-                typeField.invoke(tag, type);
+                setTypeField.invoke(tag, type);
                 setListField.invoke(tag, list);
                 return tag;
             }
@@ -184,7 +126,7 @@ public class TagList {
      * @param list   List with objects.
      * @return       New NBTTagList instance.
      */
-    public static Object newTag(RtagMirror mirror, List<?> list) {
+    public static <T> Object newTag(RtagMirror mirror, List<T> list) {
         if (list == null || list.isEmpty()) {
             return newTag();
         }
@@ -246,16 +188,27 @@ public class TagList {
     public static List<Object> getValue(RtagMirror mirror, Object tag) {
         List<Object> list = new ArrayList<>();
         if (tag != null) {
-            try {
-                int length = (int) size.invoke(tag);
-                for (int i = 0; i < length; i++) {
-                    list.add(mirror.getTagValue(get.invoke(tag, i)));
-                }
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
+            for (Object object : getValue(tag)) {
+                list.add(mirror.getTagValue(object));
             }
         }
         return list;
+    }
+
+    /**
+     * Get current tag type that reprsent tag list.
+     *
+     * @param tag NBTTagList instance.
+     * @return    A NBTBase object type.
+     *
+     * @see TagBase#getTypeId(Object)
+     */
+    public static byte getType(Object tag) {
+        try {
+            return (byte) getTypeField.invoke(tag);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 
     /**
@@ -265,11 +218,7 @@ public class TagList {
      * @return    Size of list inside.
      */
     public static int size(Object tag) {
-        try {
-            return (int) size.invoke(tag);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        return getValue(tag).size();
     }
 
     /**
@@ -290,21 +239,13 @@ public class TagList {
      * @param tag     NBTBase tag to add.
      */
     public static void add(Object listTag, Object tag) {
-        if (ServerInstance.verNumber >= 14) {
-            try {
-                if ((boolean) isTypeId.invoke(listTag, tag)) {
-                    getValue(listTag).add(tag);
-                }
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
-            }
-        } else {
-            try {
-                add.invoke(listTag, tag);
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
-            }
+        final byte listType = getType(listTag);
+        if (listType == 0) {
+            setType(listTag, TagBase.getTypeId(tag));
+        } else if (!TagBase.isTypeOf(tag, listType)) {
+            return;
         }
+        getValue(listTag).add(tag);
     }
 
     /**
@@ -314,8 +255,15 @@ public class TagList {
      * @param tags    NBTBase tags to add.
      */
     public static void add(Object listTag, Object... tags) {
+        final byte listType = getType(listTag);
+        if (listType == 0) {
+            setType(listTag, TagBase.getTypeId(tags[0]));
+        } else if (!TagBase.isTypeOf(tags[0], getType(listTag))) {
+            return;
+        }
+        final List<Object> list = getValue(listTag);
         for (Object tag : tags) {
-            add(listTag, tag);
+            list.add(tag);
         }
     }
 
@@ -327,11 +275,7 @@ public class TagList {
      * @return      Removed tag.
      */
     public static Object remove(Object tag, int index) {
-        try {
-            return remove.invoke(tag, index);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        return getValue(tag).remove(index);
     }
 
     /**
@@ -342,8 +286,20 @@ public class TagList {
      * @param tag     Tag value to set.
      */
     public static void set(Object listTag, int index, Object tag) {
+        getValue(listTag).set(index, tag);
+    }
+
+    /**
+     * Change the current NBTBase type inside NBTTagList.
+     *
+     * @param tag  NBTTagList instance.
+     * @param type NBTBase object type.
+     *
+     * @see TagBase#getTypeId(Object)
+     */
+    public static void setType(Object tag, byte type) {
         try {
-            set.invoke(listTag, index, tag);
+            setTypeField.invoke(tag, type);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -357,10 +313,16 @@ public class TagList {
      * @return      A NBTBase instance.
      */
     public static Object get(Object tag, int index) {
-        try {
-            return get.invoke(tag, index);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        return getValue(tag).get(index);
+    }
+
+    /**
+     * Clear a NBTTagList and reset list type.
+     *
+     * @param tag NBTTagList instance.
+     */
+    public static void clear(Object tag) {
+        getValue(tag).clear();
+        setType(tag, (byte) 0);
     }
 }
