@@ -62,7 +62,11 @@ public class TagCompound {
                 map = "x";
                 if (ServerInstance.verNumber >= 18) {
                     parse = "a";
-                    clone = "g";
+                    if (ServerInstance.fullVersion >= 11903) {
+                        clone = "h";
+                    } else {
+                        clone = "g";
+                    }
                 }
             } else if (ServerInstance.verNumber >= 10) {
                 clone = "g";

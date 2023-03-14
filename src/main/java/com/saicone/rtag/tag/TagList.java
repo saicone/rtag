@@ -46,7 +46,9 @@ public class TagList {
             if (ServerInstance.isUniversal) {
                 list = "c";
                 type = "w";
-                if (ServerInstance.verNumber >= 18) {
+                if (ServerInstance.fullVersion >= 11903) {
+                    clone = "e";
+                } else if (ServerInstance.verNumber >= 18) {
                     clone = "d";
                 }
             } else if (ServerInstance.verNumber >= 10 && ServerInstance.verNumber <= 13) {

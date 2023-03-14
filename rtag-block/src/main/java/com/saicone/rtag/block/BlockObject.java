@@ -47,7 +47,11 @@ public class BlockObject {
             // New method names
             if (ServerInstance.verNumber >= 18) {
                 getTileEntity = "c_";
-                save = "m";
+                if (ServerInstance.fullVersion >= 11903) {
+                    save = "o";
+                } else {
+                    save = "m";
+                }
             } else if (ServerInstance.verNumber >= 9) {
                 save = "save";
                 if (ServerInstance.verNumber >= 12) {
