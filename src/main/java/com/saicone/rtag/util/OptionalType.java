@@ -1,7 +1,9 @@
 package com.saicone.rtag.util;
 
-import java.lang.reflect.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -11,7 +13,7 @@ import java.util.function.Function;
  * @author Rubenicos
  */
 @SuppressWarnings("unchecked")
-public class OptionalType implements Iterable<Object> {
+public class OptionalType extends IterableType<Object> {
 
     private static final OptionalType BLANK = new OptionalType(null);
 
@@ -50,6 +52,16 @@ public class OptionalType implements Iterable<Object> {
      * @param value Saved value, can be null.
      */
     public OptionalType(Object value) {
+        this.value = value;
+    }
+
+    @Override
+    protected Object getIterable() {
+        return value;
+    }
+
+    @Override
+    protected void setIterable(Object value) {
         this.value = value;
     }
 
@@ -92,25 +104,6 @@ public class OptionalType implements Iterable<Object> {
     }
 
     /**
-     * Check if the current value can be iterated using for statement.<br>
-     * This condition can be applied to any {@link Iterable} type or array.
-     *
-     * @return true if the value can be iterated.
-     */
-    public boolean isIterable() {
-        return value != null && (value instanceof Iterable || value.getClass().isArray());
-    }
-
-    /**
-     * Same has {@link #isIterable()} but with inverted result.
-     *
-     * @return true if the can't be iterated.
-     */
-    public boolean isNotIterable() {
-        return !isIterable();
-    }
-
-    /**
      * Get actual value converted to required type.
      *
      * @param <T> Type to cast.
@@ -129,20 +122,6 @@ public class OptionalType implements Iterable<Object> {
      */
     public <T> T value(Class<T> clazz) {
         return isInstance(clazz) ? (T) value : null;
-    }
-
-    @Override
-    public Iterator<Object> iterator() {
-        Objects.requireNonNull(value, "Cannot iterate over empty OptionalType");
-        if (value instanceof Iterable) {
-            return ((Iterable<Object>) value).iterator();
-        } else if (value instanceof Object[]) {
-            return new ObjectArrayIterator();
-        } else if (value.getClass().isArray()) {
-            return new PrimitiveArrayIterator();
-        } else {
-            return new SingleObjectIterator();
-        }
     }
 
     @Override
@@ -573,106 +552,5 @@ public class OptionalType implements Iterable<Object> {
             }
         }
         throw new IllegalArgumentException("The provided int array isn't a 4-length array");
-    }
-
-    private class ObjectArrayIterator extends ArrayIterator {
-        @Override
-        public int size() {
-            return ((Object[]) value).length;
-        }
-
-        @Override
-        public Object get(int index) {
-            return ((Object[]) value)[index];
-        }
-    }
-
-    private class PrimitiveArrayIterator extends ArrayIterator {
-        @Override
-        public int size() {
-            return Array.getLength(value);
-        }
-
-        @Override
-        public Object get(int index) {
-            return Array.get(value, index);
-        }
-    }
-
-    private abstract class ArrayIterator implements Iterator<Object> {
-        int currentIndex;
-        int lastIndex = -1;
-
-        public abstract int size();
-
-        public abstract Object get(int index);
-
-        @Override
-        public boolean hasNext() {
-            return currentIndex != size();
-        }
-
-        @Override
-        public Object next() {
-            int i = currentIndex;
-            if (i >= size()) {
-                throw new NoSuchElementException();
-            }
-            currentIndex = i + 1;
-            return get(lastIndex = i);
-        }
-
-        @Override
-        public void remove() {
-            if (lastIndex < 0) {
-                throw new IllegalStateException();
-            }
-
-            remove(lastIndex);
-            currentIndex = lastIndex;
-            lastIndex = -1;
-        }
-
-        public void remove(int index) {
-            final int size = size();
-            if (size == 0 || index >= size) {
-                throw new ConcurrentModificationException();
-            }
-            Object newArray = Array.newInstance(value.getClass().getComponentType(), size - 1);
-            for (int i = 0; i < size; i++) {
-                if (i != index) {
-                    Array.set(newArray, i, get(i));
-                }
-            }
-            value = newArray;
-        }
-    }
-
-    private class SingleObjectIterator implements Iterator<Object> {
-        private boolean consumed = false;
-
-        @Override
-        public boolean hasNext() {
-            return !consumed && value != null;
-        }
-
-        @Override
-        public Object next() {
-            if (consumed || value == null) {
-                throw new NoSuchElementException();
-            }
-            consumed = true;
-            return value;
-        }
-
-        @Override
-        public void remove() {
-            if (consumed || value == null) {
-                value = null;
-                consumed = false;
-            } else {
-                throw new IllegalStateException();
-            }
-        }
     }
 }
