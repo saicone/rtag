@@ -1139,8 +1139,8 @@ public enum ItemMaterialTag {
     STRUCTURE_BLOCK(10),
     STRUCTURE_VOID(10),
     SUGAR(8),
-    SUGAR_CANE(13, "REEDS", 8) // "SUGAR_CANE" is an alias on legacy versions
-    ,
+    // "SUGAR_CANE" is an alias on legacy versions
+    SUGAR_CANE(13, "REEDS", 8),
     SUNFLOWER(13, "DOUBLE_PLANT", 8),
     SUSPICIOUS_SAND(11903),
     SUSPICIOUS_STEW(14),

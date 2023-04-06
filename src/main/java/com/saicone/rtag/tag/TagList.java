@@ -7,6 +7,7 @@ import com.saicone.rtag.util.ServerInstance;
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 /**
  * Class to invoke NBTTagList methods across versions.
@@ -96,10 +97,10 @@ public class TagList {
     }
 
     /**
-     * Constructs and NBTTagList with provided List of NBTBase.
-     *
+     * Constructs an NBTTagList with provided List of NBTBase.
      * @param list List with NBTBase values.
      * @return     New NBTTagList instance.
+     * @param <T>  List type parameter.
      */
     public static <T> Object newTag(List<T> list) {
         if (list == null || list.isEmpty()) {
@@ -127,6 +128,7 @@ public class TagList {
      * @param mirror RtagMirror to convert objects into tags.
      * @param list   List with objects.
      * @return       New NBTTagList instance.
+     * @param <T>    List type parameter.
      */
     public static <T> Object newTag(RtagMirror mirror, List<T> list) {
         if (list == null || list.isEmpty()) {
@@ -161,6 +163,28 @@ public class TagList {
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
+    }
+
+    /**
+     * Copy provided NBTTagList into new one using a list filter.
+     *
+     * @param tag    NBTTagList instance.
+     * @param filter Object filter.
+     * @return       A filtered copy of original NBTTagList.
+     */
+    public static Object clone(Object tag, BiPredicate<Object, Integer> filter) {
+        final List<Object> list = getValue(tag);
+        if (list.isEmpty()) {
+            return newTag();
+        }
+        final List<Object> listCopy = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            final Object o = list.get(i);
+            if (filter.test(o, i)) {
+                listCopy.add(o);
+            }
+        }
+        return newTag(listCopy);
     }
 
     /**
@@ -304,6 +328,26 @@ public class TagList {
             setTypeField.invoke(tag, type);
         } catch (Throwable t) {
             throw new RuntimeException(t);
+        }
+    }
+
+    /**
+     * Override the current NBTBase list inside NBTTagList.
+     *
+     * @param tag  NBTTagList instance.
+     * @param list List with NBTBase values.
+     */
+    public static void setValue(Object tag, List<Object> list) {
+        if (list.isEmpty()) {
+            clear(tag);
+        } else {
+            final byte type = TagBase.getTypeId(list.get(0));
+            try {
+                setTypeField.invoke(tag, type);
+                setListField.invoke(tag, list);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
         }
     }
 

@@ -304,6 +304,24 @@ public class TagCompound {
     }
 
     /**
+     * Override the current map of NBTBase inside NBTTagCompound.
+     *
+     * @param tag NBTTagCompound instance.
+     * @param map Map with NBTBase tags.
+     */
+    public static void setValue(Object tag, Map<String, Object> map) {
+        if (map.isEmpty()) {
+            clear(tag);
+        } else {
+            try {
+                setMapField.invoke(tag, map);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        }
+    }
+
+    /**
      * Get NBTBase value associated with key.
      *
      * @param tag NBTTagCompound instance.
@@ -312,5 +330,14 @@ public class TagCompound {
      */
     public static Object get(Object tag, String key) {
         return getValue(tag).get(key);
+    }
+
+    /**
+     * Clear the provided NBTTagCompound tag.
+     *
+     * @param tag NBTTagCompound instance.
+     */
+    public static void clear(Object tag) {
+        getValue(tag).clear();
     }
 }

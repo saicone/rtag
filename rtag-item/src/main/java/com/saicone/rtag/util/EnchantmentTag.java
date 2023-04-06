@@ -123,4 +123,96 @@ public enum EnchantmentTag {
     public String[] getAliases() {
         return aliases;
     }
+
+    /**
+     * Get current enchant key depending on current Bukkit version.
+     *
+     * @return Short id for legacy versions, namespaced key otherwise.
+     */
+    public Object getKey() {
+        if (ServerInstance.isLegacy) {
+            return id;
+        } else {
+            return "minecraft:" + name().toLowerCase();
+        }
+    }
+
+    /**
+     * Check if the current EnchantmentTag correspond to name object.
+     *
+     * @param name Enchantment name, alias or short id.
+     * @return     true if the EnchantmentTag is assigned to name object.
+     */
+    public boolean compare(Object name) {
+        if (name instanceof Short) {
+            return (short) name == id;
+        } else if (name instanceof String) {
+            final String s = (String) name;
+            if (name().equalsIgnoreCase(s)) {
+                return true;
+            }
+            for (String alias : aliases) {
+                if (alias.equalsIgnoreCase(s)) {
+                    return true;
+                }
+            }
+        } else if (name instanceof Number) {
+            try {
+                return compareKey(Short.parseShort(String.valueOf(name)));
+            } catch (Exception ignored) { }
+        }
+        return false;
+    }
+
+    /**
+     * Check if the current EnchantmentTag correspond to key object.
+     *
+     * @param key Namespaced key or short id.
+     * @return    true if the EnchantmentTag is assigned to key object.
+     */
+    public boolean compareKey(Object key) {
+        if (key instanceof Short) {
+            return (short) key == id;
+        } else if (key instanceof String) {
+            return name().equalsIgnoreCase(((String) key).replace("minecraft:", ""));
+        } else if (key instanceof Number) {
+            try {
+                return compareKey(Short.parseShort(String.valueOf(key)));
+            } catch (Exception ignored) { }
+        }
+        return false;
+    }
+
+    /**
+     * Parse the current object name into the most convenient format for EnchantmentTag.
+     *
+     * @param name Object representing the EnchantmentTag comparison.
+     * @return     Enchantment name, alias or short id.
+     */
+    public static Object parseName(Object name) {
+        if (name instanceof Short) {
+            return name;
+        } else if (name instanceof Number) {
+            try {
+                return Short.parseShort(String.valueOf(name));
+            } catch (Exception ignored) { }
+        }
+        return String.valueOf(name).replace("minecraft:", "").toUpperCase().replace(' ', '_');
+    }
+
+    /**
+     * Get the EnchantmentTag of provided name or short id.
+     *
+     * @param name Enchantment name, alias or short id.
+     * @return     The EnchantmentTag assigned to key object, null if not exist.
+     */
+    public static EnchantmentTag of(Object name) {
+        final Object finalName = parseName(name);
+        for (EnchantmentTag value : VALUES) {
+            if (value.compare(finalName)) {
+                return value;
+            }
+        }
+        return null;
+    }
 }
