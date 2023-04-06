@@ -6,17 +6,34 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+/**
+ * Abstract class to allow any object to be targeted on the enhanced for statement.
+ *
+ * @author Rubenicos
+ *
+ * @param <T> the iterable object type.
+ */
 public abstract class IterableType<T> implements Iterable<T> {
 
+    /**
+     * Get the object that can be iterated.
+     *
+     * @return an iterable object.
+     */
     protected abstract T getIterable();
 
+    /**
+     * Set the object that can be iterated.
+     *
+     * @param object an iterable object.
+     */
     protected abstract void setIterable(T object);
 
     /**
-     * Check if the current value can be iterated using for statement.<br>
+     * Check if the current object can be iterated using for statement.<br>
      * This condition can be applied to any {@link Iterable} type or array.
      *
-     * @return true if the value can be iterated.
+     * @return true if the object can be iterated.
      */
     public boolean isIterable() {
         return getIterable() != null && (getIterable() instanceof Iterable || getIterable().getClass().isArray());
@@ -25,7 +42,7 @@ public abstract class IterableType<T> implements Iterable<T> {
     /**
      * Same has {@link #isIterable()} but with inverted result.
      *
-     * @return true if the can't be iterated.
+     * @return true if the object can't be iterated.
      */
     public boolean isNotIterable() {
         return !isIterable();
@@ -34,7 +51,7 @@ public abstract class IterableType<T> implements Iterable<T> {
     @Override
     @SuppressWarnings("unchecked")
     public Iterator<T> iterator() {
-        Objects.requireNonNull(getIterable(), "Cannot iterate over empty OptionalType");
+        Objects.requireNonNull(getIterable(), "Cannot iterate over empty object");
         if (getIterable() instanceof Iterable) {
             return ((Iterable<T>) getIterable()).iterator();
         } else if (getIterable() instanceof Object[]) {
@@ -46,6 +63,9 @@ public abstract class IterableType<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Iterator for Object array types.
+     */
     private class ObjectArrayIterator extends ArrayIterator {
         @Override
         public int size() {
@@ -59,6 +79,9 @@ public abstract class IterableType<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Iterator for primitive array types
+     */
     private class PrimitiveArrayIterator extends ArrayIterator {
         @Override
         public int size() {
@@ -72,6 +95,9 @@ public abstract class IterableType<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Abstract iterator for arrays.
+     */
     private abstract class ArrayIterator implements Iterator<T> {
         int currentIndex;
         int lastIndex = -1;
@@ -122,6 +148,9 @@ public abstract class IterableType<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Iterator for single object instance.
+     */
     private class SingleObjectIterator implements Iterator<T> {
         private boolean consumed = false;
 
