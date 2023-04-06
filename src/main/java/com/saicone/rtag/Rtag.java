@@ -229,6 +229,17 @@ public class Rtag extends RtagMirror {
     }
 
     /**
+     * Same has {@link #get(Object, Object...)} but save the value into {@link OptionalType}.
+     *
+     * @param tag  Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param path Final value path to get.
+     * @return     The value assigned to specified path has {@link OptionalType}.
+     */
+    public OptionalType getOptional(Object tag, Object... path) {
+        return OptionalType.of(getTagValue(getExact(tag, path)));
+    }
+
+    /**
      * Get exact NBTBase value without any conversion, from the specified path inside tag.<br>
      * See {@link #get(Object, Object...)} for path information.
      *

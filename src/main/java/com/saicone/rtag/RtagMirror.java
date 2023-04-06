@@ -19,25 +19,49 @@ import java.util.Map;
  */
 public class RtagMirror {
 
+    /**
+     * NBTBase class object.
+     */
     protected static final Class<?> TAG_BASE = EasyLookup.classById("NBTBase");
+    /**
+     * NBTTagCompound class object.
+     */
     protected static final Class<?> TAG_COMPOUND = EasyLookup.classById("NBTTagCompound");
+    /**
+     * NBTTagList class object.
+     */
     protected static final Class<?> TAG_LIST = EasyLookup.classById("NBTTagList");
 
     /**
-     * RtagMirror public instance only compatible with regular Java objects.
+     * {@link RtagMirror} public instance only compatible with regular Java objects.
      */
     public static final RtagMirror INSTANCE = new RtagMirror();
 
     /**
-     * Constructs an RtagMirror only compatible with regular Java objects.
+     * Constructs an {@link RtagMirror} only compatible with regular Java objects.
      */
     public RtagMirror() {
     }
 
+    /**
+     * Constructs an {@link RtagMirror} only compatible with regular Java objects,
+     * ignoring the provided {@link Rtag}.
+     *
+     * @deprecated {@link Rtag} extends {@link RtagMirror}.
+     *
+     * @param rtag Rtag instance.
+     */
     @Deprecated
     public RtagMirror(Rtag rtag) {
     }
 
+    /**
+     * Get the current object if it is and instance of {@link Rtag}.
+     *
+     * @deprecated {@link Rtag} extends {@link RtagMirror}.
+     *
+     * @return the current Rtag instance or null.
+     */
     @Deprecated
     public Rtag getRtag() {
         if (this instanceof Rtag) {
@@ -47,6 +71,13 @@ public class RtagMirror {
         }
     }
 
+    /**
+     * Ignored method to set Rtag instance.
+     *
+     * @deprecated {@link Rtag} extends {@link RtagMirror}.
+     *
+     * @param rtag Ignored Rtag instance.
+     */
     @Deprecated
     public void setRtag(Rtag rtag) {
     }

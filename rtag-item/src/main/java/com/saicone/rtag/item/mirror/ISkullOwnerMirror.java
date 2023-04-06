@@ -3,7 +3,6 @@ package com.saicone.rtag.item.mirror;
 import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
-import com.saicone.rtag.util.EasyLookup;
 
 import java.math.BigInteger;
 
@@ -15,8 +14,6 @@ import java.math.BigInteger;
  */
 public class ISkullOwnerMirror implements ItemMirror {
 
-    private static final Class<?> intArray = EasyLookup.classById("int[]");
-
     @Override
     public void downgrade(Object compound, String id, Object tag, int from, int to) {
         if ((from >= 16 && to <= 15) && id.equals("minecraft:player_head")) {
@@ -24,7 +21,7 @@ public class ISkullOwnerMirror implements ItemMirror {
             if (skullOwner == null) return;
 
             Object ownerID = TagBase.getValue(TagCompound.get(skullOwner, "Id"));
-            if (intArray.isInstance(ownerID)) {
+            if (ownerID instanceof int[]) {
                 String uuid = getHexadecimalUUID((int[]) ownerID);
                 if (uuid != null) {
                     TagCompound.set(skullOwner, "Id", TagBase.newTag(uuid));

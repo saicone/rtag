@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandle;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Class to invoke methods inside classes that extends NBTBase.
@@ -202,6 +203,8 @@ public class TagBase {
         getValueFunction.put(EasyLookup.classById("NBTTagShort"), asShort::invoke);
 
         newTagFunction.put(String.class, tagString::invoke);
+        // UUID -> String compatibility
+        newTagFunction.put(UUID.class, (uuid) -> tagString.invoke(uuid.toString()));
         getValueFunction.put(EasyLookup.classById("NBTTagString"), asString::invoke);
 
     }
