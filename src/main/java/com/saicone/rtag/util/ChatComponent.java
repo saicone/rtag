@@ -55,6 +55,31 @@ public class ChatComponent {
     }
 
     /**
+     * Check if the provided object is instance of IChatBaseComponent<br>
+     * or is a String that follow the ChatComponent format.
+     *
+     * @param object the object to check.
+     * @return       true if the object is ChatComponent.
+     */
+    public static boolean isChatComponent(Object object) {
+        if (object instanceof String) {
+            final String s = (String) object;
+            if (s.length() > 11) {
+                final int index;
+                if (s.charAt(0) == '{' && s.charAt(s.length() - 1) == '}' && (index = s.indexOf("\"text\":\"")) > 0) {
+                    final int i = s.indexOf('"', index + 8) + 1;
+                    return i + 1 >= s.length() || s.charAt(i) == ',';
+                }
+            } else if (s.length() == 11) {
+                return s.equals("{\"text\":\"\"}");
+            }
+            return false;
+        } else {
+            return CHAT_BASE_COMPONENT.isInstance(object);
+        }
+    }
+
+    /**
      * Convert json component string to IChatBaseComponent.
      *
      * @param json Json to convert.

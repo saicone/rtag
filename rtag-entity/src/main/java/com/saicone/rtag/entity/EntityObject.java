@@ -16,6 +16,7 @@ import java.lang.invoke.MethodHandle;
 public class EntityObject {
 
     private static final Class<?> MC_ENTITY = EasyLookup.classById("Entity");
+    private static final Class<?> CRAFT_ENTITY = EasyLookup.classById("CraftEntity");
 
     private static final MethodHandle getEntity;
     private static final MethodHandle getHandle;
@@ -58,6 +59,26 @@ public class EntityObject {
     }
 
     EntityObject() {
+    }
+
+    /**
+     * Check if the provided object is instance of Minecraft Entity.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of Minecraft Entity.
+     */
+    public static boolean isMinecraftEntity(Object object) {
+        return MC_ENTITY.isInstance(object);
+    }
+
+    /**
+     * Check if the provided object is instance of CraftEntity.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of CraftEntity.
+     */
+    public static boolean isCraftEntity(Object object) {
+        return CRAFT_ENTITY.isInstance(object);
     }
 
     /**

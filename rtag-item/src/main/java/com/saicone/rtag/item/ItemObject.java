@@ -117,6 +117,26 @@ public class ItemObject {
     }
 
     /**
+     * Check if the provided object is instance of Minecraft ItemStack.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of Minecraft ItemStack.
+     */
+    public static boolean isMinecraftItem(Object object) {
+        return MC_ITEM.isInstance(object);
+    }
+
+    /**
+     * Check if the provided object is instance of CraftItemStack.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of CraftItemStack.
+     */
+    public static boolean isCraftItem(Object object) {
+        return CRAFT_ITEM.isInstance(object);
+    }
+
+    /**
      * Save current Item tag into new NBTTagCompound.
      *
      * @param item ItemStack instance.

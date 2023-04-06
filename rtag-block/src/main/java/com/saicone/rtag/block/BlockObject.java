@@ -16,6 +16,7 @@ import java.lang.invoke.MethodHandle;
 public class BlockObject {
 
     private static final Class<?> BLOCK_STATE = EasyLookup.classById("CraftBlockState");
+    private static final Class<?> TILE_ENTITY = EasyLookup.classById("TileEntity");
 
     private static final MethodHandle newBlockPosition;
     private static final MethodHandle getTileEntity;
@@ -93,6 +94,16 @@ public class BlockObject {
     }
 
     BlockObject() {
+    }
+
+    /**
+     * Check if the provided object is instance of Minecraft TileEntity.
+     *
+     * @param object the object to check.
+     * @return       true if the object is an instance of Minecraft TileEntity.
+     */
+    public static boolean isTileEntity(Object object) {
+        return TILE_ENTITY.isInstance(object);
     }
 
     /**
