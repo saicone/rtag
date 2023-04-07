@@ -1,10 +1,7 @@
 package com.saicone.rtag.util;
 
-import org.bukkit.inventory.ItemFlag;
-
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * Object container with automatic conversion to required
@@ -16,6 +13,8 @@ import java.util.function.Supplier;
 public class OptionalType extends IterableType<Object> {
 
     private static final OptionalType BLANK = new OptionalType(null);
+
+    private Object value;
 
     /**
      * Get current OptionalType from object value.
@@ -43,8 +42,6 @@ public class OptionalType extends IterableType<Object> {
             return null;
         }
     }
-
-    private Object value;
 
     /**
      * Constructs an OptionalType with specified value.

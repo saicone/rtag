@@ -49,10 +49,10 @@ public class RtagMirror {
      *
      * @deprecated {@link Rtag} extends {@link RtagMirror}.
      *
-     * @param rtag Rtag instance.
+     * @param ignored Ignored Rtag instance.
      */
     @Deprecated
-    public RtagMirror(Rtag rtag) {
+    public RtagMirror(Rtag ignored) {
     }
 
     /**
@@ -80,6 +80,7 @@ public class RtagMirror {
      */
     @Deprecated
     public void setRtag(Rtag rtag) {
+        // empty method
     }
 
     /**

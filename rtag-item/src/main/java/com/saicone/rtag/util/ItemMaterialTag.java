@@ -1284,6 +1284,9 @@ public enum ItemMaterialTag {
      */
     public static final Map<String, ItemMaterialTag> SERVER_VALUES;
 
+    private final TreeMap<Integer, String> names;
+    private final String[] aliases;
+
     static {
         final Map<String, ItemMaterialTag> compatible = new HashMap<>();
         for (ItemMaterialTag tag : VALUES) {
@@ -1319,9 +1322,6 @@ public enum ItemMaterialTag {
         }
         return finalName;
     }
-
-    private final TreeMap<Integer, String> names;
-    private final String[] aliases;
 
     ItemMaterialTag(int version, String name1, int ver1, String name2, int ver2, String... aliases) {
         this(version, Map.of(name1, ver1, name2, ver2), aliases);

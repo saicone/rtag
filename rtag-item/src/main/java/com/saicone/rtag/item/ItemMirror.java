@@ -36,7 +36,9 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void upgrade(Object compound, String id, int from, int to) { }
+    default void upgrade(Object compound, String id, int from, int to) {
+        // empty default method
+    }
 
     /**
      * Upgrade current NBTTagCompound from lower version.
@@ -47,7 +49,9 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void upgrade(Object compound, String id, Object tag, int from, int to) { }
+    default void upgrade(Object compound, String id, Object tag, int from, int to) {
+        // empty default method
+    }
 
     /**
      * Downgrade current NBTTagCompound from upper version.
@@ -57,7 +61,9 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void downgrade(Object compound, String id, int from, int to) { }
+    default void downgrade(Object compound, String id, int from, int to) {
+        // empty default method
+    }
 
     /**
      * Downgrade current NBTTagCompound from upper version.
@@ -68,5 +74,7 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void downgrade(Object compound, String id, Object tag, int from, int to) { }
+    default void downgrade(Object compound, String id, Object tag, int from, int to) {
+        // empty default method
+    }
 }

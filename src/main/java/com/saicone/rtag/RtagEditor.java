@@ -20,19 +20,49 @@ public abstract class RtagEditor<T> {
     private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
 
     private final Rtag rtag;
-    private final Object object;
+    private final T typeObject;
+    private final Object literalObject;
     private Object tag;
 
     /**
-     * Constructs an NBTEditor with specified Rtag parent.
+     * Constructs an NBTEditor.
      *
-     * @param rtag   Rtag parent.
-     * @param object Object instance with NBTTagCompound inside.
-     * @param tag    Object tag to edit.
+     * @param rtag       Rtag parent.
+     * @param typeObject Editor type object that can be converted to literal object.
      */
-    public RtagEditor(Rtag rtag, Object object, Object tag) {
+    public RtagEditor(Rtag rtag, T typeObject) {
         this.rtag = rtag;
-        this.object = object;
+        this.typeObject = typeObject;
+        this.literalObject = getLiteralObject(typeObject);
+        this.tag = getTag(this.literalObject);
+    }
+
+    /**
+     * Constructs an NBTEditor.
+     *
+     * @param rtag          Rtag parent.
+     * @param typeObject    Editor type object that can be converted to literal object.
+     * @param literalObject Object instance with NBTTagCompound inside.
+     */
+    public RtagEditor(Rtag rtag, T typeObject, Object literalObject) {
+        this.rtag = rtag;
+        this.typeObject = typeObject;
+        this.literalObject = literalObject;
+        this.tag = getTag(literalObject);
+    }
+
+    /**
+     * Constructs an NBTEditor.
+     *
+     * @param rtag          Rtag parent.
+     * @param typeObject    Editor type object that can be converted to literal object.
+     * @param literalObject Object instance with NBTTagCompound inside.
+     * @param tag           NBTTagCompound object to edit.
+     */
+    public RtagEditor(Rtag rtag, T typeObject, Object literalObject, Object tag) {
+        this.rtag = rtag;
+        this.typeObject = typeObject;
+        this.literalObject = literalObject;
         this.tag = tag;
     }
 
@@ -46,13 +76,31 @@ public abstract class RtagEditor<T> {
     }
 
     /**
-     * Get current object instance.
+     * Get current type object defined on editor.
+     *
+     * @return An object that can be converted to literal object.
+     */
+    public T getTypeObject() {
+        return typeObject;
+    }
+
+    /**
+     * Get current literal object.<br>
+     * In most cases this is a Minecraft server object.
      *
      * @return An object with NBTTagCompound inside.
      */
-    public Object getObject() {
-        return object;
+    public Object getLiteralObject() {
+        return literalObject;
     }
+
+    /**
+     * Get type object as literal one.
+     *
+     * @param typeObject Editor type object that can be converted to literal object.
+     * @return           An object with NBTTagCompound inside.
+     */
+    public abstract Object getLiteralObject(T typeObject);
 
     /**
      * Get current tag.
@@ -64,9 +112,33 @@ public abstract class RtagEditor<T> {
     }
 
     /**
+     * Get current tag inside type or literal object.
+     *
+     * @param object Object instance with NBTTagCompound inside.
+     * @return       A NBTTagCompound.
+     */
+    public abstract Object getTag(Object object);
+
+    /**
      * Load changes into object instance.
      */
     public abstract void load();
+
+    /**
+     * Update the current tag using the original object type.
+     */
+    public void update() {
+        update(typeObject);
+    }
+
+    /**
+     * Update the current tag using the provided object type.
+     *
+     * @param object Object type according RtagEditor instance.
+     */
+    public void update(Object object) {
+        this.tag = getTag(object);
+    }
 
     /**
      * Check if current object has tag.
@@ -107,12 +179,68 @@ public abstract class RtagEditor<T> {
     }
 
     /**
+     * Check if current tag has Enum element in defined path.
+     *
+     * @param element Enum element to check.
+     * @param path    Path with Integer storing enum ordinals.
+     * @return        true if the tag contains a bit field with enum ordinal.
+     * @param <E>     Enum element type.
+     */
+    public <E extends Enum<E>> boolean hasEnum(E element, Object... path) {
+        return hasBitField(getBitField(path), element.ordinal());
+    }
+
+    /**
+     * Check if current tag has Enum elements array in defined path.
+     *
+     * @param elements Enum elements to check.
+     * @param path     Path with Integer storing enum ordinals.
+     * @return         true if the tag contains a bit field with enum ordinals.
+     * @param <E>      Enum element type.
+     */
+    public <E extends Enum<E>> boolean hasEnum(E[] elements, Object... path) {
+        return hasBitField(getBitField(path), enumOrdinals(elements));
+    }
+
+    /**
+     * Check if current tag has Enum ordinal in defined path.
+     *
+     * @param ordinal Enum ordinal to check.
+     * @param path    Path with Integer storing enum ordinals.
+     * @return        true if the tag contains a bit field with enum ordinal.
+     */
+    public boolean hasEnum(int ordinal, Object... path) {
+        return hasBitField(getBitField(path), ordinal);
+    }
+
+    /**
+     * Check if current tag has Enum ordinals in defined path.
+     *
+     * @param ordinals Enum ordinal to check.
+     * @param path     Path with Integer storing enum ordinals.
+     * @return         true if the tag contains a bit field with enum ordinals.
+     */
+    public boolean hasEnum(int[] ordinals, Object... path) {
+        return hasBitField(getBitField(path), ordinals);
+    }
+
+    private boolean hasBitField(int bitField, int... ordinals) {
+        for (int ordinal : ordinals) {
+            final byte bit = (byte) (1 << ordinal);
+            if ((bitField & bit) != bit) {
+                return false;
+            }
+        }
+        return bitField > 0;
+    }
+
+    /**
      * Add value to an NBTTagList on specified path inside current object tag.<br>
      * See {@link Rtag#add(Object, Object, Object...)} for more information.
      *
      * @param value Value to add.
      * @param path  Final list path to add the specified value.
-     * @return      True if value is added.
+     * @return      True if the value was added.
      */
     public boolean add(Object value, Object... path) {
         try {
@@ -121,6 +249,57 @@ public abstract class RtagEditor<T> {
             t.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Add Enum element into bit field on specified path.
+     *
+     * @param element Enum element to add.
+     * @param path    Path with Integer storing enum ordinals.
+     * @return        true if the Enum element was added successfully.
+     * @param <E>     Enum element type.
+     */
+    public <E extends Enum<E>> boolean addEnum(E element, Object... path) {
+        return addEnum(new int[] {element.ordinal()}, path);
+    }
+
+    /**
+     * Add Enum elements into bit field on specified path.
+     *
+     * @param elements Enum elements to add.
+     * @param path     Path with Integer storing enum ordinals.
+     * @return         true if the Enum elements was added successfully.
+     * @param <E>      Enum element type.
+     */
+    public <E extends Enum<E>> boolean addEnum(E[] elements, Object... path) {
+        return addEnum(enumOrdinals(elements), path);
+    }
+
+    /**
+     * Add Enum ordinal into bit field on specified path.
+     *
+     * @param ordinal Enum ordinal to add.
+     * @param path    Path with Integer storing enum ordinals.
+     * @return        true if the Enum ordinal was added successfully.
+     */
+    public boolean addEnum(int ordinal, Object... path) {
+        return addEnum(new int[] {ordinal}, path);
+    }
+
+    /**
+     * Add Enum ordinals into bit field on specified path.
+     *
+     * @param ordinals Enum ordinals to add.
+     * @param path     Path with Integer storing enum ordinals.
+     * @return         true if the Enum ordinals was added successfully.
+     */
+    public boolean addEnum(int[] ordinals, Object... path) {
+        int bitField = getBitField(path);
+        for (int ordinal : ordinals) {
+            final byte bit = (byte) (1 << ordinal);
+            bitField |= bit;
+        }
+        return set(bitField, path);
     }
 
     /**
@@ -170,6 +349,60 @@ public abstract class RtagEditor<T> {
             t.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Remove Enum element from bit field on specified path.
+     *
+     * @param element Enum element to remove.
+     * @param path    Path with Integer storing enum ordinals.
+     * @return        true if the Enum element was removed or the bit field doesn't exist.
+     * @param <E>     Enum element type.
+     */
+    public <E extends Enum<E>> boolean removeEnum(E element, Object... path) {
+        return removeEnum(new int[] {element.ordinal()}, path);
+    }
+
+    /**
+     * Remove Enum elements from bit field on specified path.
+     *
+     * @param elements Enum elements to remove.
+     * @param path     Path with Integer storing enum ordinals.
+     * @return         true if the Enum elements was removed or the bit field doesn't exist.
+     * @param <E>      Enum element type.
+     */
+    public <E extends Enum<E>> boolean removeEnum(E[] elements, Object... path) {
+        return removeEnum(enumOrdinals(elements), path);
+    }
+
+    /**
+     * Remove Enum ordinal from bit field on specified path.
+     *
+     * @param ordinal Enum ordinal to remove.
+     * @param path    Path with Integer storing enum ordinals.
+     * @return        true if the Enum ordinal was removed or the bit field doesn't exist.
+     */
+    public boolean removeEnum(int ordinal, Object... path) {
+        return removeEnum(new int[] {ordinal}, path);
+    }
+
+    /**
+     * Remove Enum ordinals from bit field on specified path.
+     *
+     * @param ordinals Enum ordinals to remove.
+     * @param path     Path with Integer storing enum ordinals.
+     * @return         true if the Enum ordinals was removed or the bit field doesn't exist.
+     */
+    public boolean removeEnum(int[] ordinals, Object... path) {
+        int bitField = getBitField(path);
+        if (bitField < 1) {
+            return true;
+        }
+        for (int ordinal : ordinals) {
+            final byte bit = (byte) (1 << ordinal);
+            bitField &= ~bit;
+        }
+        return set(bitField, path);
     }
 
     /**
@@ -231,5 +464,23 @@ public abstract class RtagEditor<T> {
             t.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Get Integer bit field from specified path.
+     *
+     * @param path Final value path to get.
+     * @return     The value assigned to specified path, 0 if not exist.
+     */
+    public int getBitField(Object... path) {
+        return getOptional(path).asInt(0);
+    }
+
+    private <E extends Enum<E>> int[] enumOrdinals(E[] elements) {
+        final int[] ordinals = new int[elements.length];
+        for (int i = 0; i < elements.length; i++) {
+            ordinals[i] = elements[i].ordinal();
+        }
+        return ordinals;
     }
 }
