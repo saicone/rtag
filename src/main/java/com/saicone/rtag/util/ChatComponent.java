@@ -1,6 +1,7 @@
 package com.saicone.rtag.util;
 
 import java.lang.invoke.MethodHandle;
+import java.util.Objects;
 
 /**
  * Class to invoke CraftChatMessage methods across versions.
@@ -112,13 +113,17 @@ public class ChatComponent {
     }
 
     /**
-     * Convert IChatBaseComponent to json component.
+     * Convert String or IChatBaseComponent to json component.
      *
-     * @param component IChatBaseComponent to convert.
+     * @param component String or IChatBaseComponent to convert.
      * @return          A json component.
-     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
+     * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
     public static String toJson(Object component) throws IllegalArgumentException {
+        if (component instanceof String) {
+            return toJson(fromString((String) component));
+        }
+        Objects.requireNonNull(component, "The provided object cannot be null");
         if (!CHAT_BASE_COMPONENT.isInstance(component)) {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
@@ -130,44 +135,31 @@ public class ChatComponent {
     }
 
     /**
-     * Convert string to json component string.
+     * Convert String or IChatBaseComponent to json component.
      *
-     * @param string String to convert.
-     * @return       A json component.
-     */
-    public static String toJson(String string) {
-        return toJson(fromString(string));
-    }
-
-    /**
-     * Convert IChatBaseComponent to json component.
-     *
-     * @param component IChatBaseComponent to convert.
+     * @param component String or IChatBaseComponent to convert.
      * @return          A json component or null.
-     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
+     * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
     public static String toJsonOrNull(Object component) throws IllegalArgumentException {
+        if (component instanceof String) {
+            return toJsonOrNull(fromString((String) component));
+        }
         return component == null ? null : toJson(component);
     }
 
     /**
-     * Convert string to json component.
+     * Convert json String or IChatBaseComponent to string.
      *
-     * @param string String to convert.
-     * @return       A json component or null.
-     */
-    public static String toJsonOrNull(String string) {
-        return toJsonOrNull(fromString(string));
-    }
-
-    /**
-     * Convert IChatBaseComponent to string.
-     *
-     * @param component IChatBaseComponent to convert.
+     * @param component Json String or IChatBaseComponent to convert.
      * @return          A string with old format.
-     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
+     * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
     public static String toString(Object component) throws IllegalArgumentException {
+        if (component instanceof String) {
+            return toString(fromJson((String) component));
+        }
+        Objects.requireNonNull(component, "The provided object cannot be null");
         if (!CHAT_BASE_COMPONENT.isInstance(component)) {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
@@ -179,33 +171,16 @@ public class ChatComponent {
     }
 
     /**
-     * Convert json component to string.
+     * Convert json String or IChatBaseComponent to string.
      *
-     * @param json Json to convert.
-     * @return     A string with old format.
-     */
-    public static String toString(String json) {
-        return toString(fromJson(json));
-    }
-
-    /**
-     * Convert IChatBaseComponent to string.
-     *
-     * @param component IChatBaseComponent to convert.
+     * @param component Json String or IChatBaseComponent to convert.
      * @return          A string with old format or null.
-     * @throws IllegalArgumentException if component is not an IChatBaseComponent.
+     * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
     public static String toStringOrNull(Object component) throws IllegalArgumentException {
+        if (component instanceof String) {
+            return toStringOrNull(fromJson((String) component));
+        }
         return component == null ? null : toString(component);
-    }
-
-    /**
-     * Convert json component to string.
-     *
-     * @param json Json to convert.
-     * @return     A string with old format or null.
-     */
-    public static String toStringOrNull(String json) {
-        return toStringOrNull(fromJson(json));
     }
 }

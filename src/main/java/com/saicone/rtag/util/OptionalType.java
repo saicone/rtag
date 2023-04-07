@@ -1,10 +1,10 @@
 package com.saicone.rtag.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import org.bukkit.inventory.ItemFlag;
+
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Object container with automatic conversion to required
@@ -200,6 +200,25 @@ public class OptionalType extends IterableType<Object> {
     }
 
     /**
+     * Get actual value as type or by function with defined default value.
+     *
+     * @param type     The class type to match the value.
+     * @param function Function to process the actual non-null value.
+     * @param def      Defined default value if the actual or final value is null.
+     * @return         A value as required type or default value if the function return null object or throws exception.
+     * @param <T>      The required result type.
+     */
+    public <T> T by(Class<T> type, ThrowableFunction<Object, T> function, T def) {
+        if (type.isInstance(value)) {
+            return (T) value;
+        }
+        if (value instanceof Boolean && Number.class.isAssignableFrom(type)) {
+            return by(object -> function.apply((boolean) object ? "1" : "0"), def);
+        }
+        return by(function, def);
+    }
+
+    /**
      * Get actual value as array using function.
      *
      * @param array    The array to fill with objects.
@@ -307,10 +326,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Character value or default value.
      */
     public Character asChar(Character def) {
-        if (value instanceof Character) {
-            return (Character) value;
-        }
-        return by(object -> {
+        return by(Character.class, object -> {
             final String s = String.valueOf(object);
             return s.isBlank() ? null : s.charAt(0);
         }, def);
@@ -332,10 +348,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Boolean value or default value.
      */
     public Boolean asBoolean(Boolean def) {
-        if (value instanceof Boolean) {
-            return (Boolean) value;
-        }
-        return by(object -> {
+        return by(Boolean.class, object -> {
             switch (String.valueOf(object).toLowerCase()) {
                 case "true":
                 case "1":
@@ -373,13 +386,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Byte value or default value.
      */
     public Byte asByte(Byte def) {
-        if (value instanceof Byte) {
-            return (Byte) value;
-        }
-        if (value instanceof Boolean) {
-            return (byte) ((boolean) value ? 1 : 0);
-        }
-        return by(object -> Byte.parseByte(String.valueOf(object)), def);
+        return by(Byte.class, object -> Byte.parseByte(String.valueOf(object)), def);
     }
 
     /**
@@ -398,13 +405,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Short value or default value.
      */
     public Short asShort(Short def) {
-        if (value instanceof Short) {
-            return (Short) value;
-        }
-        if (value instanceof Boolean) {
-            return (short) ((boolean) value ? 1 : 0);
-        }
-        return by(object -> Short.parseShort(String.valueOf(object)), def);
+        return by(Short.class, object -> Short.parseShort(String.valueOf(object)), def);
     }
 
     /**
@@ -423,13 +424,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Integer value or default value.
      */
     public Integer asInt(Integer def) {
-        if (value instanceof Integer) {
-            return (Integer) value;
-        }
-        if (value instanceof Boolean) {
-            return (boolean) value ? 1 : 0;
-        }
-        return by(object -> Integer.parseInt(String.valueOf(object)), def);
+        return by(Integer.class, object -> Integer.parseInt(String.valueOf(object)), def);
     }
 
     /**
@@ -448,13 +443,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Float value or default value.
      */
     public Float asFloat(Float def) {
-        if (value instanceof Float) {
-            return (Float) value;
-        }
-        if (value instanceof Boolean) {
-            return (boolean) value ? 1F : 0F;
-        }
-        return by(object -> Float.parseFloat(String.valueOf(object)), def);
+        return by(Float.class, object -> Float.parseFloat(String.valueOf(object)), def);
     }
 
     /**
@@ -473,13 +462,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Long value or default value.
      */
     public Long asLong(Long def) {
-        if (value instanceof Long) {
-            return (Long) value;
-        }
-        if (value instanceof Boolean) {
-            return (boolean) value ? 1L : 0L;
-        }
-        return by(object -> Long.parseLong(String.valueOf(object)), def);
+        return by(Long.class, object -> Long.parseLong(String.valueOf(object)), def);
     }
 
     /**
@@ -498,13 +481,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Double value or default value.
      */
     public Double asDouble(Double def) {
-        if (value instanceof Double) {
-            return (Double) value;
-        }
-        if (value instanceof Boolean) {
-            return (boolean) value ? 1D : 0D;
-        }
-        return by(object -> Double.parseDouble(String.valueOf(object)), def);
+        return by(Double.class, object -> Double.parseDouble(String.valueOf(object)), def);
     }
 
     /**
@@ -523,10 +500,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    An UUID value or default value.
      */
     public UUID asUuid(UUID def) {
-        if (value instanceof UUID) {
-            return (UUID) value;
-        }
-        return by((object) -> {
+        return by(UUID.class, (object) -> {
             if (object instanceof int[]) {
                 return getUUID((int[]) object);
             } else if (object instanceof String) {
@@ -535,6 +509,64 @@ public class OptionalType extends IterableType<Object> {
                 return null;
             }
         }, def);
+    }
+
+    /**
+     * Get the actual value as Enum type Set.<br>
+     * This method only works if the actual value is a bitField.
+     *
+     * @param enumType Enum type class.
+     * @return         A Set with Enum elements or null if the class isn't an enum type
+     * @param <E>      Enum required type.
+     */
+    public <E extends Enum<E>> Set<E> asEnumSet(Class<E> enumType) {
+        if (!enumType.isEnum()) {
+            return null;
+        }
+        final E[] constants = enumType.getEnumConstants();
+        return asEnumSet(ordinal -> ordinal < constants.length ? constants[ordinal] : null, constants.length);
+    }
+
+    /**
+     * Get the actual value as Enum type Set.<br>
+     * This method only works if the actual value is a bitField.
+     *
+     * @param element Function to convert ordinal to Enum type element.
+     * @param size    The maximum length of the enum values.
+     * @return        A Set with Enum elements.
+     * @param <E>     Enum required type.
+     */
+    public <E extends Enum<E>> Set<E> asEnumSet(Function<Integer, E> element, int size) {
+        final Set<E> set = new HashSet<>();
+        for (Integer ordinal : asEnumSet(size)) {
+            E e = element.apply(ordinal);
+            if (e != null) {
+                set.add(e);
+            }
+        }
+        return set;
+    }
+
+    /**
+     * Get the actual value as Enum ordinal-value Set.<br>
+     * This method only works if the actual value is a bitField.
+     *
+     * @param size The maximum length of the enum values.
+     * @return     A Set with Enum ordinals.
+     */
+    public Set<Integer> asEnumSet(int size) {
+        final Set<Integer> ordinals = new HashSet<>();
+        final Integer bitField = asInt();
+        if (bitField == null) {
+            return ordinals;
+        }
+        for (int i = 0; i < size; i++) {
+            final byte bit = (byte) (1 << i);
+            if ((bitField & bit) == bit) {
+                ordinals.add(i);
+            }
+        }
+        return ordinals;
     }
 
     private static UUID getUUID(int[] array) {
