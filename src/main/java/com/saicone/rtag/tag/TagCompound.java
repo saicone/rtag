@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.OptionalType;
 import com.saicone.rtag.util.ServerInstance;
 
 import java.lang.invoke.MethodHandle;
@@ -151,6 +152,26 @@ public class TagCompound {
             }
             return tag;
         }
+    }
+
+    /**
+     * Constructs an NBTTagCompound with provided object
+     * and required {@link RtagMirror} to convert Objects.<br>
+     * This method can convert any supported object to Map
+     * of objects using Gson deserializer.
+     *
+     * @param mirror RtagMirror to convert objects into tags.
+     * @param object Object that can be converted to NBTTagCompound.
+     * @return       New NBTTagCompound instance.
+     * @throws IllegalArgumentException if the object is not supported.
+     */
+    @SuppressWarnings("unchecked")
+    public static Object newTag(RtagMirror mirror, Object object) {
+        final Map<String, Object> map = (Map<String, Object>) OptionalType.of(object).as(Map.class);
+        if (map == null) {
+            throw new IllegalArgumentException("The object type " + object.getClass().getName() + " cannot be used to create NBTTagCompound tag using TagCompound class");
+        }
+        return newTag(mirror, map);
     }
 
     /**

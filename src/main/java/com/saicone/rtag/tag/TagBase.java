@@ -247,6 +247,27 @@ public class TagBase {
     }
 
     /**
+     * Constructs an NBTBase directly associated with provided object.<br>
+     * For example List -&gt; NBTTagList
+     *
+     * @param mirror RtagMirror to convert objects into tags.
+     * @param object Object that can be converted to NBTBase tag.
+     * @return       A NBTBase tag associated with provided object.
+     * @throws IllegalArgumentException if the object is not supported.
+     */
+    public static Object newTag(RtagMirror mirror, Object object) throws IllegalArgumentException {
+        try {
+            return newTag(object);
+        } catch (IllegalArgumentException e) {
+            if (object instanceof List) {
+                return TagList.newTag(mirror, (List<?>) object);
+            } else {
+                return TagCompound.newTag(mirror, object);
+            }
+        }
+    }
+
+    /**
      * Check if the provided object is instance of NBTBase class.
      *
      * @param object the object to check.
@@ -327,6 +348,29 @@ public class TagBase {
             return function.apply(tag);
         } catch (Throwable t) {
             throw new RuntimeException("Cannot get java object from " + tag.getClass().getName() + " class", t);
+        }
+    }
+
+    /**
+     * Get Java value of any NBTBase tag.<br>
+     * For example NBTTagCompound -&gt; Map.
+     *
+     * @param mirror RtagMirror to convert objects into tags.
+     * @param tag    Tag to extract value.
+     * @return       A java object like NBTBase tag.
+     * @throws IllegalArgumentException if tag is not supported.
+     */
+    public static Object getValue(RtagMirror mirror, Object tag) throws IllegalArgumentException {
+        try {
+            return getValue(tag);
+        } catch (IllegalArgumentException e) {
+            if (TagCompound.isTagCompound(tag)) {
+                return TagCompound.getValue(mirror, tag);
+            }
+            if (TagList.isTagList(tag)) {
+                return TagList.getValue(mirror, tag);
+            }
+            throw e;
         }
     }
 }

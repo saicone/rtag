@@ -76,6 +76,19 @@ public abstract class RtagEditor<T> {
     }
 
     /**
+     * Get current object instance.
+     *
+     * @deprecated To get current object use {@link #getLiteralObject()} instead.
+     * @see #getLiteralObject()
+     *
+     * @return An object with NBTTagCompound inside.
+     */
+    @Deprecated
+    public Object getObject() {
+        return literalObject;
+    }
+
+    /**
      * Get current type object defined on editor.
      *
      * @return An object that can be converted to literal object.

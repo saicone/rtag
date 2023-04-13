@@ -98,7 +98,7 @@ public class RtagMirror {
         } else if (object instanceof List) {
             return TagList.newTag(this, (List<Object>) object);
         } else {
-            return TagBase.newTag(object);
+            return TagBase.newTag(this, object);
         }
     }
 
@@ -134,7 +134,7 @@ public class RtagMirror {
         } else if (TAG_LIST.isInstance(tag)) {
             return TagList.getValue(this, tag);
         } else {
-            return TagBase.getValue(tag);
+            return TagBase.getValue(this, tag);
         }
     }
 }

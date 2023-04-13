@@ -1,5 +1,8 @@
 package com.saicone.rtag.util;
 
+import com.google.gson.Gson;
+
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
 
@@ -13,6 +16,10 @@ import java.util.function.Function;
 public class OptionalType extends IterableType<Object> {
 
     private static final OptionalType BLANK = new OptionalType(null);
+    /**
+     * {@link Gson} public instance with default configuration.
+     */
+    public static final Gson GSON = new Gson();
 
     private Object value;
 
@@ -216,6 +223,28 @@ public class OptionalType extends IterableType<Object> {
     }
 
     /**
+     * Get actual value as specific type using Gson deserializer.
+     *
+     * @param type The specific type.
+     * @return     The value as required type or null if deserialization fails.
+     * @param <T>  The required type.
+     */
+    public <T> T as(Type type) {
+        return GSON.fromJson(GSON.toJsonTree(value), type);
+    }
+
+    /**
+     * Get actual value as required class type using Gson deserializer.
+     *
+     * @param type The class of type.
+     * @return     The value as required type or null if deserialization fails.
+     * @param <T>  The required type.
+     */
+    public <T> T as(Class<T> type) {
+        return GSON.fromJson(GSON.toJsonTree(value), type);
+    }
+
+    /**
      * Get actual value as array using function.
      *
      * @param array    The array to fill with objects.
@@ -248,7 +277,7 @@ public class OptionalType extends IterableType<Object> {
     /**
      * Apply actual value to list using function.
      *
-     * @param list     The function to add values.
+     * @param list     The list to add values.
      * @param function Function to convert the value or any element inside value to required type.
      * @return         The provided list.
      * @param <T>      The required type.
