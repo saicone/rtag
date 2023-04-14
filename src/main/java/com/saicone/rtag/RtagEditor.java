@@ -349,6 +349,57 @@ public abstract class RtagEditor<T> {
     }
 
     /**
+     * Set Enum element has bit field on specified path.
+     *
+     * @param element Enum element to set.
+     * @param path    Path to store enum ordinals has integer.
+     * @return        true if the Enum element was set successfully.
+     * @param <E>     Enum element type.
+     */
+    public <E extends Enum<E>> boolean setEnum(E element, Object... path) {
+        return setEnum(new int[] {element.ordinal()}, path);
+    }
+
+    /**
+     * Set Enum elements has bit field on specified path.
+     *
+     * @param elements Enum elements to set.
+     * @param path     Path to store enum ordinals has integer.
+     * @return         true if the Enum elements was set successfully.
+     * @param <E>      Enum element type.
+     */
+    public <E extends Enum<E>> boolean setEnum(E[] elements, Object... path) {
+        return setEnum(enumOrdinals(elements), path);
+    }
+
+    /**
+     * Set Enum ordinal has bit field on specified path.
+     *
+     * @param ordinal Enum ordinal to set.
+     * @param path    Path to store enum ordinals has integer.
+     * @return        true if the Enum ordinal was set successfully.
+     */
+    public boolean setEnum(int ordinal, Object... path) {
+        return setEnum(new int[] {ordinal}, path);
+    }
+
+    /**
+     * Set Enum ordinals has bit field on specified path.
+     *
+     * @param ordinals Enum ordinals to set.
+     * @param path     Path to store enum ordinals has integer.
+     * @return         true if the Enum ordinals was set successfully.
+     */
+    public boolean setEnum(int[] ordinals, Object... path) {
+        int bitField = 0;
+        for (int ordinal : ordinals) {
+            final byte bit = (byte) (1 << ordinal);
+            bitField |= bit;
+        }
+        return set(bitField, path);
+    }
+
+    /**
      * Remove value to specified path inside current tag.<br>
      * See {@link Rtag#set(Object, Object, Object...)} for more information.
      *

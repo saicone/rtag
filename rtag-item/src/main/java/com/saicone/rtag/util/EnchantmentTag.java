@@ -1,5 +1,9 @@
 package com.saicone.rtag.util;
 
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +71,15 @@ public enum EnchantmentTag {
      * only server version compatible enchantments.
      */
     public static final EnchantmentTag[] SERVER_VALUES;
+
+    /**
+     * Current key where enchantments are inside items tag.
+     */
+    public static final String TAG_KEY = ServerInstance.isLegacy ? "ench" : "Enchantments";
+    /**
+     * Current key where stored enchantments are inside items tag.
+     */
+    public static final String STORED_KEY = "StoredEnchantments";
 
     static {
         List<EnchantmentTag> legacy = new ArrayList<>();
@@ -201,12 +214,32 @@ public enum EnchantmentTag {
     }
 
     /**
-     * Get the EnchantmentTag of provided name or short id.
+     * Get the current key where enchantments are stored in the item tag depending on item meta or server version.
+     *
+     * @param item Item to check enchantment key.
+     * @return     A String key.
+     */
+    public static String getEnchantmentKey(ItemStack item) {
+        if (item.getItemMeta() instanceof EnchantmentStorageMeta) {
+            return STORED_KEY;
+        }
+        return TAG_KEY;
+    }
+
+    /**
+     * Get the EnchantmentTag of provided name, short id or {@link Enchantment}.
      *
      * @param name Enchantment name, alias or short id.
      * @return     The EnchantmentTag assigned to key object, null if not exist.
      */
+    @SuppressWarnings("deprecation")
     public static EnchantmentTag of(Object name) {
+        if (name instanceof EnchantmentTag) {
+            return (EnchantmentTag) name;
+        }
+        if (name instanceof Enchantment) {
+            return of(((Enchantment) name).getName());
+        }
         final Object finalName = parseName(name);
         for (EnchantmentTag value : VALUES) {
             if (value.compare(finalName)) {

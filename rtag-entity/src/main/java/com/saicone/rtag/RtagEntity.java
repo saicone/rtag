@@ -1,6 +1,10 @@
 package com.saicone.rtag;
 
 import com.saicone.rtag.entity.EntityObject;
+import com.saicone.rtag.tag.TagBase;
+import com.saicone.rtag.tag.TagCompound;
+import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.OptionalType;
 import org.bukkit.entity.Entity;
 
 import java.util.function.Consumer;
@@ -107,6 +111,91 @@ public class RtagEntity extends RtagEditor<Entity> {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+    }
+
+    /**
+     * Change the base value of given attribute name.<br>
+     * Take in count that some attributes doesn't exist in old Minecraft versions.
+     *
+     * @param name  Minecraft attribute name.
+     * @param value Double value.
+     * @return      true if the base value was changed.
+     */
+    public boolean setAttributeBase(String name, double value) {
+        return setAttributeValue(name, "Base", value);
+    }
+
+    /**
+     * Change the attribute value of given key.<br>
+     * Take in count that some attributes doesn't exist in old Minecraft versions.
+     *
+     * @param name  Minecraft attribute name.
+     * @param key   Key that represent the value.
+     * @param value Value to set.
+     * @return      true if the value was changed.
+     */
+    public boolean setAttributeValue(String name, String key, Object value) {
+        final Object attribute = getAttribute(name);
+        if (attribute != null) {
+            TagCompound.set(attribute, key, getRtag().newTag(value));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Change entity health amount.<br>
+     * Take in count some entities has a fixed health value.
+     *
+     * @param health Health value.
+     * @return       true if the health was changed.
+     */
+    public boolean setHealth(float health) {
+        return set(health, "Health");
+    }
+
+    /**
+     * Get the NBTTagCompound of the given attribute name.
+     *
+     * @param name Minecraft attribute name.
+     * @return     the raw full attribute if was found, null otherwise.
+     */
+    public Object getAttribute(String name) {
+        if (name == null) {
+            return null;
+        }
+        final Object attributes = TagCompound.get(getTag(), "Attributes");
+        if (attributes != null) {
+            for (Object attribute : TagList.getValue(attributes)) {
+                if (name.equals(TagBase.getValue(TagCompound.get(attribute, "Name")))) {
+                    return attribute;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the double base value of the given attribute name.
+     *
+     * @param name Minecraft attribute name.
+     * @return     the base value of the attribute if was found, 0 otherwise.
+     */
+    public double getAttributeBase(String name) {
+        final Object attribute = getAttribute(name);
+        if (attribute != null) {
+            return OptionalType.of(TagBase.getValue(TagCompound.get(attribute, "Base"))).or(0);
+        }
+        return 0;
+    }
+
+    /**
+     * Get the current entity health.
+     *
+     * @return the health amount.
+     */
+    public float getHealth() {
+        return getOptional("Health").asFloat(0F);
     }
 
     /**

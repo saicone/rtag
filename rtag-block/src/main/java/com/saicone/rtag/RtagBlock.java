@@ -1,6 +1,7 @@
 package com.saicone.rtag;
 
 import com.saicone.rtag.block.BlockObject;
+import com.saicone.rtag.util.ChatComponent;
 import org.bukkit.block.Block;
 
 import java.util.function.Consumer;
@@ -107,6 +108,31 @@ public class RtagBlock extends RtagEditor<Block> {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+    }
+
+    /**
+     * Change the entity display name.<br>
+     * Make sure to use color codes correctly or chat component format.
+     *
+     * @param name Normal string or ChatComponent.
+     * @return     true if the custom name was changed.
+     */
+    public boolean setCustomName(String name) {
+        return set(ChatComponent.isChatComponent(name) ? name : ChatComponent.toJson(name), "CustomName");
+    }
+
+    /**
+     * Get the entity display name.<br>
+     * This method convert any ChatComponent to normal colored string.
+     *
+     * @return A colored string.
+     */
+    public String getCustomName() {
+        final String name = get("CustomName");
+        if (name == null) {
+            return null;
+        }
+        return ChatComponent.isChatComponent(name) ? name : ChatComponent.toString(name);
     }
 
     /**
