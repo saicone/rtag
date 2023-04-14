@@ -10,12 +10,9 @@ public class RtagPlugin extends JavaPlugin {
         return instance;
     }
 
-    public RtagPlugin() {
-        instance = this;
-    }
-
     @Override
     public void onLoad() {
+        instance = this;
         // Utils
         loadRtagClass("util.EasyLookup",
                 "util.ChatComponent",

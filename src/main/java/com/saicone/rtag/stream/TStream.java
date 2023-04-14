@@ -1,6 +1,7 @@
 package com.saicone.rtag.stream;
 
-import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.RtagMirror;
+import com.saicone.rtag.tag.TagCompound;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -9,6 +10,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Tag stream class to handle NBTTagCompound
@@ -28,9 +30,6 @@ import java.util.List;
  * @param <T> Object type to write and read.
  */
 public class TStream<T> {
-
-    private static final Class<?> byteArray = EasyLookup.classById("byte[]");
-    private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
 
     /**
      * Clone provided object by extract NBTTagCompound
@@ -79,7 +78,7 @@ public class TStream<T> {
             return null;
         }
         Object compound = extract(object);
-        if (tagCompound.isInstance(compound)) {
+        if (TagCompound.isTagCompound(compound)) {
             return compound;
         } else {
             return null;
@@ -93,11 +92,31 @@ public class TStream<T> {
      * @return         A new object with NBTTagCompound parameters.
      */
     public T fromCompound(Object compound) {
-        if (tagCompound.isInstance(compound)) {
+        if (TagCompound.isTagCompound(compound)) {
             return build(compound);
         } else {
             return null;
         }
+    }
+
+    /**
+     * Convert object into Map of objects.
+     *
+     * @param object Object to convert.
+     * @return       A map that represent the provided object compound.
+     */
+    public Map<String, Object> toMap(T object) {
+        return TagCompound.getValue(RtagMirror.INSTANCE, toCompound(object));
+    }
+
+    /**
+     * Convert object into NBT String.
+     *
+     * @param object Object to convert.
+     * @return       The object compound as String.
+     */
+    public String toString(T object) {
+        return toCompound(object).toString();
     }
 
     /**
@@ -180,6 +199,26 @@ public class TStream<T> {
     }
 
     /**
+     * Get object by read provided Map of objects.
+     *
+     * @param map Map that represent the object.
+     * @return    An object representation using Map as compound.
+     */
+    public T fromMap(Map<String, Object> map) {
+        return fromCompound(TagCompound.newTag(RtagMirror.INSTANCE, map));
+    }
+
+    /**
+     * Get object by read provided NBT String.
+     *
+     * @param snbt A NBTTagCompound string.
+     * @return     An object representation using NBT String as compound.
+     */
+    public T fromString(String snbt) {
+        return fromCompound(TagCompound.newTag(snbt));
+    }
+
+    /**
      * Get object by read provided file.
      *
      * @param file File to read.
@@ -217,7 +256,7 @@ public class TStream<T> {
             try (ByteArrayInputStream in = new ByteArrayInputStream(Base64Coder.decodeLines(base64)); BukkitObjectInputStream input = new BukkitObjectInputStream(in)) {
                 Object o;
                 while ((o = input.readObject()) != null) {
-                    if (byteArray.isInstance(o)) {
+                    if (o instanceof byte[]) {
                         T object = fromBytes((byte[]) o);
                         if (object != null) {
                             list.add(object);
