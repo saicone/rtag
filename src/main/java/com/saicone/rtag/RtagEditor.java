@@ -1,6 +1,6 @@
 package com.saicone.rtag;
 
-import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.OptionalType;
 
 import java.util.Map;
@@ -16,8 +16,6 @@ import java.util.Map;
  * @param <T> Parent object type.
  */
 public abstract class RtagEditor<T> {
-
-    private static final Class<?> tagCompound = EasyLookup.classById("NBTTagCompound");
 
     private final Rtag rtag;
     private final T typeObject;
@@ -141,7 +139,7 @@ public abstract class RtagEditor<T> {
      * Update the current tag using the original object type.
      */
     public void update() {
-        update(typeObject);
+        update(getLiteralObject(typeObject));
     }
 
     /**
@@ -150,7 +148,7 @@ public abstract class RtagEditor<T> {
      * @param object Object type according RtagEditor instance.
      */
     public void update(Object object) {
-        this.tag = getTag(object);
+        set(getTag(object));
     }
 
     /**
@@ -324,7 +322,7 @@ public abstract class RtagEditor<T> {
      */
     public boolean set(Object value) {
         Object tag = rtag.newTag(value);
-        if (tagCompound.isInstance(tag)) {
+        if (TagCompound.isTagCompound(tag)) {
             this.tag = tag;
             return true;
         }
