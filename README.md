@@ -35,13 +35,15 @@ RtagBlock tag = new RtagBlock(block);
 
 
 // --- Put values
-// value = "Custom Text"
-// path = "deep" -> "path"
-tag.set("Custom Text", "deep", "path");
-tag.set(40, "somekey");
-tag.set("Item name!", "display", "name");
+// Set the value "Custom Text" at "display.Name" path
+tag.set("Custom Text", "display", "Name");
+// Or set an integer at "someKey" path
+tag.set(40, "someKey");
+// Including compatibility with any type of object like MyObject
+MyObject myobject = new MyObject();
+tag.set(myobject, "any", "path");
 
-// You can add lists
+// So you can add lists
 tag.set(new ArrayList(), "list", "path");
 // And add values into list
 tag.add((short) 3, "list", "path");
@@ -49,20 +51,20 @@ tag.add((short) 3, "list", "path");
 tag.set((short) 5, "list", "path", 0); // index 0
 
 // --- Get values
-// Value from path "deep" -> "path"
-String text = tag.get("deep", "path");
-String name = tag.get("display", "name");
-
-// Safe value get
-// Value from path "somekey", or -1 by default
-int intValue = tag.getOptional("somekey").or(-1);
+// Value from path "display" -> "Name"
+String name = tag.get("display", "Name");
+// Safe value get from path "someKey", or -1 by default
+int intValue = tag.getOptional("someKey").or(-1);
+int sameValue = tag.getOptional("someKey").asInt(-1); // This method try to convert any type to int
+// Explicit value get for custom objects
+MyObject sameobject = tag.getOptional("any", "path").as(MyObject.class);
 
 // Get lists
 List<Short> list = tag.get("list", "path");
 // Get list value from index
 short listValue = tag.get("list", "path", 0); // index 0
 
-// Get the entire object tag as Map
+// Get the entire object tag as Map of Java objects
 Map<String, Object> map = tag.get();
 
 // --- Load changes into object
@@ -70,12 +72,15 @@ Map<String, Object> map = tag.get();
 tag.load();
 // RtagItem as the option to create an item copy with changes loaded
 ItemStack itemCopy = tag.loadCopy();
+
+// --- Update current tag if the original object was edited
+tag.update();
 ```
 
 ## Get Rtag
 
 ### Requirements
-*  **At least Minecraft 1.8.8:** Rtag is made to be used in latest Minecraft versions, old versions support is only for commercial purposes.
+*  **At least Minecraft 1.8.8:** Rtag is made to be used in last Minecraft versions, old versions support is only for commercial purposes.
 *  Minimum Java 11
 
 ### Project build
@@ -161,6 +166,8 @@ There are other libraries to edit NBT tags, why should Rtag be used over the oth
 Rtag abuses of static final MethodHandles to convert the use of reflected methods as if they were direct calls, so it works to edit NBT tags in non-async operations without producing a bad performance impact on big servers.
 
 ## Easy to understand
+
+### Simple methods
 You don't need to be an expert with NBT tags, just with simple methods you can set and get normal Java objects.
 ```java
 Rtag rtag = new Rtag();
@@ -168,8 +175,53 @@ rtag.set(compound, "Normal string", "CustomTagPath");
 String string = rtag.get(compound, "CustomTagPath");
 ```
 
+### Compatibility methods
+The main RtagEditor instances have methods to make tag editing easier.
+```java
+RtagItem tag = new RtagItem(item);
+tag.setUnbreakable(true);
+tag.setRepairCost(20);
+int level = tag.getEnchantmentLevel("unbreaking"); // Enchantment enum, name or id
+
+RtagEntity tag = new RtagEntity(entity);
+tag.setAttributeBase("generic.attackDamage", 0.5);
+
+RtagBlock tag = new RtagBlock(block);
+tag.setCustomName("§eColored name");
+```
+
+### Functional methods
+You can edit objects using functions inside RtagEditor instances and return any type of object.
+```java
+ItemStack item = ...;
+// Edit original
+RtagItem.edit(item, tag -> {
+    tag.set("Custom Text", "display", "name");
+    tag.set(30, "someKey");
+});
+// Return a copy
+ItemStack copy = RtagItem.edit(item, tag -> {
+    tag.set(30, "someKey");
+    return tag.loadCopy();
+});
+```
+
 ## Store custom objects
+
+### Using default method
+By default, Rtag uses the Gson library inside Bukkit to (de)serialize custom objects, but you need to get them using explicit conversion.
+```java
+Rtag rtag = new Rtag();
+MyObject myObject = new MyObject();
+
+rtag.set(compound, myObject, "CustomTagPath");
+MyObject sameObject = rtag.getOptional(compound, "CustomTagPath").as(MyObject.class);
+```
+
+### Using your own method
 You can register (de)serializers in Rtag instance to set and get custom objects with automatic conversion.
+
+This conversion put an additional key into your saved tag to detect it using the provided ID.
 ```java
 public class MyObjectSerializer implements RtagSerializer<MyObject>, RtagDeserializer<MyObject> {
     
@@ -202,11 +254,20 @@ public class MyObjectSerializer implements RtagSerializer<MyObject>, RtagDeseria
     }
 }
 ```
+Then you can get your custom object without explicit conversion.
+```java
+Rtag rtag = new Rtag();
+new MyObjectSerializer(rtag);
+MyObject myObject = new MyObject();
+
+rtag.set(compound, myObject, "CustomTagPath");
+MyObject sameObject = rtag.get(compound, "CustomTagPath");
+```
 
 ## TagStream instances
 
 ### ItemTagStream
-With ItemTagStream instance you can convert items into Base64|File|Bytes and viceversa.
+With ItemTagStream instance you can convert items into Base64|File|Bytes|Map|String and viceversa.
 
 Including **cross-version support**! Save an item on any version and get on any version without compatibility problems. Materials, enchantments, potions... etc, all will be converted!
 ```java
@@ -234,9 +295,17 @@ ItemStack head = SkullTexture.getTexturedHead("7ca003dc-175f-4f1f-b490-565104531
 ```
 
 ### Chat Component
-With ChatComponent class you can convert (json) strings into chat components!
+With ChatComponent class you can convert (json) strings into chat components and viceversa.
 ```java
-Object component = ChatComponent.fromJson("{\"bold\":true,\"italic\":false,\"underlined\":false,\"strikethrough\":false,\"obfuscated\":false,\"color\":\"dark_purple\",\"text\":\"Colored text!\"}");
+// To component
+Object component = ChatComponent.fromJson("{\"bold\":true,\"italic\":false,\"color\":\"dark_purple\",\"text\":\"Colored text!\"}");
+Object sameComponent = ChatComponent.fromString("§5§lColored text!");
 
-Object otherComponent = ChatComponent.fromString("§5§lColored text!");
+// From component
+String json = ChatComponent.toJson(component);
+String string = ChatComponent.toString(component);
+
+// Cross-compatibility
+String json = ChatComponent.toJson("§5§lColored text!");
+String string = ChatComponent.toString("{\"bold\":true,\"italic\":false,\"color\":\"dark_purple\",\"text\":\"Colored text!\"}");
 ```
