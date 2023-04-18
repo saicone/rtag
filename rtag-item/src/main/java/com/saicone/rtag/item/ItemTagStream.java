@@ -140,7 +140,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @return     A readable map that represent the provided item.
      */
     public Map<String, Object> toReadableMap(ItemStack item) {
-        return makeReadable(toMap(item), true);
+        return readable(toMap(item), true);
     }
 
     /**
@@ -151,33 +151,31 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @return    An item representation using readable Map as compound.
      */
     public ItemStack fromReadableMap(Map<String, Object> map) {
-        return fromMap(makeReadable(map, false));
+        return fromMap(readable(map, false));
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> makeReadable(Map<String, Object> map, boolean forward) {
+    private Map<String, Object> readable(Map<String, Object> map, boolean forward) {
         final Map<String, Object> tag;
         final Map<String, Object> display;
         if (ServerInstance.verNumber >= 13 && (tag = (Map<String, Object>) map.get("tag")) != null && (display = (Map<String, Object>) tag.get("display")) != null) {
             // Process name
-            final String name = (String) display.get("name");
+            final String name = (String) display.get("Name");
             if (name != null) {
-                display.put("name", makeReadable(name, forward));
+                display.put("Name", readable(name, forward));
             }
             if (ServerInstance.verNumber >= 14) {
                 // Process lore
-                final List<String> lore = (List<String>) display.get("lore");
+                final List<String> lore = (List<String>) display.get("Lore");
                 if (lore != null) {
-                    for (int i = 0; i < lore.size(); i++) {
-                        lore.add(i, makeReadable(lore.get(i), forward));
-                    }
+                    lore.replaceAll(line -> readable(line, forward));
                 }
             }
         }
         return map;
     }
 
-    private String makeReadable(String s, boolean forward) {
+    private String readable(String s, boolean forward) {
         if (ChatComponent.isChatComponent(s)) {
             if (forward) {
                 return ChatComponent.toString(s);

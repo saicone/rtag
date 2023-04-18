@@ -69,7 +69,8 @@ public class ChatComponent {
                 final int index;
                 if (s.charAt(0) == '{' && s.charAt(s.length() - 1) == '}' && (index = s.indexOf("\"text\":\"")) > 0) {
                     final int i = s.indexOf('"', index + 8) + 1;
-                    return i + 1 >= s.length() || s.charAt(i) == ',';
+                    final char c;
+                    return i + 1 >= s.length() || (c = s.charAt(i)) == '}' || c == ',';
                 }
             } else if (s.length() == 11) {
                 return s.equals("{\"text\":\"\"}");
