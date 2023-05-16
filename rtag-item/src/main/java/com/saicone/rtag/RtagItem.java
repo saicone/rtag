@@ -322,7 +322,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * @return A set of flag ordinals.
      */
     public Set<Integer> getHideFlags() {
-        return getOptional("HideFlags").asEnumSet(8);
+        return getOptional("HideFlags").asOrdinalSet(8);
     }
 
     /**

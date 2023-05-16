@@ -15,7 +15,10 @@ import java.util.function.Function;
 @SuppressWarnings("unchecked")
 public class OptionalType extends IterableType<Object> {
 
-    private static final OptionalType BLANK = new OptionalType(null);
+    /**
+     * Static object representation of empty OptionalType.
+     */
+    public static final OptionalType EMPTY = new OptionalType(null);
     /**
      * {@link Gson} public instance with default configuration.
      */
@@ -30,7 +33,7 @@ public class OptionalType extends IterableType<Object> {
      * @return      An OptionalType with object value.
      */
     public static OptionalType of(Object value) {
-        return value != null ? new OptionalType(value) : BLANK;
+        return value != null ? new OptionalType(value) : EMPTY;
     }
 
     /**
@@ -128,6 +131,46 @@ public class OptionalType extends IterableType<Object> {
         return isInstance(clazz) ? (T) value : null;
     }
 
+    /**
+     * Clear the current object, only affect {@link Collection} and {@link Map} types.
+     */
+    public void clear() {
+        clear(false);
+    }
+
+    /**
+     * Clear the current object, only affect {@link Collection} and {@link Map} types.
+     *
+     * @param deep true to clear the inner objects.
+     */
+    public void clear(boolean deep) {
+        if (value == null) {
+            return;
+        }
+        clear(value, deep);
+    }
+
+    private void clear(Object object, boolean deep) {
+        if (object instanceof Iterable) {
+            if (deep) {
+                for (Object o : (Iterable<?>) object) {
+                    clear(o, true);
+                }
+            }
+            if (object instanceof Collection) {
+                ((Collection<?>) object).clear();
+            }
+        } else if (object instanceof Map) {
+            if (deep) {
+                for (Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                    clear(entry.getValue(), true);
+                    clear(entry.getKey(), true);
+                }
+            }
+            ((Map<?, ?>) object).clear();
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -217,7 +260,7 @@ public class OptionalType extends IterableType<Object> {
             return (T) value;
         }
         if (value instanceof Boolean && Number.class.isAssignableFrom(type)) {
-            return by(object -> function.apply((boolean) object ? "1" : "0"), def);
+            return by(object -> function.apply(Boolean.TRUE.equals(object) ? "1" : "0"), def);
         }
         return by(function, def);
     }
@@ -271,30 +314,31 @@ public class OptionalType extends IterableType<Object> {
      * @param <T>      The required type.
      */
     public <T> List<T> asList(Function<OptionalType, T> function) {
-        return asList(new ArrayList<>(), function);
+        return asCollection(new ArrayList<>(), function);
     }
 
     /**
-     * Apply actual value to list using function.
+     * Apply actual value to collection using function.
      *
-     * @param list     The list to add values.
-     * @param function Function to convert the value or any element inside value to required type.
-     * @return         The provided list.
-     * @param <T>      The required type.
+     * @param collection The collection to add values.
+     * @param function   Function to convert the value or any element inside value to required type.
+     * @return           The provided collection.
+     * @param <T>        The required type inside collection.
+     * @param <C>        The required collection type.
      */
-    public <T> List<T> asList(List<T> list, Function<OptionalType, T> function) {
+    public <T, C extends Collection<T>> C asCollection(C collection, Function<OptionalType, T> function) {
         if (value == null) {
-            return list;
+            return collection;
         }
         try {
-            return (List<T>) value;
+            return (C) value;
         } catch (ClassCastException ignored) { }
         if (isIterable()) {
-            forEach(object -> list.add(function.apply(OptionalType.of(object))));
+            forEach(object -> collection.add(function.apply(OptionalType.of(object))));
         } else {
-            list.add(function.apply(this));
+            collection.add(function.apply(this));
         }
-        return list;
+        return collection;
     }
 
     /**
@@ -546,25 +590,22 @@ public class OptionalType extends IterableType<Object> {
      * @param <E>      Enum required type.
      */
     public <E extends Enum<E>> Set<E> asEnumSet(Class<E> enumType) {
-        if (!enumType.isEnum()) {
-            return null;
-        }
         final E[] constants = enumType.getEnumConstants();
-        return asEnumSet(ordinal -> ordinal < constants.length ? constants[ordinal] : null, constants.length);
+        return asElementSet(ordinal -> ordinal < constants.length ? constants[ordinal] : null, constants.length);
     }
 
     /**
-     * Get the actual value as Enum type Set.<br>
+     * Get the actual value as element type Set.<br>
      * This method only works if the actual value is a bitField.
      *
-     * @param element Function to convert ordinal to Enum type element.
+     * @param element Function to convert ordinal to element type.
      * @param size    The maximum length of the enum values.
      * @return        A Set with Enum elements.
-     * @param <E>     Enum required type.
+     * @param <E>     Element required type.
      */
-    public <E extends Enum<E>> Set<E> asEnumSet(Function<Integer, E> element, int size) {
+    public <E> Set<E> asElementSet(Function<Integer, E> element, int size) {
         final Set<E> set = new HashSet<>();
-        for (Integer ordinal : asEnumSet(size)) {
+        for (Integer ordinal : asOrdinalSet(size)) {
             E e = element.apply(ordinal);
             if (e != null) {
                 set.add(e);
@@ -574,13 +615,13 @@ public class OptionalType extends IterableType<Object> {
     }
 
     /**
-     * Get the actual value as Enum ordinal-value Set.<br>
+     * Get the actual value as ordinal-value Set.<br>
      * This method only works if the actual value is a bitField.
      *
-     * @param size The maximum length of the enum values.
-     * @return     A Set with Enum ordinals.
+     * @param size The maximum length of the ordinal values.
+     * @return     A Set with ordinals.
      */
-    public Set<Integer> asEnumSet(int size) {
+    public Set<Integer> asOrdinalSet(int size) {
         final Set<Integer> ordinals = new HashSet<>();
         final Integer bitField = asInt();
         if (bitField == null) {
