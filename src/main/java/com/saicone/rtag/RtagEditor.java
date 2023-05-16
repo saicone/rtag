@@ -473,7 +473,7 @@ public abstract class RtagEditor<T> {
      * @return A Map with objects converted by Rtag parent.
      */
     public Map<String, Object> get() {
-        return OptionalType.cast(tag);
+        return OptionalType.cast(rtag.getTagValue(tag));
     }
 
     /**
