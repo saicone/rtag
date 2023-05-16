@@ -4,7 +4,9 @@ import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.EnchantmentTag;
+import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -159,6 +161,28 @@ public class RtagItem extends RtagEditor<ItemStack> {
      */
     public boolean hasEnchantment(Object enchant) {
         return getEnchantment(enchant) != null;
+    }
+
+    /**
+     * Fix bad item caused by Bukkit serialization, most specifically
+     * item lore component that doesn't allow to compare with similar items.
+     */
+    public void fixSerialization() {
+        if (ServerInstance.verNumber < 14) {
+            return;
+        }
+        // Fix lore
+        final Object tag = getExact("display", "Lore");
+        if (tag != null) {
+            final List<Object> lore = TagList.getValue(tag);
+            for (int i = 0; i < lore.size(); i++) {
+                // NBTTagString -> component as json -> colored string -> fixed component as json -> NBTTagString
+                final String line = (String) TagBase.getValue(lore.get(i));
+                if (ChatComponent.isChatComponent(line)) {
+                    lore.set(i, TagBase.newTag(ChatComponent.toJson(ChatComponent.toString(line))));
+                }
+            }
+        }
     }
 
     /**
