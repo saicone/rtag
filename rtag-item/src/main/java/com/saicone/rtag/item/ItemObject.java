@@ -57,7 +57,9 @@ public class ItemObject {
                     if (ServerInstance.verNumber >= 18) {
                         save = "b";
                         setTag = "c";
-                        if (ServerInstance.verNumber >= 19) {
+                        if (ServerInstance.verNumber >= 20) {
+                            getTag = "v";
+                        } else if (ServerInstance.verNumber >= 19) {
                             getTag = "u";
                         } else {
                             getTag = ServerInstance.release >= 2 ? "t" : "s";
