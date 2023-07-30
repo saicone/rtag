@@ -30,4 +30,3 @@ jobs:
           repository-name: saicone/javadoc
           branch: gh-pages
           target-folder: rtag
-          clean: false
