@@ -12,7 +12,7 @@ Por ahora el RtagBlock solo puede ser utilizado para editar los tags de "tile en
 
 :::info Antes de continuar
 
-Para entender esta página primero debes ver [la guía de RtagEditor](usage/editor.md).
+Para entender esta página primero debes ver [la guía de RtagEditor](usage/editor/).
 
 Para entender sobre los tags comunes en las "tile entities" se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format).
 
@@ -20,7 +20,7 @@ Para entender sobre los tags comunes en las "tile entities" se sugiere visitar l
 
 :::tip ¿Buscando tags no-vanilla?
 
-Si quieres agregar tags no-vanilla a las entidades, echa un vistazo en la sección de [APIs compatibles](feature/compatible.md).
+Si quieres agregar tags no-vanilla a las entidades, echa un vistazo en la sección de [APIs compatibles](feature/compatible/).
 
 Por ahora Rtag no ofrece una "forma segura" de guardar tags no-vanilla en versiones viejas de Bukkit.
 

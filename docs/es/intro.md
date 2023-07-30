@@ -60,7 +60,7 @@ NBTBase -> Object
 Object -> NBTBase
 ```
 
-Actualmente limitado por la conversión de `boolean`, así que es sugerido obtenerlos como `byte` o ejecutar una [conversión explícita](feature/types.md#conversion).
+Actualmente limitado por la conversión de `boolean`, así que es sugerido obtenerlos como `byte` o ejecutar una [conversión explícita](feature/types/#conversion).
 
 ```java
 // obtener desde la ruta

@@ -6,7 +6,7 @@ description: Edit entity NBT
 
 :::info Before continue
 
-To understand this page you should see [RtagEditor guide](usage/editor.md).
+To understand this page you should see [RtagEditor guide](usage/editor/).
 
 For better understand about some entity tags it's suggested to visit the [Minecraft wiki page](https://minecraft.fandom.com/wiki/Entity_format).
 
@@ -14,7 +14,7 @@ For better understand about some entity tags it's suggested to visit the [Minecr
 
 :::tip Looking for non-vanilla tags?
 
-If you want to add non-vanilla tags to entities, take a look hover [compatible APIs](feature/compatible.md) section.
+If you want to add non-vanilla tags to entities, take a look hover [compatible APIs](feature/compatible/) section.
 
 For now Rtag does not offer a "safe way" to save non-vanilla tags in old Bukkit versions.
 

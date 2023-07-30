@@ -316,7 +316,7 @@ rtag.set(compound, "Texto Normal", "Custom", "Tag", "Path");
 String string = rtag.get(compound, "Custom", "Tag", "Path");
 ```
 
-Las principales [instancias de RtagEditor](usage/editor.md) tienen métodos para hacer la edición de tags fácilmente.
+Las principales [instancias de RtagEditor](usage/editor/) tienen métodos para hacer la edición de tags fácilmente.
 
 ```java
 RtagItem tag = new RtagItem(item);
@@ -351,7 +351,7 @@ ItemStack copy = RtagItem.edit(item, tag -> {
 
 Por defecto, Rtag utiliza la librería Gson dentro de Bukkit para (de)serializar los objetos custom, pero necesitas obtenerlos usando una conversión explícita.
 
-Además, puede registrar tus propios (de)serializadores dentro de la instancia de Rtag que utilices para llevar a cabo una [conversión automática](feature/custom-objects.md).
+Además, puede registrar tus propios (de)serializadores dentro de la instancia de Rtag que utilices para llevar a cabo una [conversión automática](feature/custom-objects/).
 
 ```java
 Rtag rtag = new Rtag();
@@ -363,7 +363,7 @@ MyObject sameObject = rtag.getOptional(compound, "CustomTagPath").as(MyObject.cl
 
 ### Instancias del TagStream
 
-Con la [instancia ItemTagStream](feature/stream.md) puedes convertir cualquier item en los formatos Base64|Archivo|Bytes|Map|String y viceversa.
+Con la [instancia ItemTagStream](feature/stream/) puedes convertir cualquier item en los formatos Base64|Archivo|Bytes|Map|String y viceversa.
 Incuyendo **compatibilidad entre versiones**! Puedes guardar cualquier item en cualquier versión y obtenerlo en cualquier versión sin problemas de compatibilidad. Materiales, encantamientos, pociones... etc, todo será convertido!
 
 ```java
@@ -375,7 +375,7 @@ ItemStack sameItem = tag.fromBase64(string)[0];
 
 ### Cabezas con textura
 
-Con el [class SkullTexture](feature/skulls.md) puedes obtener cabezas con textura desde los formatos base64, url, id de la textura, nombre o uuid del
+Con el [class SkullTexture](feature/skulls/) puedes obtener cabezas con textura desde los formatos base64, url, id de la textura, nombre o uuid del
 
 ```java
 // Base64
@@ -392,7 +392,7 @@ ItemStack head = SkullTexture.getTexturedHead("7ca003dc-175f-4f1f-b490-565104531
 
 ### Componentes de chat
 
-Con el [class ChatComponent](feature/chat-component.md) puede convertir (json) strings en componentes de chat y viceversa
+Con el [class ChatComponent](feature/chat-component/) puede convertir (json) strings en componentes de chat y viceversa
 
 ````java
 // Convertir en componente

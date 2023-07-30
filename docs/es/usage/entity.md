@@ -6,7 +6,7 @@ description: Editar el NBT de las entidades
 
 :::info Antes de continuar
 
-Para entender esta página primero debes ver [la guía de RtagEditor](usage/editor.md).
+Para entender esta página primero debes ver [la guía de RtagEditor](usage/editor/).
 
 Para entender sobre los tags comunes en las entidades se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.fandom.com/wiki/Entity_format).
 
@@ -14,7 +14,7 @@ Para entender sobre los tags comunes en las entidades se sugiere visitar la [pá
 
 :::tip ¿Buscando tags no-vanilla?
 
-Si quieres agregar tags no-vanilla a las entidades, echa un vistazo en la sección de [APIs compatibles](feature/compatible.md).
+Si quieres agregar tags no-vanilla a las entidades, echa un vistazo en la sección de [APIs compatibles](feature/compatible/).
 
 Por ahora Rtag no ofrece una "forma segura" de guardar tags no-vanilla en versiones viejas de Bukkit.
 

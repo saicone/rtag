@@ -104,7 +104,7 @@ Rtag includes an easy way to convert any ItemStack into File, Base64, Bytes, Map
 
 :::info
 
-The "readable map" format convert item name and lore into colored strings, instead of [chat component](feature/chat-component.md) format introduced for items nbt on Minecraft 1.13, useful to save items in files and make them editable by the user without understanding chat components.
+The "readable map" format convert item name and lore into colored strings, instead of [chat component](feature/chat-component/) format introduced for items nbt on Minecraft 1.13, useful to save items in files and make them editable by the user without understanding chat components.
 
 :::
 

@@ -13,7 +13,7 @@ Rtag is made of multiple classes that work together to handle NBT.
 
 Rtag contains multiple utility classes to handle NBT objects maintaining a cross-version compatibility, including the conversion of respective object to Java and vice versa.
 
-Go to [Tag Objects section](advanced/tags.md) for more information.
+Go to [Tag Objects section](advanced/tags/) for more information.
 
 ## Tag Mirror
 
@@ -41,7 +41,7 @@ String sameObject = (String) mirror.getTagValue(nbtTag);
 
 It's the Rtag itself, with this instance you can edit any `NBTTagCompound` and `NBTTagList` in a simple way, you can add and remove objects using a tree-like path format.
 
-Including compatibility with custom objects by registering an object (de)serializer, for more information visit the [custom object](feature/custom-objects.md) feature page.
+Including compatibility with custom objects by registering an object (de)serializer, for more information visit the [custom object](feature/custom-objects/) feature page.
 
 ```java
 // Create Rtag
@@ -67,4 +67,4 @@ rtag.remove(compound, "my", "saved", "object");
 
 Various types of utility classes to interact hover CraftBukkit objects and Minecraft objects using reflected methods.
 
-Go to [Minecraft Objects section](advanced/minecraft.md) for more information.
+Go to [Minecraft Objects section](advanced/minecraft/) for more information.
