@@ -10,9 +10,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        with:
-          sparse-checkout: |
-            docs
 
       - name: Deploy default docs to Github repository
         uses: JamesIves/github-pages-deploy-action@v4.4.1

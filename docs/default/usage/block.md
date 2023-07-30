@@ -6,7 +6,7 @@ description: Edit block NBT
 
 :::info Before continue
 
-To understand this page you should see [RtagEditor guide](/usage/editor.md).
+To understand this page you should see [RtagEditor guide](usage/editor.md).
 
 For better understand about some tile entity tags it's suggested to visit the [Minecraft wiki page](https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format).
 
@@ -20,7 +20,7 @@ For now RtagBlock only can be used to edit tile entities tags, so **it's planned
 
 :::tip Looking for non-vanilla tags?
 
-If you want to add non-vanilla tags to tile entities, take a look hover [compatible APIs](/feature/compatible.md) section.
+If you want to add non-vanilla tags to tile entities, take a look hover [compatible APIs](feature/compatible.md) section.
 
 For now Rtag does not offer a "safe way" to save non-vanilla tags in old Bukkit versions.
 
