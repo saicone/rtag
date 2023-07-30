@@ -1,0 +1,37 @@
+name: Deploy Docs
+
+on: [workflow_dispatch]
+
+jobs:
+  docs:
+    if: ${{ github.repository_owner == 'saicone' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          sparse-checkout: |
+            docs
+
+      - name: Deploy default docs to Github repository
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          folder: docs/default
+          ssh-key: ${{ secrets.DOCS_DEPLOY_KEY }}
+          git-config-name: github-actions[bot]
+          git-config-email: 41898282+github-actions[bot]@users.noreply.github.com
+          repository-name: saicone/docs
+          branch: main
+          target-folder: docs/rtag
+
+      - name: Deploy ES docs to Github repository
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          folder: docs/es
+          ssh-key: ${{ secrets.DOCS_DEPLOY_KEY }}
+          git-config-name: github-actions[bot]
+          git-config-email: 41898282+github-actions[bot]@users.noreply.github.com
+          repository-name: saicone/docs
+          branch: main
+          target-folder: i18n/es/docusaurus-plugin-content-docs/current/rtag
