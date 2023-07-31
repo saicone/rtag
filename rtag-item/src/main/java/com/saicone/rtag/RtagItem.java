@@ -108,8 +108,9 @@ public class RtagItem extends RtagEditor<ItemStack> {
     /**
      * Load changes into item instance.
      */
-    public void load() {
+    public ItemStack load() {
         ItemObject.setHandle(getTypeObject(), getLiteralObject());
+        return getTypeObject();
     }
 
     /**

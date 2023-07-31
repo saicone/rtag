@@ -105,12 +105,13 @@ public class RtagEntity extends RtagEditor<Entity> {
     /**
      * Load changes into entity instance.
      */
-    public void load() {
+    public Entity load() {
         try {
             EntityObject.load(getLiteralObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }
+        return getTypeObject();
     }
 
     /**

@@ -133,7 +133,7 @@ public abstract class RtagEditor<T> {
     /**
      * Load changes into object instance.
      */
-    public abstract void load();
+    public abstract T load();
 
     /**
      * Update the current tag using the original object type.

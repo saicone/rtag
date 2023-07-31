@@ -102,12 +102,13 @@ public class RtagBlock extends RtagEditor<Block> {
     /**
      * Load changes into block instance.
      */
-    public void load() {
+    public Block load() {
         try {
             BlockObject.load(getLiteralObject(), getTag());
         } catch (Throwable t) {
             t.printStackTrace();
         }
+        return getTypeObject();
     }
 
     /**
