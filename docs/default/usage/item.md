@@ -6,7 +6,7 @@ description: Edit item NBT
 
 :::info Before continue
 
-To understand this page you should see [RtagEditor guide](usage/editor/).
+To understand this page you should see [RtagEditor guide](../../usage/editor/).
 
 For better understand about some item tags it's suggested to visit the [Minecraft wiki page](https://minecraft.fandom.com/wiki/Player.dat_format#Item_structure).
 
@@ -211,7 +211,7 @@ int cost = tag.getRepairCost();
 
 :::info
 
-On Minecraft 1.14, the item lore strings was moved to [chat component](feature/chat-component/) format, so Bukkit serialized items in some way cannot be compared with other items using `ItemStack#isSimilar()` because the chat component of serialized item lore doesn't contains various unused tags.
+On Minecraft 1.14, the item lore strings was moved to [chat component](../../feature/chat-component/) format, so Bukkit serialized items in some way cannot be compared with other items using `ItemStack#isSimilar()` because the chat component of serialized item lore doesn't contains various unused tags.
 
 :::
 

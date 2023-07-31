@@ -6,7 +6,7 @@ description: How to save items in database or configuration files
 
 When handling items you probably experienced problems at item saving, that because items are not mean to be used has database or configurable objects on vanilla Minecraft.
 
-So Rtag offers an easier way to handle items into different types of data by using [item stream](feature/stream/#itemtagstream) instance, maintaining compatibility across versions instead of Bukkit serializer that cannot convert new item format into old one.
+So Rtag offers an easier way to handle items into different types of data by using [item stream](../../feature/stream/#itemtagstream) instance, maintaining compatibility across versions instead of Bukkit serializer that cannot convert new item format into old one.
 
 ## Save on database
 

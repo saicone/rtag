@@ -8,7 +8,7 @@ description: How to handle paths with functions
 
 This is an advanced feature, you can ignore this because is rarely used.
 
-To understand this page you should see [Tag Objects guide](advanced/tags/).
+To understand this page you should see [Tag Objects guide](../../advanced/tags/).
 
 :::
 

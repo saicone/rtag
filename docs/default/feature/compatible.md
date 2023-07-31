@@ -8,7 +8,7 @@ There are some compatible APIs that Rtag can interact with.
 
 ## Bukkit PersistentDataContainer
 
-The `PersistentDataContainer` API was introduced in Bukkit 1.14 to save custom tags at different objects like items, entities and tile entities, making NBT tag editor easier for most developers, basically the same utility as Rtag but limited to custom tags, only with [compatible objects](intro/#compatible-objects) and plugin instance usage, so you need to understand NBT tags to make something functional.
+The `PersistentDataContainer` API was introduced in Bukkit 1.14 to save custom tags at different objects like items, entities and tile entities, making NBT tag editor easier for most developers, basically the same utility as Rtag but limited to custom tags, only with [compatible objects](../../intro/#compatible-objects) and plugin instance usage, so you need to understand NBT tags to make something functional.
 
 With Rtag it's possible to edit objects from `PersistentDataContainer` because are saved in the path `PublicBukkitValues -> <plugin>:<key>`.
 

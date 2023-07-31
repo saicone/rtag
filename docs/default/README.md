@@ -375,7 +375,7 @@ ItemStack sameItem = tag.fromBase64(string)[0];
 
 ### Textured heads
 
-With [SkullTexture class](feature/skulls/) you can get textured heads from base64, url, texture ID, player name or uuid.
+With [SkullTexture class](feature/textured-heads/) you can get textured heads from base64, url, texture ID, player name or uuid.
 
 ```java
 // Base64

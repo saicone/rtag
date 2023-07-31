@@ -375,7 +375,7 @@ ItemStack sameItem = tag.fromBase64(string)[0];
 
 ### Cabezas con textura
 
-Con el [class SkullTexture](feature/skulls/) puedes obtener cabezas con textura desde los formatos base64, url, id de la textura, nombre o uuid del
+Con el [class SkullTexture](feature/textured-heads/) puedes obtener cabezas con textura desde los formatos base64, url, id de la textura, nombre o uuid del
 
 ```java
 // Base64

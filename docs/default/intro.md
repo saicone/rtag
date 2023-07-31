@@ -60,7 +60,7 @@ NBTBase -> Object
 Object -> NBTBase
 ```
 
-Currently limited by `boolean` conversion, so it's suggested to get them as `byte` or run an [explicit conversion](feature/types/#conversion).
+Currently limited by `boolean` conversion, so it's suggested to get them as `byte` or run an [explicit conversion](../../feature/types/#conversion).
 
 ```java
 // get from path

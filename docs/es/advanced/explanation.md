@@ -14,7 +14,7 @@ Rtag está hecho de múltiples classes para funcionar entre sí y manejar NBT.
 
 Rtag contiene varias classes para ejecutar métodos de los objetos NBT manteniendo la compatibilidad entre versiones, incluyendo la conversión del respectivo NBT a un objeto normal de Java y viceversa.
 
-Ve hacia la [sección de objetos de tag](advanced/tags/) para más información.
+Ve hacia la [sección de objetos de tag](../../advanced/tags/) para más información.
 
 ## Espejo de tags
 
@@ -42,7 +42,7 @@ String sameObject = (String) mirror.getTagValue(nbtTag);
 
 Es el propio Rtag, con esta instancia puedes editar cualquier `NBTTagCompound` y `NBTTagList` de una manera simple, puedes agregar y remover objetos utilizando una estructura de datos de árbol para las rutas.
 
-Incluyendo compatibilidad con objetos custom al registrar un (de)serializador, para más información visita la página que explica los [objetos custom](feature/custom-objects/).
+Incluyendo compatibilidad con objetos custom al registrar un (de)serializador, para más información visita la página que explica los [objetos custom](../../feature/custom-objects/).
 
 ```java
 // Crear un Rtag
@@ -69,4 +69,4 @@ rtag.remove(compound, "my", "saved", "object");
 Varios tipos de classes útiles para interactuar sobre objetos de CraftBukkit y objetos de Minecraft utilizando métodos con reflection.
 
 
-Ve hacia la [sección de objetos de Minecraft](advanced/minecraft/) para más información.
+Ve hacia la [sección de objetos de Minecraft](../../advanced/minecraft/) para más información.
