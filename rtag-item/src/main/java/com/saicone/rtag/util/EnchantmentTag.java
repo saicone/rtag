@@ -1,5 +1,6 @@
 package com.saicone.rtag.util;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -100,14 +101,22 @@ public enum EnchantmentTag {
     private final short id;
     private final String[] aliases;
 
+    private final Enchantment enchantment;
+
     EnchantmentTag(int version, int id, String... aliases) {
         this(version, (short) id, aliases);
     }
 
+    @SuppressWarnings("deprecation")
     EnchantmentTag(int version, short id, String... aliases) {
         this.version = version;
         this.id = id;
         this.aliases = aliases;
+        if (ServerInstance.isLegacy) {
+            this.enchantment = Enchantment.getByName(this.name());
+        } else {
+            this.enchantment = Enchantment.getByKey(NamespacedKey.minecraft(this.name().toLowerCase()));
+        }
     }
 
     /**
@@ -135,6 +144,15 @@ public enum EnchantmentTag {
      */
     public String[] getAliases() {
         return aliases;
+    }
+
+    /**
+     * Get current enchant as {@link Enchantment}.
+     *
+     * @return A Bukkit enchantment if exist on the current version, null otherwise.
+     */
+    public Enchantment getEnchantment() {
+        return enchantment;
     }
 
     /**
