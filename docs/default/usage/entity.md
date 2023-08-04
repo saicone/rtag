@@ -154,4 +154,6 @@ tag.setAttributeBase("generic.attackDamage", 0.5d);
 tag.setAttributeValue("generic.attackDamage", "Base", 0.5d);
 
 double damage = tag.getAttributeBase("generic.attackDamage");
+// Same has above
+Object value = tag.getAttributeValue("generic.attackDamage", "Base");
 ```

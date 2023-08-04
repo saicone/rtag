@@ -183,11 +183,22 @@ public class RtagEntity extends RtagEditor<Entity> {
      * @return     the base value of the attribute if was found, 0 otherwise.
      */
     public double getAttributeBase(String name) {
+        return OptionalType.of(getAttributeValue(name, "Base")).or(0);
+    }
+
+    /**
+     * Get the attribute value of given key.
+     *
+     * @param name Minecraft attribute name.
+     * @param key  Key that represent the value.
+     * @return     the value of the attribute if was found, null otherwise.
+     */
+    public Object getAttributeValue(String name, String key) {
         final Object attribute = getAttribute(name);
         if (attribute != null) {
-            return OptionalType.of(TagBase.getValue(TagCompound.get(attribute, "Base"))).or(0);
+            return TagBase.getValue(TagCompound.get(attribute, key));
         }
-        return 0;
+        return null;
     }
 
     /**
