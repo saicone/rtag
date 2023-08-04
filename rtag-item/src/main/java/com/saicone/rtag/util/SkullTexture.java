@@ -1,5 +1,7 @@
 package com.saicone.rtag.util;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -7,17 +9,18 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.net.URL;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * Very simple class to get textured heads from:<br>
@@ -40,15 +43,14 @@ public class SkullTexture {
     private static final String SESSION_API = "https://sessionserver.mojang.com/session/minecraft/profile/";
 
     private static final String INVALID_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDZiYTYzMzQ0ZjQ5ZGQxYzRmNTQ4OGU5MjZiZjNkOWUyYjI5OTE2YTZjNTBkNjEwYmI0MGE1MjczZGM4YzgyIn19fQ==";
-    //private static final String LOADING_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzI0MzE5MTFmNDE3OGI0ZDJiNDEzYWE3ZjVjNzhhZTQ0NDdmZTkyNDY5NDNjMzFkZjMxMTYzYzBlMDQzZTBkNiJ9fX0=";
+    private static final String LOADING_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzI0MzE5MTFmNDE3OGI0ZDJiNDEzYWE3ZjVjNzhhZTQ0NDdmZTkyNDY5NDNjMzFkZjMxMTYzYzBlMDQzZTBkNiJ9fX0=";
 
     private static final ItemStack PLAYER_HEAD;
 
     private static final MethodHandle getProfile;
     private static final MethodHandle setProfile;
 
-    private static final Map<String, String> cache = new HashMap<>();
-    private static final Map<String, UUID> cacheUUID = new HashMap<>();
+    private static final Cache<String, String> TEXTURE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.HOURS).build();
 
     static {
         if (ServerInstance.verNumber >= 13) {
@@ -83,57 +85,94 @@ public class SkullTexture {
      * @return        A ItemStack that represent the textured head.
      */
     public static ItemStack getTexturedHead(String texture) {
-        //return cache.computeIfAbsent(texture, SkullTexture::buildHead);
-        return buildHead(texture);
+        return setTexture(new ItemStack(PLAYER_HEAD), getTextureValue(texture));
     }
 
-    private static ItemStack buildHead(String texture) {
-        ItemStack item = new ItemStack(PLAYER_HEAD);
-        return setHead(item, texture);
+    /**
+     * Main method to get textured head and save into cache.
+     *
+     * @param texture  Texture ID, URL, Base64, Player name or UUID.
+     * @param callback Function to execute if textured head is retrieved in async operation.
+     * @return         A ItemStack that represent the textured head.
+     */
+    public static ItemStack getTexturedHead(String texture, Consumer<ItemStack> callback) {
+        if (callback == null) {
+            return getTexturedHead(texture);
+        }
+        return setTexture(new ItemStack(PLAYER_HEAD), getTextureValue(texture, value -> callback.accept(setTexture(new ItemStack(PLAYER_HEAD), value))));
     }
 
-    public static ItemStack setHead(ItemStack item, String texture){
-        if(!cacheUUID.containsKey(texture)) cacheUUID.put(texture, UUID.randomUUID());
-        GameProfile profile = new GameProfile(cacheUUID.get(texture), null);
+    /**
+     * Set encoded texture value into skull meta.
+     *
+     * @see #getTextureValue(String)
+     *
+     * @param head    Skull item to set the texture.
+     * @param texture Encoded texture value.
+     * @return        The provided item.
+     * @throws IllegalArgumentException if the provided item isn't a player head.
+     */
+    public static ItemStack setTexture(ItemStack head, String texture) throws IllegalArgumentException {
+        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
         profile.getProperties().put("textures", new Property("textures", getTextureValue(texture)));
 
-        ItemMeta meta = item.getItemMeta();
+        ItemMeta meta = head.getItemMeta();
+        if (!(meta instanceof SkullMeta)) {
+            throw new IllegalArgumentException("The provided item isn't a player head");
+        }
         try {
             setProfile.invoke(meta, profile);
         } catch (Throwable t) {
             t.printStackTrace();
         }
-        item.setItemMeta(meta);
-        return item;
+        head.setItemMeta(meta);
+        return head;
     }
 
     /**
-     * Get Base64 texture from the given texture parameter,
+     * Get Base64 encoded texture from the given texture parameter,
      * can be player name, player uuid, texture id, url or base64.
      *
      * @param texture Texture type.
      * @return        A Base64 encoded text.
      */
     public static String getTextureValue(String texture) {
-        if(cache.containsKey(texture)) return cache.get(texture);
-
-        String value = texture;
-        if (texture.length() <= 20) {
-            value = getPlayerTexture(texture, Bukkit.getOfflinePlayer(texture));
-        } else if (texture.length() == 36) {
-            value = getPlayerTexture(texture, Bukkit.getOfflinePlayer(UUID.fromString(texture)));
-        } else if (texture.length() == 64) {
-            value = parseTextureUrl("http://textures.minecraft.net/texture/" + texture);
-        } else if (texture.startsWith("http")) {
-            value = parseTextureUrl(texture);
-        }
-
-        cache.put(texture, value);
-        return value;
+        return getTextureValue(texture, null);
     }
 
-    private static String getPlayerTexture(String key, OfflinePlayer player) {
-        if (player.isOnline()) {
+    /**
+     * Get Base64 encoded texture from the given texture parameter,
+     * can be player name, player uuid, texture id, url or base64.
+     *
+     * @param texture  Texture type.
+     * @param callback Function to execute if texture value is retrieved in async operation.
+     * @return         A Base64 encoded text.
+     */
+    public static String getTextureValue(String texture, Consumer<String> callback) {
+        String cachedTexture = TEXTURE_CACHE.getIfPresent(texture);
+        if (cachedTexture != null) {
+            return cachedTexture;
+        }
+
+        if (texture.length() <= 20) {
+            cachedTexture = getPlayerTexture(texture, texture, null, callback);
+        } else if (texture.length() == 36) {
+            cachedTexture = getPlayerTexture(texture, null, UUID.fromString(texture), callback);
+        } else if (texture.length() == 64) {
+            cachedTexture = parseTextureUrl("http://textures.minecraft.net/texture/" + texture);
+        } else if (texture.startsWith("http")) {
+            cachedTexture = parseTextureUrl(texture);
+        } else {
+            cachedTexture = texture;
+        }
+
+        TEXTURE_CACHE.put(texture, cachedTexture);
+        return cachedTexture;
+    }
+
+    private static String getPlayerTexture(String key, String name, UUID uuid, Consumer<String> callback) {
+        final Player player = name != null ? Bukkit.getPlayer(name) : Bukkit.getPlayer(uuid);
+        if (player != null && player.isOnline()) {
             try {
                 GameProfile profile = ((GameProfile) getProfile.invoke(player));
                 for (Property texture : profile.getProperties().get("textures")) {
@@ -142,23 +181,57 @@ public class SkullTexture {
                     }
                 }
             } catch (Throwable t) {
-                new RuntimeException("Error when getting online player texture, trying to get from Mojang API... ", t).printStackTrace();
+                new RuntimeException("Error when getting online player texture of '" + player.getName() + "', trying to get from Mojang API... ", t).printStackTrace();
             }
         }
         // Async operation
-        //new Thread(() -> computePlayerTexture(key, player.getName(), item)).start();
-        computePlayerTexture(key, player.getName());
-        return cache.getOrDefault(key, INVALID_TEXTURE);
+        new Thread(() -> {
+            final String texture = computePlayerTexture(key, name != null ? name : Bukkit.getOfflinePlayer(uuid).getName());
+            if (callback != null) {
+                callback.accept(texture);
+            }
+        }).start();
+        return LOADING_TEXTURE;
     }
 
     /**
      * Compute textured head via making a request to Mojang API,
      * it's suggested to call this method in async environment.
      *
-     * @param key  Map key to put
-     * @param name Player name
+     * @param name The player name.
+     * @return     A Base64 encoded text.
      */
-    public static void computePlayerTexture(String key, String name) {
+    public static String computePlayerTexture(String name) {
+        return computePlayerTexture(name, name);
+    }
+
+    /**
+     * Compute textured head via making a request to Mojang API,
+     * it's suggested to call this method in async environment.
+     *
+     * @param key  Map key to put.
+     * @param name The player name.
+     * @return     A Base64 encoded text.
+     */
+    public static String computePlayerTexture(String key, String name) {
+        String texture = requestTextureUrl(name);
+        if (texture != null) {
+            texture = parseTextureUrl(texture);
+            TEXTURE_CACHE.put(key, texture);
+            return texture;
+        } else {
+            TEXTURE_CACHE.put(key, INVALID_TEXTURE);
+            return INVALID_TEXTURE;
+        }
+    }
+
+    /**
+     * Request player texture url using Mojang API.
+     *
+     * @param name The player name.
+     * @return     A Mojang texture url if the player profile exists, null otherwise.
+     */
+    public static String requestTextureUrl(String name) {
         JsonObject user = urlJson(USER_API + name);
         if (user != null && user.has("id")) {
             String uuid = user.get("id").getAsString();
@@ -170,17 +243,13 @@ public class SkullTexture {
                         String value = property.get("value").getAsString();
                         JsonObject texture = parseJsonObject(new String(Base64.getDecoder().decode(value)));
                         if (texture != null) {
-                            String url = texture.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
-                            //cache.put(key, buildHead(url));
-                            cache.put(key, getTextureValue(url));
-                            return;
+                            return texture.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
                         }
                     }
                 }
             }
         }
-        //cache.put(key, buildHead(INVALID_TEXTURE));
-        cache.put(key, INVALID_TEXTURE);
+        return null;
     }
 
     private static JsonObject urlJson(String url) {
