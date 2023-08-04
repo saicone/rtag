@@ -40,14 +40,15 @@ public class SkullTexture {
     private static final String SESSION_API = "https://sessionserver.mojang.com/session/minecraft/profile/";
 
     private static final String INVALID_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDZiYTYzMzQ0ZjQ5ZGQxYzRmNTQ4OGU5MjZiZjNkOWUyYjI5OTE2YTZjNTBkNjEwYmI0MGE1MjczZGM4YzgyIn19fQ==";
-    private static final String LOADING_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzI0MzE5MTFmNDE3OGI0ZDJiNDEzYWE3ZjVjNzhhZTQ0NDdmZTkyNDY5NDNjMzFkZjMxMTYzYzBlMDQzZTBkNiJ9fX0=";
+    //private static final String LOADING_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzI0MzE5MTFmNDE3OGI0ZDJiNDEzYWE3ZjVjNzhhZTQ0NDdmZTkyNDY5NDNjMzFkZjMxMTYzYzBlMDQzZTBkNiJ9fX0=";
 
     private static final ItemStack PLAYER_HEAD;
 
     private static final MethodHandle getProfile;
     private static final MethodHandle setProfile;
 
-    private static final Map<String, ItemStack> cache = new HashMap<>();
+    private static final Map<String, String> cache = new HashMap<>();
+    private static final Map<String, UUID> cacheUUID = new HashMap<>();
 
     static {
         if (ServerInstance.verNumber >= 13) {
@@ -82,14 +83,20 @@ public class SkullTexture {
      * @return        A ItemStack that represent the textured head.
      */
     public static ItemStack getTexturedHead(String texture) {
-        return cache.computeIfAbsent(texture, SkullTexture::buildHead);
+        //return cache.computeIfAbsent(texture, SkullTexture::buildHead);
+        return buildHead(texture);
     }
 
     private static ItemStack buildHead(String texture) {
-        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        ItemStack item = new ItemStack(PLAYER_HEAD);
+        return setHead(item, texture);
+    }
+
+    public static ItemStack setHead(ItemStack item, String texture){
+        if(!cacheUUID.containsKey(texture)) cacheUUID.put(texture, UUID.randomUUID());
+        GameProfile profile = new GameProfile(cacheUUID.get(texture), null);
         profile.getProperties().put("textures", new Property("textures", getTextureValue(texture)));
 
-        ItemStack item = new ItemStack(PLAYER_HEAD);
         ItemMeta meta = item.getItemMeta();
         try {
             setProfile.invoke(meta, profile);
@@ -108,17 +115,21 @@ public class SkullTexture {
      * @return        A Base64 encoded text.
      */
     public static String getTextureValue(String texture) {
+        if(cache.containsKey(texture)) return cache.get(texture);
+
+        String value = texture;
         if (texture.length() <= 20) {
-            return getPlayerTexture(texture, Bukkit.getOfflinePlayer(texture));
+            value = getPlayerTexture(texture, Bukkit.getOfflinePlayer(texture));
         } else if (texture.length() == 36) {
-            return getPlayerTexture(texture, Bukkit.getOfflinePlayer(UUID.fromString(texture)));
+            value = getPlayerTexture(texture, Bukkit.getOfflinePlayer(UUID.fromString(texture)));
         } else if (texture.length() == 64) {
-            return parseTextureUrl("http://textures.minecraft.net/texture/" + texture);
+            value = parseTextureUrl("http://textures.minecraft.net/texture/" + texture);
         } else if (texture.startsWith("http")) {
-            return parseTextureUrl(texture);
-        } else {
-            return texture;
+            value = parseTextureUrl(texture);
         }
+
+        cache.put(texture, value);
+        return value;
     }
 
     private static String getPlayerTexture(String key, OfflinePlayer player) {
@@ -135,8 +146,9 @@ public class SkullTexture {
             }
         }
         // Async operation
-        new Thread(() -> computePlayerTexture(key, player.getName())).start();
-        return LOADING_TEXTURE;
+        //new Thread(() -> computePlayerTexture(key, player.getName(), item)).start();
+        computePlayerTexture(key, player.getName());
+        return cache.getOrDefault(key, INVALID_TEXTURE);
     }
 
     /**
@@ -159,14 +171,16 @@ public class SkullTexture {
                         JsonObject texture = parseJsonObject(new String(Base64.getDecoder().decode(value)));
                         if (texture != null) {
                             String url = texture.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
-                            cache.put(key, buildHead(url));
+                            //cache.put(key, buildHead(url));
+                            cache.put(key, getTextureValue(url));
                             return;
                         }
                     }
                 }
             }
         }
-        cache.put(key, buildHead(INVALID_TEXTURE));
+        //cache.put(key, buildHead(INVALID_TEXTURE));
+        cache.put(key, INVALID_TEXTURE);
     }
 
     private static JsonObject urlJson(String url) {
