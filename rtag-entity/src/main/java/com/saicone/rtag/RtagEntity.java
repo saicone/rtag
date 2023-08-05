@@ -196,7 +196,7 @@ public class RtagEntity extends RtagEditor<Entity> {
     public Object getAttributeValue(String name, String key) {
         final Object attribute = getAttribute(name);
         if (attribute != null) {
-            return TagBase.getValue(TagCompound.get(attribute, key));
+            return TagBase.getValue(getRtag(), TagCompound.get(attribute, key));
         }
         return null;
     }

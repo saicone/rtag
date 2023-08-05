@@ -271,8 +271,20 @@ public class TagCompound {
      */
     @SuppressWarnings("all")
     public static String getJson(Object tag) {
+        return getJson(new Gson(), tag);
+    }
+
+    /**
+     * Get the provided NBTTagCompound as Json string.
+     *
+     * @param gson The Gson instance to use.
+     * @param tag  NBTTagCompound instance.
+     * @return     A Json string.
+     */
+    @SuppressWarnings("all")
+    public static String getJson(Gson gson, Object tag) {
         final Type type = new TypeToken(){}.getType();
-        return new Gson().toJson(getValue(RtagMirror.INSTANCE, tag), type);
+        return gson.toJson(getValue(RtagMirror.INSTANCE, tag), type);
     }
 
     /**
