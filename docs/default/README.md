@@ -407,3 +407,19 @@ String string = ChatComponent.toString(component);
 String json = ChatComponent.toJson("§5§lColored text!");
 String string = ChatComponent.toString("{\"bold\":true,\"italic\":false,\"color\":\"dark_purple\",\"text\":\"Colored text!\"}");
 ```
+
+Including pretty nbt formatter to colorize nbt tags like `/data` Minecraft command.
+
+```java
+Object nbt = ...;
+
+// Pretty format into chat component
+Object component = ChatComponent.toPrettyComponent(nbt, null);
+// Into json with 2 spaces as indent
+String json = ChatComponent.toPrettyJson(nbt, "  ");
+// Into colored string
+String colored = ChatComponent.toPrettyString(nbt, null);
+
+// Using other color palette (You can use your own one)
+String colored = ChatComponent.toPrettyString(nbt, null, ChatComponent.NBT_PALETTE_BUNGEE);
+```
