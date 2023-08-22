@@ -52,7 +52,6 @@ public class EasyLookup {
             }
             addNMSClass("nbt.NBTTagShort");
             addNMSClass("nbt.NBTTagString");
-            addNMSClass("nbt.NBTCompressedStreamTools");
             addNMSClass("world.item.ItemStack");
             addNMSClass("world.entity.Entity");
             addNMSClass("world.level.block.entity.TileEntity");

@@ -394,7 +394,7 @@ ItemStack head = SkullTexture.getTexturedHead("7ca003dc-175f-4f1f-b490-565104531
 
 With [ChatComponent class](feature/chat-component/) you can convert (json) strings into chat components and viceversa.
 
-````java
+```java
 // To component
 Object component = ChatComponent.fromJson("{\"bold\":true,\"italic\":false,\"color\":\"dark_purple\",\"text\":\"Colored text!\"}");
 Object sameComponent = ChatComponent.fromString("§5§lColored text!");
