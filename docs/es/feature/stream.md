@@ -211,6 +211,8 @@ ItemStack sameItem = ItemTagStream.INSTANCE.fromReadableMap(map);
 
 ItemTagStream incluye **compatibilidad con múltiples versiones**, puedes convertir cualquier item para luego obtenerlo en cualquier versión. Materiales, encantamientos, pociones... etc, todo será convertido! esto es algo que ni siquiera Bukkit tiene ya que es excluyente con las versiones viejas.
 
+También detecta items serializados por Bukkit o Paper que agregan la versión de los datos mediante el tag `DataVersion` or `v` y de esta manera aplicar la conversión.
+
 :::info
 
 En la instancia por defecto de ItemTagStream, su conversión de ítems entre versiones es **únicamente compatible con Bukkit**.

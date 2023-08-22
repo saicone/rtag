@@ -103,6 +103,31 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     /**
+     * Get current version number from compound.
+     *
+     * @param compound NBTTagCompound to read.
+     * @return         A valid version number or null.
+     */
+    protected Integer getVersion(Object compound) {
+        final Map<String, Object> value = TagCompound.getValue(compound);
+        Object version = TagBase.getValue(value.get(getVersionKey()));
+        if (version instanceof Integer) {
+            return (Integer) version;
+        }
+
+        version = TagBase.getValue(value.get("DataVersion"));
+        if (version == null) {
+            version = TagBase.getValue(value.get("v"));
+        }
+
+        if (version instanceof Integer) {
+            return ServerInstance.verNumber((Integer) version);
+        }
+
+        return null;
+    }
+
+    /**
      * Get current version key identifier.
      *
      * @return Version key identifier.
@@ -203,7 +228,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param compound NBTTagCompound with item information.
      */
     public void onLoad(Object compound) {
-        Integer version = (Integer) TagBase.getValue(TagCompound.get(compound, getVersionKey()));
+        final Integer version = getVersion(compound);
         if (version != null && version != getVersion()) {
             onLoad(compound, version, getVersion());
         }

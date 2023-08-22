@@ -211,6 +211,8 @@ ItemStack sameItem = ItemTagStream.INSTANCE.fromReadableMap(map);
 
 Including **cross-version support**! Save an item on any version and get on any version without compatibility problems. Materials, enchantments, potions... etc, all will be converted!
 
+It also detects items serialized by Bukkit or Paper that adds data version tag as `DataVersion` or `v` to apply the conversion.
+
 :::caution Current limitations
 
 The default ItemTagStream instance it's **only compatible** with Bukkit items, if your server uses Forge it is suggested to use your own instance of ItemTagStream with Forge compatibility.
