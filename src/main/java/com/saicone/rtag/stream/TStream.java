@@ -1,7 +1,10 @@
 package com.saicone.rtag.stream;
 
 import com.saicone.rtag.RtagMirror;
+import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
+import com.saicone.rtag.tag.TagList;
+import org.bukkit.util.Consumer;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -86,6 +89,29 @@ public class TStream<T> {
     }
 
     /**
+     * Consume new objects if it can be created from NBTBase object.<br>
+     * Only compatible with NBTTagByteArray, NBTTagList and NBTTagCompound.
+     *
+     * @param nbt      NBTBase instance.
+     * @param consumer The consumer that accept non-null objects.
+     */
+    public void fromBase(Object nbt, Consumer<T> consumer) {
+        switch (TagBase.getTypeId(nbt)) {
+            case 7: // NBTTagByteArray
+                fromBytes((byte[]) TagBase.getValue(nbt), consumer);
+                break;
+            case 9: // NBTTagList
+                fromList(nbt, consumer);
+                break;
+            case 10: // NBTTagCompound
+                fromCompound(nbt, consumer);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Create new object from NBTTagCompound.
      *
      * @param compound NBTTagCompound instance.
@@ -94,8 +120,57 @@ public class TStream<T> {
     public T fromCompound(Object compound) {
         if (TagCompound.isTagCompound(compound)) {
             return build(compound);
-        } else {
-            return null;
+        }
+
+        if (TagList.isTagList(compound)) {
+            final List<Object> list = TagList.getValue(compound);
+            if (!list.isEmpty()) {
+                return fromCompound(list.get(0));
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Consume new object if it can be created from NBTTagCompound.
+     *
+     * @param compound NBTTagCompound instance.
+     * @param consumer The consumer that accept non-null objects.
+     */
+    public void fromCompound(Object compound, Consumer<T> consumer) {
+        final T t = fromCompound(compound);
+        if (t != null) {
+            consumer.accept(t);
+        }
+    }
+
+    /**
+     * Consume new objects if it can be created from NBTTagList object.<br>
+     * Only compatible with list types of NBTTagByteArray, NBTTagList and NBTTagCompound.
+     *
+     * @param list     NBTTagList instance.
+     * @param consumer The consumer that accept non-null objects.
+     */
+    public void fromList(Object list, Consumer<T> consumer) {
+        switch (TagList.getType(list)) {
+            case 7: // List<NBTTagByteArray>
+                for (Object o : TagList.getValue(list)) {
+                    fromBytes((byte[]) TagBase.getValue(o), consumer);
+                }
+                break;
+            case 9: // List<NBTTagList>
+                for (Object o : TagList.getValue(list)) {
+                    fromList(o, consumer);
+                }
+                break;
+            case 10: // List<NBTTagCompound>
+                for (Object o : TagList.getValue(list)) {
+                    fromCompound(o, consumer);
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -188,14 +263,13 @@ public class TStream<T> {
         if (compound == null) {
             return null;
         }
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try {
-            TStreamTools.write(compound, output);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            TStreamTools.write(compound, out);
+            return out.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-        return output.toByteArray();
     }
 
     /**
@@ -234,9 +308,23 @@ public class TStream<T> {
     }
 
     /**
+     * Consume new objects if it can be created from file.
+     *
+     * @param file     File to read.
+     * @param consumer The consumer that accept non-null objects.
+     */
+    public void fromFile(File file, Consumer<T> consumer) {
+        try {
+            fromBase(TStreamTools.read(file), consumer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Get array of objects by read Base64 string.
      *
-     * @param base64 Base64 that represent the objets.
+     * @param base64 Base64 that represent the objects.
      * @return       Array of objects.
      */
     @SuppressWarnings("unchecked")
@@ -245,35 +333,46 @@ public class TStream<T> {
     }
 
     /**
-     * Get list og objects by reAD Base64 string.
+     * Consume new objects if it can be created from Base64 string.
+     *
+     * @param base64   Base64 that represent the objects.
+     * @param consumer The consumer that accept non-null objects.
+     */
+    public void fromBase64(String base64, Consumer<T> consumer) {
+        if (base64.equalsIgnoreCase("null")) {
+            return;
+        }
+        fromBytes(Base64Coder.decodeLines(base64), consumer);
+    }
+
+    /**
+     * Get list of objects by read Base64 string.
      *
      * @param base64 Base64 that represent the list.
      * @return       List of objects.
      */
     public List<T> listFromBase64(String base64) {
-        List<T> list = new ArrayList<>();
-        if (!base64.isBlank()) {
-            try (ByteArrayInputStream in = new ByteArrayInputStream(Base64Coder.decodeLines(base64)); BukkitObjectInputStream input = new BukkitObjectInputStream(in)) {
-                Object o;
-                while ((o = input.readObject()) != null) {
-                    if (o instanceof byte[]) {
-                        T object = fromBytes((byte[]) o);
-                        if (object != null) {
-                            list.add(object);
-                        }
-                    }
-                }
-            } catch (EOFException ignored) {
-            } catch (ClassNotFoundException | IOException e) {
-                e.printStackTrace();
-            }
+        if (base64.equalsIgnoreCase("null")) {
+            return new ArrayList<>();
         }
+        return listFromBytes(Base64Coder.decodeLines(base64));
+    }
+
+    /**
+     * Get list of objects by read byte array.
+     *
+     * @param bytes Bytes to read,
+     * @return      A list of converted objects from any saved compound.
+     */
+    public List<T> listFromBytes(byte[] bytes) {
+        final List<T> list = new ArrayList<>();
+        fromBytes(bytes, list::add);
         return list;
     }
 
     /**
      * Get object from bytes.<br>
-     * The method first read the bytes with ByteArrayInputStream to
+     * This method first read the bytes with ByteArrayInputStream to
      * get an NBTTagCompound and convert it into object.<br>
      * Bytes -&gt; NBTTagCompound -&gt; Object
      *
@@ -282,10 +381,61 @@ public class TStream<T> {
      */
     public T fromBytes(byte[] bytes) {
         try {
-            return fromCompound(TStreamTools.read(new ByteArrayInputStream(bytes)));
+            return fromCompound(TStreamTools.read(bytes));
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    /**
+     * Consume new objects if it can be created from byte array.<br>
+     * This method detect any NBTTagCompound inside provided bytes and convert into current
+     * instance object using the detected compression format, it is also compatible with
+     * any saved object inside NBTTagByteArray, NBTTagList and BukkitObjectInputStream.
+     *
+     * @param bytes    NBTTagList instance.
+     * @param consumer The consumer that accept non-null objects.
+     */
+    @SuppressWarnings("unchecked")
+    public void fromBytes(byte[] bytes, Consumer<T> consumer) {
+        if (bytes.length < 3) {
+            return;
+        }
+
+        // Detect NBT and parse with GZIP compression format if it's applicable
+        final Boolean gzip = TStreamTools.isGzipHeader(bytes) ? Boolean.TRUE : (TStreamTools.isNbtHeader(bytes) ? Boolean.FALSE : null);
+        if (gzip != null) {
+            Object nbt = null;
+            try (DataInputStream in = TStreamTools.getDataInput(new ByteArrayInputStream(bytes), gzip)) {
+                nbt = TStreamTools.read((DataInput) in);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (nbt != null) {
+                fromBase(nbt, consumer);
+                return;
+            }
+        }
+
+        // Try to read with BukkitObject stream
+        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes); BukkitObjectInputStream input = new BukkitObjectInputStream(in)) {
+            Object o;
+            while ((o = input.readObject()) != null) {
+                if (o instanceof byte[]) {
+                    fromBytes((byte[]) o, consumer);
+                } else {
+                    // Try to cast to current type
+                    try {
+                        final T t = (T) o;
+                        consumer.accept(t);
+                    } catch (ClassCastException ignored) { }
+                }
+            }
+        } catch (EOFException ignored) {
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
         }
     }
 }
