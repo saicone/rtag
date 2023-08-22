@@ -394,10 +394,9 @@ public class TStream<T> {
      * instance object using the detected compression format, it is also compatible with
      * any saved object inside NBTTagByteArray, NBTTagList and BukkitObjectInputStream.
      *
-     * @param bytes    NBTTagList instance.
+     * @param bytes    Byte array to read.
      * @param consumer The consumer that accept non-null objects.
      */
-    @SuppressWarnings("unchecked")
     public void fromBytes(byte[] bytes, Consumer<T> consumer) {
         if (bytes.length < 3) {
             return;
@@ -406,20 +405,32 @@ public class TStream<T> {
         // Detect NBT and parse with GZIP compression format if it's applicable
         final Boolean gzip = TStreamTools.isGzipHeader(bytes) ? Boolean.TRUE : (TStreamTools.isNbtHeader(bytes) ? Boolean.FALSE : null);
         if (gzip != null) {
-            Object nbt = null;
+            final Object nbt;
             try (DataInputStream in = TStreamTools.getDataInput(new ByteArrayInputStream(bytes), gzip)) {
                 nbt = TStreamTools.read((DataInput) in);
             } catch (IOException e) {
                 e.printStackTrace();
+                return;
             }
 
             if (nbt != null) {
                 fromBase(nbt, consumer);
-                return;
             }
+            return;
         }
 
         // Try to read with BukkitObject stream
+        fromBukkitObject(bytes, consumer);
+    }
+
+    /**
+     * Consume new objects if it can be created from byte array read by BukkitObjectInputStream.
+     *
+     * @param bytes    Byte array to read.
+     * @param consumer The consumer that accept non-null objects.
+     */
+    @SuppressWarnings("unchecked")
+    public void fromBukkitObject(byte[] bytes, Consumer<T> consumer) {
         try (ByteArrayInputStream in = new ByteArrayInputStream(bytes); BukkitObjectInputStream input = new BukkitObjectInputStream(in)) {
             Object o;
             while ((o = input.readObject()) != null) {
@@ -435,6 +446,9 @@ public class TStream<T> {
             }
         } catch (EOFException ignored) {
         } catch (ClassNotFoundException | IOException e) {
+            if (e.getMessage().contains("invalid stream header")) {
+                throw new IllegalArgumentException("Unsupported serialization format", e);
+            }
             e.printStackTrace();
         }
     }
