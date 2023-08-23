@@ -56,9 +56,14 @@ public class ServerInstance {
     public static final boolean isSpigot;
     /**
      * Return true if server instance is a PaperMC server.<br>
-     * <a href="https://papermc.io/">PaperMC.io</a>
+     * <a href="https://papermc.io/software/paper">PaperMC.io</a>
      */
     public static final boolean isPaper;
+    /**
+     * Return true if server instance is a Folia server.<br>
+     * <a href="https://papermc.io/software/folia">PaperMC.io</a>
+     */
+    public static final boolean isFolia;
 
     private static final TreeMap<Integer, Integer[]> DATA_VERSION = new TreeMap<>();
 
@@ -83,6 +88,7 @@ public class ServerInstance {
         isUniversal = verNumber >= 17;
         boolean spigot = false;
         boolean paper = false;
+        boolean folia = false;
         try {
             Class.forName("org.spigotmc.SpigotConfig");
             spigot = true;
@@ -91,8 +97,13 @@ public class ServerInstance {
             Class.forName("com.destroystokyo.paper.Title");
             paper = true;
         } catch (ClassNotFoundException ignored) { }
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            folia = true;
+        } catch (ClassNotFoundException ignored) { }
         isSpigot = spigot;
         isPaper = paper;
+        isFolia = folia;
 
         // Original data versions start by 100 until 15w32a
         DATA_VERSION.put(Integer.MIN_VALUE, new Integer[] {verNumber, release, fullVersion});
