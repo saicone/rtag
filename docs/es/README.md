@@ -23,6 +23,8 @@ tag.set(40, "someKey");
 // Incluyendo compatibilidad con cualquier tipo de objeto como MyObject
 MyObject myobject = new MyObject();
 tag.set(myobject, "any", "path");
+// Unir múltiples valores en el tag
+tag.merge(Map.of("asd", 123, "someKey", 41), true);
 
 // También puedes añadir listas
 tag.set(new ArrayList(), "list", "path");

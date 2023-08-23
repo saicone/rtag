@@ -60,6 +60,21 @@ Revisa la **[guía de objetos custom](../../feature/custom-objects/)** si quiere
 
 :::
 
+### Transformación
+
+Usando métodos de transformación puedes unir y mover rutas fácilmente.
+
+```java
+// Cualquier instancia de RtagEditor (RtagItem, RtagEntity, RtagBlock)
+RtagEditor tag = ...;
+
+// Unir múltiples valores en el tag
+tag.merge(Map.of("asd", 123, "someKey", 41), true);
+
+// Mover desde una ruta hacia cualquier ruta
+tag.move(new Object[] {"asd"}, new Object[] {"my", "saved", "object"});
+```
+
 ### Colecciones
 
 Con Rtag es bastante fácil manejar listas de objetos, con el método `add` puedes agregar objetos dentro de las listas en las rutas establecidas, además que si la lista no existe se encargará de crear una nueva.

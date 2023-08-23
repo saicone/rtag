@@ -373,4 +373,33 @@ public class TagBase {
             throw e;
         }
     }
+
+    /**
+     * Get the size of elements inside NBTTagCompound or NBTTagList.
+     *
+     * @param tag NBTBase instance.
+     * @return    Size of map or list inside.
+     */
+    public static int size(Object tag) {
+        if (TagCompound.isTagCompound(tag)) {
+            return TagCompound.getValue(tag).size();
+        } else if (TagList.isTagList(tag)) {
+            return TagList.size(tag);
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * Clear the provided NBTTagCompound or NBTTagList.
+     *
+     * @param tag NBTBase instance.
+     */
+    public static void clear(Object tag) {
+        if (TagCompound.isTagCompound(tag)) {
+            TagCompound.clear(tag);
+        } else if (TagList.isTagList(tag)) {
+            TagList.clear(tag);
+        }
+    }
 }

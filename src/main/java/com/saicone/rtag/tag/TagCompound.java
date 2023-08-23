@@ -355,6 +355,53 @@ public class TagCompound {
     }
 
     /**
+     * Merge the provided value into NBTTagCompound.
+     *
+     * @param tag     NBTTagCompound instance.
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @return        true if the value was merged.
+     */
+    public static boolean merge(Object tag, Object value, boolean replace) {
+        return merge(tag, value, replace, false);
+    }
+
+    /**
+     * Merge the provided value into NBTTagCompound.
+     *
+     * @param tag     NBTTagCompound instance.
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param deep    True to merge into sub paths instead of main path.
+     * @return        true if the value was merged.
+     */
+    public static boolean merge(Object tag, Object value, boolean replace, boolean deep) {
+        if (!isTagCompound(value)) {
+            return false;
+        }
+        final Map<String, Object> from = getValue(value);
+        final Map<String, Object> to = getValue(tag);
+
+        boolean merged = false;
+        Object tempValue;
+        for (var entry : from.entrySet()) {
+            if (!to.containsKey(entry.getKey())) {
+                to.put(entry.getKey(), entry.getValue());
+                merged = true;
+            } else if (deep && isTagCompound(entry.getValue()) && isTagCompound((tempValue = to.get(entry.getKey())))) {
+                final boolean result = merge(tempValue, entry.getValue(), replace, true);
+                if (!merged && result) {
+                    merged = true;
+                }
+            } else if (replace) {
+                to.put(entry.getKey(), entry.getValue());
+                merged = true;
+            }
+        }
+        return merged;
+    }
+
+    /**
      * Get NBTBase value associated with key.
      *
      * @param tag NBTTagCompound instance.

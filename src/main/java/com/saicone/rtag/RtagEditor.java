@@ -398,6 +398,75 @@ public abstract class RtagEditor<T> {
     }
 
     /**
+     * Merge the provided value into current tag.
+     *
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside current tag.
+     * @return        true if the value was merged.
+     */
+    public boolean merge(Object value, boolean replace) {
+        return TagCompound.merge(tag, rtag.newTag(value), replace);
+    }
+
+    /**
+     * Merge the provided value at provided path.
+     *
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param path    Final value path to merge into.
+     * @return        true if the value was merged.
+     */
+    public boolean merge(Object value, boolean replace, Object... path) {
+        return rtag.merge(tag, value, replace, path);
+    }
+
+    /**
+     * Merge the provided value into current tag using deep method.
+     *
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside current tag.
+     * @return        true if the value was merged.
+     */
+    public boolean deepMerge(Object value, boolean replace) {
+        return TagCompound.merge(tag, rtag.newTag(value), replace, true);
+    }
+
+    /**
+     * Merge the provided value at provided path using deep method.
+     *
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param path    Final value path to merge into.
+     * @return        true if the value was merged.
+     */
+    public boolean deepMerge(Object value, boolean replace, Object... path) {
+        return rtag.deepMerge(tag, value, replace, path);
+    }
+
+    /**
+     * Move tag from specified path to any path.
+     *
+     * @param from  Path to get the value.
+     * @param to    Path to set the value.
+     * @return      true if the value was moved.
+     */
+    public boolean move(Object[] from, Object[] to) {
+        return rtag.move(tag, from, to);
+    }
+
+    /**
+     * Move tag from specified path to any path.
+     *
+     * @param from  Path to get the value.
+     * @param to    Path to set the value.
+     * @param clear True to clear empty paths.
+     * @return      true if the value was moved.
+     */
+    public boolean move(Object[] from, Object[] to, boolean clear) {
+        return rtag.move(tag, from, to, clear);
+    }
+
+    /**
      * Remove value to specified path inside current tag.<br>
      * See {@link Rtag#set(Object, Object, Object...)} for more information.
      *

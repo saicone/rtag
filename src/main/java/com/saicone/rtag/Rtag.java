@@ -1,5 +1,6 @@
 package com.saicone.rtag;
 
+import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.OptionalType;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * <p>Rtag class to edit NBTTagCompound &amp; NBTTagList objects.<br>
@@ -112,7 +114,7 @@ public class Rtag extends RtagMirror {
      * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
      * @param value Value to add.
      * @param path  Final list path to add the specified value.
-     * @return      True if value is added.
+     * @return      true if value was added.
      */
     public boolean add(Object tag, Object value, Object... path) {
         if (path.length == 0) {
@@ -140,7 +142,7 @@ public class Rtag extends RtagMirror {
      * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
      * @param value Value to set.
      * @param path  Final value path to set.
-     * @return      True if the value is set.
+     * @return      true if the value was set.
      */
     public boolean set(Object tag, Object value, Object... path) {
         if (path.length == 0) {
@@ -164,7 +166,7 @@ public class Rtag extends RtagMirror {
      * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
      * @param value Value to set.
      * @param key   Key associated with value.
-     * @return      True if the value is set.
+     * @return      true if the value was set.
      */
     public boolean setExact(Object tag, Object value, Object key) {
         if (key instanceof Integer && TAG_LIST.isInstance(tag)) {
@@ -185,11 +187,84 @@ public class Rtag extends RtagMirror {
     }
 
     /**
+     * Merge the provided value with NBTTagCompound at provided path.
+     *
+     * @param tag     Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param path    Final value path to merge into.
+     * @return        true if the value was merged.
+     */
+    public boolean merge(Object tag, Object value, boolean replace, Object... path) {
+        return getExactOrCreate(tag, path, setPredicate, finalTag -> TagCompound.merge(finalTag, newTag(value), replace));
+    }
+
+    /**
+     * Merge the provided value with NBTTagCompound at provided path using deep method.
+     *
+     * @param tag     Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param value   The value to merge.
+     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param path    Final value path to merge into.
+     * @return        true if the value was merged.
+     */
+    public boolean deepMerge(Object tag, Object value, boolean replace, Object... path) {
+        return getExactOrCreate(tag, path, setPredicate, finalTag -> TagCompound.merge(finalTag, newTag(value), replace, true));
+    }
+
+    /**
+     * Move tag from specified path to any path.
+     *
+     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param from  Path to get the value.
+     * @param to    Path to set the value.
+     * @return      true if the value was moved.
+     */
+    public boolean move(Object tag, Object[] from, Object[] to) {
+        return move(tag, from, to, true);
+    }
+
+    /**
+     * Move tag from specified path to any path.
+     *
+     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param from  Path to get the value.
+     * @param to    Path to set the value.
+     * @param clear True to clear empty paths.
+     * @return      true if the value was moved.
+     */
+    public boolean move(Object tag, Object[] from, Object[] to, boolean clear) {
+        final Object value = getExact(tag, from);
+        if (value == null) {
+            return false;
+        }
+        final boolean result = set(tag, value, to);
+        if (!result) {
+            return false;
+        }
+        if (clear && from.length > 1) {
+            Object[] path = from;
+            for (int i = 1; i < from.length; i++) {
+                final Object[] copy = Arrays.copyOf(from, from.length - i);
+                final int size = TagBase.size(getExact(tag, copy));
+                if (size < 0 || size > 1) {
+                    break;
+                }
+                path = copy;
+            }
+            set(tag, null, path);
+        } else {
+            set(tag, null, from);
+        }
+        return true;
+    }
+
+    /**
      * Remove value from exact NBTTag list or compound.
      *
      * @param tag Tag instance, can be NBTTagCompound or NBTTagList.
      * @param key Key associated with value.
-     * @return    True if the value is removed (or don't exist).
+     * @return    true if the value is removed (or don't exist).
      */
     public boolean removeExact(Object tag, Object key) {
         if (key instanceof Integer && TAG_LIST.isInstance(tag)) {
@@ -257,7 +332,7 @@ public class Rtag extends RtagMirror {
      *
      * @param tag           Tag instance, can be NBTTagCompound or NBTTagList.
      * @param path          Final value path to get.
-     * @param listPredicate Predicate to set new NBTTagList if NBTTagCompound doesn't contains key.
+     * @param listPredicate Predicate to set new NBTTagList if NBTTagCompound doesn't contain key.
      * @return              The value assigned to specified path or null.
      */
     @SuppressWarnings("unchecked")
@@ -298,6 +373,24 @@ public class Rtag extends RtagMirror {
             }
         }
         return finalTag;
+    }
+
+    /**
+     * Get and test exact NBTBase value without any conversion, from the specified path inside tag.<br>
+     * See {@link #get(Object, Object...)} for path information.
+     *
+     * @param tag           Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param path          Final value path to get.
+     * @param listPredicate Predicate to set new NBTTagList if NBTTagCompound doesn't contain key.
+     * @param predicate     Consumer that accept non-null value.
+     * @return              true if the value was consumed.
+     */
+    public boolean getExactOrCreate(Object tag, Object[] path, BiPredicate<Integer, Object[]> listPredicate, Predicate<Object> predicate) {
+        final Object finalTag = getExactOrCreate(tag, path, listPredicate);
+        if (finalTag == null) {
+            return false;
+        }
+        return predicate.test(finalTag);
     }
 
     /**

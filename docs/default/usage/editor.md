@@ -59,6 +59,21 @@ Check out **[custom objects guide](../../feature/custom-objects/)** if you want 
 
 :::
 
+### Transformation
+
+Using transformation methods you can merge and move paths easily.
+
+```java
+// Any RtagEditor instance (RtagItem, RtagEntity, RtagBlock)
+RtagEditor tag = ...;
+
+// Merge values into tag
+tag.merge(Map.of("asd", 123, "someKey", 41), true);
+
+// Move from path to any path
+tag.move(new Object[] {"asd"}, new Object[] {"my", "saved", "object"});
+```
+
 ### Collections
 
 With Rtag is easy to handle list of objects, with `add` method you can add objects to list at provided path, so if the List doesn't exist it will be created.

@@ -23,6 +23,8 @@ tag.set(40, "someKey");
 // Including compatibility with any type of object like MyObject
 MyObject myobject = new MyObject();
 tag.set(myobject, "any", "path");
+// Merge values into tag
+tag.merge(Map.of("asd", 123, "someKey", 41), true);
 
 // So you can add lists
 tag.set(new ArrayList(), "list", "path");

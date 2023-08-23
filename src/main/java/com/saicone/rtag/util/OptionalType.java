@@ -118,10 +118,8 @@ public class OptionalType extends IterableType<Object> {
      */
     public OptionalType first() {
         if (isIterable()) {
-            for (Object o : this) {
-                return OptionalType.of(o);
-            }
-            return OptionalType.EMPTY;
+            final Iterator<Object> iterator = this.iterator();
+            return iterator.hasNext() ? OptionalType.of(iterator.next()) : OptionalType.EMPTY;
         }
         return this;
     }
@@ -134,10 +132,8 @@ public class OptionalType extends IterableType<Object> {
      */
     public OptionalType single() {
         if (isIterable()) {
-            for (Object o : this) {
-                return OptionalType.of(o).single();
-            }
-            return OptionalType.EMPTY;
+            final Iterator<Object> iterator = this.iterator();
+            return iterator.hasNext() ? OptionalType.of(iterator.next()).single() : OptionalType.EMPTY;
         }
         return this;
     }
