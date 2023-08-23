@@ -111,6 +111,38 @@ public class OptionalType extends IterableType<Object> {
     }
 
     /**
+     * Get the first value.<br>
+     * This method extract the first value if the current object is a collection or array.
+     *
+     * @return An OptionalType with object value.
+     */
+    public OptionalType first() {
+        if (isIterable()) {
+            for (Object o : this) {
+                return OptionalType.of(o);
+            }
+            return OptionalType.EMPTY;
+        }
+        return this;
+    }
+
+    /**
+     * Get actual value as single object<br>
+     * This method make a recursively extract from the first value if the current object is a collection or array.
+     *
+     * @return An OptionalType with object value.
+     */
+    public OptionalType single() {
+        if (isIterable()) {
+            for (Object o : this) {
+                return OptionalType.of(o).single();
+            }
+            return OptionalType.EMPTY;
+        }
+        return this;
+    }
+
+    /**
      * Get actual value converted to required type.
      *
      * @param <T> Type to cast.

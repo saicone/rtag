@@ -111,9 +111,11 @@ Tomar en cuenta que la conversión de múltiples objetos no hace "magia" para co
 
 :::
 
-:::caution Limitaciones actuales
+:::tip Conversión de objeto único
 
-La instancia de `OptionalType` tiene conversión de objetos únicos a objetos múltiples como colecciones o array, pero no puede convertir colecciones y arrays en objetos únicos.
+Si quieres que la instancia de `OptionalType` sea un objeto único solamente utiliza el método `OptionalType#single()`, si el tipo de objeto actual es una colección o array el primer valor será utilizado **de manera recursiva**.
+
+Para tener solo "el primer valor" utiliza en cambio el método `OptionalType#first()`.
 
 :::
 

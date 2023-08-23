@@ -111,9 +111,11 @@ Take in count the multiple-type conversion doesn't do "magic" to convert types, 
 
 :::
 
-:::caution Current limitations
+:::tip Single type conversion
 
-The `OptionalType` instance provide a single object to collection or array conversion, but it doesn't convert collections or arrays into single objects.
+If you want the `OptionalType` instance as single object just wrap it with `OptionalType#single()` method, if the current type is a collection or array the first value will be used **recursively**.
+
+For only "the first value" use the method `OptionalType#first()` instead.
 
 :::
 
