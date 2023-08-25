@@ -37,7 +37,7 @@ Ejemplo con la paleta de color por defecto:
 
 ![Pretty NBT](https://raw.githubusercontent.com/saicone/rtag/main/docs/images/pretty-nbt.png)
 
-::: info
+:::info
 
 Para hacer tu propia paleta debes proporcionar un `String[]` de un tamaño de 5 con los colores en el orden de:
 

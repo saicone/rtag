@@ -15,6 +15,7 @@ import java.util.List;
  *
  * @author Rubenicos
  */
+@SuppressWarnings("javadoc")
 public enum EnchantmentTag {
 
     AQUA_AFFINITY(0, 6, "WATER_WORKER"),

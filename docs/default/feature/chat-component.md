@@ -37,7 +37,7 @@ Example with default color palette:
 
 ![Pretty NBT](https://raw.githubusercontent.com/saicone/rtag/main/docs/images/pretty-nbt.png)
 
-::: info
+:::info
 
 You can make your own color palette by providing a 5-length `String[]` with color in the order of:
 

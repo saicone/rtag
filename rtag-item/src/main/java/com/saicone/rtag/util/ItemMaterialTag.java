@@ -12,6 +12,7 @@ import java.util.TreeMap;
  *
  * @author Rubenicos
  */
+@SuppressWarnings("javadoc")
 public enum ItemMaterialTag {
 
     ACACIA_BOAT(9, "BOAT_ACACIA"),
