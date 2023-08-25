@@ -47,7 +47,6 @@ ItemStack head = SkullTexture.getTexturedHead(texture);
 
 ```java
 String texture = "fedfa2e0fdea0c0423804cdb5b62ad05a6e914c046c4a3b7e355bf81269125fd";
-ItemStack head = SkullTexture.getTexturedHead(texture);
 // Obtener de manera simple, el valor de la textura será utilizado
 ItemStack head = SkullTexture.getTexturedHead(texture);
 ```
@@ -57,7 +56,6 @@ ItemStack head = SkullTexture.getTexturedHead(texture);
 
 ```java
 String texture = "Rubenicos";
-ItemStack head = SkullTexture.getTexturedHead(texture);
 // Obtener de manera simple, la textura puede ser obtenida de manera async
 ItemStack head = SkullTexture.getTexturedHead(texture);
 

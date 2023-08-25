@@ -218,7 +218,7 @@ public class RtagItem extends RtagEditor<ItemStack> {
         }
         final Object enchantment = getEnchantment(tag);
         if (enchantment == null) {
-            return add(Map.of(tag.getKey(), level), EnchantmentTag.getEnchantmentKey(getTypeObject()));
+            return add(Map.of("id", tag.getKey(), "lvl", level), EnchantmentTag.getEnchantmentKey(getTypeObject()));
         }
         TagCompound.set(enchantment, "lvl", TagBase.newTag(level));
         return true;

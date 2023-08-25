@@ -132,6 +132,8 @@ public abstract class RtagEditor<T> {
 
     /**
      * Load changes into object instance.
+     *
+     * @return The current instance type object.
      */
     public abstract T load();
 
