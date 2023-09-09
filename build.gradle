@@ -19,6 +19,13 @@ allprojects {
         withJavadocJar()
     }
 
+    javadoc {
+        options {
+            links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
+            links 'https://hub.spigotmc.org/javadocs/spigot/'
+        }
+    }
+
     publishing {
         publications {
             maven(MavenPublication) {
@@ -58,5 +65,9 @@ def javadocProjects= [
 task allJavadoc(type: Javadoc) {
     source javadocProjects.collect { project(it).sourceSets.main.allJava }
     classpath = files(javadocProjects.collect { project(it).sourceSets.main.compileClasspath })
+    options {
+        links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
+        links 'https://hub.spigotmc.org/javadocs/spigot/'
+    }
     destinationDir = file(project.buildDir.path + '/docs/all-javadoc')
 }
