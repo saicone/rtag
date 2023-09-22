@@ -51,20 +51,20 @@ public class IEffectMirror implements ItemMirror {
     }
 
     @Override
-    public double getMinVersion() {
+    public float getMinVersion() {
         return 14;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, double from, double to) {
-        if (from <= 20.1 && id.equals("minecraft:suspicious_stew")) {
+    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+        if (from <= 20.01f && id.equals("minecraft:suspicious_stew")) {
             processEffects(tag, "Effects", "effects", true);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, double from, double to) {
-        if (to <= 20.1 && id.equals("minecraft:suspicious_stew")) {
+    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+        if (to <= 20.01f && id.equals("minecraft:suspicious_stew")) {
             processEffects(tag, "effects", "Effects", false);
         }
     }

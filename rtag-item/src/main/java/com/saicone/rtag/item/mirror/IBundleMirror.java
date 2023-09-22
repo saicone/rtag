@@ -26,19 +26,19 @@ public class IBundleMirror implements ItemMirror {
     }
 
     @Override
-    public double getMinVersion() {
+    public float getMinVersion() {
         return 17;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, double from, double to) {
+    public void upgrade(Object compound, String id, Object tag, float from, float to) {
         if (id.equals("minecraft:bundle")) {
             processTag(tag, from, to);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, double from, double to) {
+    public void downgrade(Object compound, String id, Object tag, float from, float to) {
         if (id.equals("minecraft:bundle")) {
             processTag(tag, from, to);
         }
@@ -50,7 +50,7 @@ public class IBundleMirror implements ItemMirror {
      * @param from Version specified in compound.
      * @param to   Version to convert.
      */
-    public void processTag(Object tag, double from, double to) {
+    public void processTag(Object tag, float from, float to) {
         Object items = TagCompound.get(tag, "Items");
         if (items != null) {
             int size = TagList.size(items);

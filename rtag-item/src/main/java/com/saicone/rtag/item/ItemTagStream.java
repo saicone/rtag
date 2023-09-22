@@ -54,7 +54,7 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     private final List<ItemMirror> mirror;
-    private final double version;
+    private final float version;
     private final String versionKey;
 
     /**
@@ -65,12 +65,12 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     /**
-     * Constructs am ItemTagStream with specified {@link ItemMirror} list.
+     * Constructs an ItemTagStream with specified {@link ItemMirror} list.
      *
      * @param mirror Mirror list.
      */
     public ItemTagStream(List<ItemMirror> mirror) {
-        this(mirror, Double.parseDouble(ServerInstance.verNumber + "." + ServerInstance.release), "rtagDataVersion");
+        this(mirror, Float.parseFloat(ServerInstance.verNumber + "." + (ServerInstance.release < 10 ? "0" : "") + ServerInstance.release), "rtagDataVersion");
     }
 
     /**
@@ -81,7 +81,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param version    Server version.
      * @param versionKey Version key identifier from compound.
      */
-    public ItemTagStream(List<ItemMirror> mirror, double version, String versionKey) {
+    public ItemTagStream(List<ItemMirror> mirror, float version, String versionKey) {
         this.mirror = mirror;
         this.version = version;
         this.versionKey = versionKey;
@@ -101,7 +101,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      *
      * @return Server version.
      */
-    public double getVersion() {
+    public float getVersion() {
         return version;
     }
 
@@ -111,11 +111,11 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param compound NBTTagCompound to read.
      * @return         A valid version number or null.
      */
-    protected Double getVersion(Object compound) {
+    protected Float getVersion(Object compound) {
         final Map<String, Object> value = TagCompound.getValue(compound);
         Object version = TagBase.getValue(value.get(getVersionKey()));
         if (version instanceof Number) {
-            return ((Number) version).doubleValue();
+            return ((Number) version).floatValue();
         }
 
         version = TagBase.getValue(value.get("DataVersion"));
@@ -125,7 +125,8 @@ public class ItemTagStream extends TStream<ItemStack> {
 
         if (version instanceof Number) {
             final int dataVersion = ((Number) version).intValue();
-            return Double.parseDouble(ServerInstance.verNumber(dataVersion) + "." + ServerInstance.release(dataVersion));
+            final int release = ServerInstance.release(dataVersion);
+            return Float.parseFloat(ServerInstance.verNumber(dataVersion) + "." + (release < 10 ? "0" : "") + release);
         }
 
         return null;
@@ -232,8 +233,8 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param compound NBTTagCompound with item information.
      */
     public void onLoad(Object compound) {
-        final Double version = getVersion(compound);
-        if (version != null && (version > getVersion() || getVersion() > version)) {
+        final Float version = getVersion(compound);
+        if (version != null && !versionMatches(version, getVersion())) {
             onLoad(compound, version, getVersion());
         }
     }
@@ -245,7 +246,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    public void onLoad(Object compound, double from, double to) {
+    public void onLoad(Object compound, float from, float to) {
         String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
         if (id == null) return;
 
@@ -271,6 +272,20 @@ public class ItemTagStream extends TStream<ItemStack> {
                 }
             }
         }
+    }
+
+    /**
+     * Check if the provided pair of versions matches.
+     *
+     * @param from Version specified in compound.
+     * @param to   Version to convert.
+     * @return     true if matches.
+     */
+    protected boolean versionMatches(float from, float to) {
+        if (from < 19.02f && to < 19.02f) {
+            return (int) from == (int) to;
+        }
+        return from == to;
     }
 
     @Override

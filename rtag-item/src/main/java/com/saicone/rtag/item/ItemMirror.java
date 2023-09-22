@@ -15,7 +15,7 @@ public interface ItemMirror {
      *
      * @return A version number.
      */
-    default double getDeprecationVersion() {
+    default float getDeprecationVersion() {
         return ServerInstance.verNumber + 1;
     }
 
@@ -24,7 +24,7 @@ public interface ItemMirror {
      *
      * @return A version number.
      */
-    default double getMinVersion() {
+    default float getMinVersion() {
         return 8;
     }
 
@@ -36,7 +36,7 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void upgrade(Object compound, String id, double from, double to) {
+    default void upgrade(Object compound, String id, float from, float to) {
         // empty default method
     }
 
@@ -49,7 +49,7 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void upgrade(Object compound, String id, Object tag, double from, double to) {
+    default void upgrade(Object compound, String id, Object tag, float from, float to) {
         // empty default method
     }
 
@@ -61,7 +61,7 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void downgrade(Object compound, String id, double from, double to) {
+    default void downgrade(Object compound, String id, float from, float to) {
         // empty default method
     }
 
@@ -74,7 +74,7 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void downgrade(Object compound, String id, Object tag, double from, double to) {
+    default void downgrade(Object compound, String id, Object tag, float from, float to) {
         // empty default method
     }
 }

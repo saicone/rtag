@@ -26,19 +26,19 @@ public class IShulkerMirror implements ItemMirror {
     }
 
     @Override
-    public double getMinVersion() {
+    public float getMinVersion() {
         return 9;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, double from, double to) {
+    public void upgrade(Object compound, String id, Object tag, float from, float to) {
         if (id.contains("shulker_box")) {
             processTag(tag, from, to);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, double from, double to) {
+    public void downgrade(Object compound, String id, Object tag, float from, float to) {
         if (id.contains("shulker_box")) {
             processTag(tag, from, to);
         }
@@ -50,7 +50,7 @@ public class IShulkerMirror implements ItemMirror {
      * @param from Version specified in compound.
      * @param to   Version to convert.
      */
-    public void processTag(Object tag, double from, double to) {
+    public void processTag(Object tag, float from, float to) {
         Object items = Rtag.INSTANCE.getExact(tag, "BlockEntityTag", "Items");
         if (items != null) {
             int size = TagList.size(items);

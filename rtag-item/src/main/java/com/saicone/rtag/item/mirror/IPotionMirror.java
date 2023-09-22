@@ -39,8 +39,8 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, double from, double to) {
-        if (from <= 20.1 && POTION_ITEMS.contains(id)) {
+    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+        if (from <= 20.01f && POTION_ITEMS.contains(id)) {
             final Map<String, Object> map = TagCompound.getValue(tag);
             if (map.containsKey("CustomPotionEffects")) {
                 final Object customPotionEffects = map.remove("CustomPotionEffects");
@@ -51,8 +51,8 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, double from, double to) {
-        if (from < 9 && id.equals("minecraft:potion")) {
+    public void upgrade(Object compound, String id, float from, float to) {
+        if (to >= 9f && from < 9f && id.equals("minecraft:potion")) {
             upgrade(compound);
         }
     }
@@ -70,14 +70,14 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, double from, double to) {
-        if (to <= 20.1 && POTION_ITEMS.contains(id)) {
+    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+        if (to <= 20.01f && POTION_ITEMS.contains(id)) {
             final Map<String, Object> map = TagCompound.getValue(tag);
             if (map.containsKey("custom_potion_effects")) {
                 final Object customPotionEffects = map.remove("custom_potion_effects");
                 map.put("CustomPotionEffects", customPotionEffects);
             }
-            if (to < 9 && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
+            if (from >= 9f && to < 9f && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
                 String potion = (String) TagBase.getValue(map.get("Potion"));
                 if (potion == null || potion.equals("empty") || potion.equals("water")) return;
 

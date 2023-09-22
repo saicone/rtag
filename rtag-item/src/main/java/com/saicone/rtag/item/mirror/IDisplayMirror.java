@@ -15,40 +15,31 @@ import com.saicone.rtag.util.ChatComponent;
 public class IDisplayMirror implements ItemMirror {
 
     @Override
-    public double getDeprecationVersion() {
+    public float getDeprecationVersion() {
         return 14;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, double from, double to) {
-        processDisplay(tag, from, true);
+    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+        if (to >= 13f && from < 13f) {
+            // display.Name to json text component
+            if (!processName(TagCompound.get(tag, "display"), true)) return;
+        }
+        if (to >= 14f && from < 14f) {
+            // display.Lore to json text component
+            processLore(TagCompound.get(tag, "display"), true);
+        }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, double from, double to) {
-        processDisplay(tag, to, false);
-    }
-
-    /**
-     * Process current display inside item tag.
-     *
-     * @param tag     ItemStack tag.
-     * @param version Version to convert.
-     * @param toJson  True to convert texts into Json component.
-     */
-    public void processDisplay(Object tag, double version, boolean toJson) {
-        if (version < 14) {
-            Object display = TagCompound.get(tag, "display");
-            if (display == null) return;
-
-            // Since 1.14
-            // display.Lore = Json text component
-            processLore(display, toJson);
-            if (version < 13) {
-                // Since 1.13
-                // display.Name = Json text component
-                processName(display, toJson);
-            }
+    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+        if (from >= 13f && to < 13f) {
+            // display.Name to legacy text
+            if (!processName(TagCompound.get(tag, "display"), false)) return;
+        }
+        if (from >= 14f && to < 14f) {
+            // display.Lore to legacy text
+            processLore(TagCompound.get(tag, "display"), false);
         }
     }
 
@@ -59,6 +50,9 @@ public class IDisplayMirror implements ItemMirror {
      * @param toJson  True to convert texts into Json component.
      */
     public void processLore(Object display, boolean toJson) {
+        if (display == null) {
+            return;
+        }
         Object displayLore = TagCompound.get(display, "Lore");
         if (displayLore != null) {
             int size = TagList.size(displayLore);
@@ -75,12 +69,17 @@ public class IDisplayMirror implements ItemMirror {
      * Process current display name tag.
      * @param display Display tag.
      * @param toJson  True to convert texts into Json component.
+     * @return        true if the display tag was processed.
      */
-    public void processName(Object display, boolean toJson) {
+    public boolean processName(Object display, boolean toJson) {
+        if (display == null) {
+            return false;
+        }
         Object tag = processTag(TagCompound.get(display, "Name"), toJson);
         if (tag != null) {
             TagCompound.set(display, "Name", tag);
         }
+        return true;
     }
 
     /**
