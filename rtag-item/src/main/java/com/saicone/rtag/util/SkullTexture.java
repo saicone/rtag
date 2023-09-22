@@ -113,7 +113,8 @@ public class SkullTexture {
      * @throws IllegalArgumentException if the provided item isn't a player head.
      */
     public static ItemStack setTexture(ItemStack head, String texture) throws IllegalArgumentException {
-        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        // Since 1.20.2: The Mojang AuthLib version used by spigot require non-null name for game profile
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "Rubenicos");
         profile.getProperties().put("textures", new Property("textures", getTextureValue(texture)));
 
         ItemMeta meta = head.getItemMeta();
