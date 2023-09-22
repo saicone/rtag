@@ -15,14 +15,14 @@ import java.math.BigInteger;
 public class ISkullOwnerMirror implements ItemMirror {
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) {
-        if ((from >= 16 && to <= 15) && id.equals("minecraft:player_head")) {
+    public void upgrade(Object compound, String id, Object tag, double from, double to) {
+        if ((from < 16 && to >= 19) && (id.equals("minecraft:player_head") || id.equals("minecraft:skull"))) {
             Object skullOwner = TagCompound.get(tag, "SkullOwner");
             if (skullOwner == null) return;
 
             Object ownerID = TagBase.getValue(TagCompound.get(skullOwner, "Id"));
-            if (ownerID instanceof int[]) {
-                String uuid = getHexadecimalUUID((int[]) ownerID);
+            if (ownerID instanceof String) {
+                int[] uuid = getIntArrayUUID((String) ownerID);
                 if (uuid != null) {
                     TagCompound.set(skullOwner, "Id", TagBase.newTag(uuid));
                 }
@@ -31,14 +31,14 @@ public class ISkullOwnerMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) {
-        if ((from <= 15 && to >= 19) && (id.equals("minecraft:player_head") || id.equals("minecraft:skull"))) {
+    public void downgrade(Object compound, String id, Object tag, double from, double to) {
+        if ((from >= 16 && to < 16) && id.equals("minecraft:player_head")) {
             Object skullOwner = TagCompound.get(tag, "SkullOwner");
             if (skullOwner == null) return;
 
             Object ownerID = TagBase.getValue(TagCompound.get(skullOwner, "Id"));
-            if (ownerID instanceof String) {
-                int[] uuid = getIntArrayUUID((String) ownerID);
+            if (ownerID instanceof int[]) {
+                String uuid = getHexadecimalUUID((int[]) ownerID);
                 if (uuid != null) {
                     TagCompound.set(skullOwner, "Id", TagBase.newTag(uuid));
                 }

@@ -21,7 +21,7 @@ public enum ItemMaterialTag {
     ACACIA_DOOR(8, "ACACIA_DOOR_ITEM"),
     ACACIA_FENCE(8),
     ACACIA_FENCE_GATE(8),
-    ACACIA_HANGING_SIGN(11902),
+    ACACIA_HANGING_SIGN(19.2),
     ACACIA_LEAVES(13, "LEAVES2", 8, "LEAVES_2"),
     ACACIA_LOG(13, "LOG2", 8, "LOG_2"),
     ACACIA_PLANKS(13, "PLANKS:4", 8, "WOOD"),
@@ -46,9 +46,9 @@ public enum ItemMaterialTag {
     ANGLER_POTTERY_SHERD(20),
     ANVIL(8),
     APPLE(8),
-    ARCHER_POTTERY_SHERD(20, "POTTERY_SHARD_ARCHER", 11903),
+    ARCHER_POTTERY_SHERD(20, "POTTERY_SHARD_ARCHER", 19.3),
     ARMOR_STAND(8),
-    ARMS_UP_POTTERY_SHERD(20, "POTTERY_SHARD_ARMS_UP", 11903),
+    ARMS_UP_POTTERY_SHERD(20, "POTTERY_SHARD_ARMS_UP", 19.3),
     ARROW(8),
     AXOLOTL_BUCKET(17),
     AXOLOTL_SPAWN_EGG(17),
@@ -57,23 +57,23 @@ public enum ItemMaterialTag {
     AZURE_BLUET(13, "RED_FLOWER:3", 8, "RED_ROSE"),
     BAKED_POTATO(8),
     BAMBOO(14),
-    BAMBOO_BLOCK(11902),
-    BAMBOO_BUTTON(11902),
-    BAMBOO_CHEST_RAFT(11902),
-    BAMBOO_DOOR(11902),
-    BAMBOO_FENCE(11902),
-    BAMBOO_FENCE_GATE(11902),
-    BAMBOO_HANGING_SIGN(11902),
-    BAMBOO_MOSAIC(11902),
-    BAMBOO_MOSAIC_SLAB(11902),
-    BAMBOO_MOSAIC_STAIRS(11902),
-    BAMBOO_PLANKS(11902),
-    BAMBOO_PRESSURE_PLATE(11902),
-    BAMBOO_RAFT(11902),
-    BAMBOO_SIGN(11902),
-    BAMBOO_SLAB(11902),
-    BAMBOO_STAIRS(11902),
-    BAMBOO_TRAPDOOR(11902),
+    BAMBOO_BLOCK(19.2),
+    BAMBOO_BUTTON(19.2),
+    BAMBOO_CHEST_RAFT(19.2),
+    BAMBOO_DOOR(19.2),
+    BAMBOO_FENCE(19.2),
+    BAMBOO_FENCE_GATE(19.2),
+    BAMBOO_HANGING_SIGN(19.2),
+    BAMBOO_MOSAIC(19.2),
+    BAMBOO_MOSAIC_SLAB(19.2),
+    BAMBOO_MOSAIC_STAIRS(19.2),
+    BAMBOO_PLANKS(19.2),
+    BAMBOO_PRESSURE_PLATE(19.2),
+    BAMBOO_RAFT(19.2),
+    BAMBOO_SIGN(19.2),
+    BAMBOO_SLAB(19.2),
+    BAMBOO_STAIRS(19.2),
+    BAMBOO_TRAPDOOR(19.2),
     BARREL(14),
     BARRIER(8),
     BASALT(16),
@@ -95,7 +95,7 @@ public enum ItemMaterialTag {
     BIRCH_DOOR(8, "BIRCH_DOOR_ITEM"),
     BIRCH_FENCE(8),
     BIRCH_FENCE_GATE(8),
-    BIRCH_HANGING_SIGN(11902),
+    BIRCH_HANGING_SIGN(19.2),
     BIRCH_LEAVES(13, "LEAVES:2", 8),
     BIRCH_LOG(13, "LOG:2", 8),
     BIRCH_PLANKS(13, "PLANKS:2", 8, "WOOD"),
@@ -176,7 +176,7 @@ public enum ItemMaterialTag {
     BROWN_STAINED_GLASS_PANE(13, "STAINED_GLASS_PANE:12", 8),
     BROWN_TERRACOTTA(13, "STAINED_HARDENED_CLAY:12", 8, "STAINED_CLAY"),
     BROWN_WOOL(13, "WOOL:12", 8),
-    BRUSH(11903),
+    BRUSH(19.3),
     BUBBLE_CORAL(13),
     BUBBLE_CORAL_BLOCK(13),
     BUBBLE_CORAL_FAN(13),
@@ -188,7 +188,7 @@ public enum ItemMaterialTag {
     CAKE(8),
     CALCITE(17),
     CALIBRATED_SCULK_SENSOR(20),
-    CAMEL_SPAWN_EGG(11902),
+    CAMEL_SPAWN_EGG(19.2),
     CAMPFIRE(14),
     CANDLE(17),
     CARROT(8, "CARROT_ITEM"),
@@ -197,7 +197,7 @@ public enum ItemMaterialTag {
     CARVED_PUMPKIN(13, "PUMPKIN", 8),
     CAT_SPAWN_EGG(14),
     CAULDRON(8, "CAULDRON_ITEM"),
-    CAVE_SPIDER_SPAWN_EGG(13, Map.of("SPAWN_EGG=cave_spider", 11, "SPAWN_EGG=CaveSpider", 9, "SPAWN_EGG:59", 8), "MONSTER_EGG"),
+    CAVE_SPIDER_SPAWN_EGG(13, Map.of("SPAWN_EGG=cave_spider", 11D, "SPAWN_EGG=CaveSpider", 9D, "SPAWN_EGG:59", 8D), "MONSTER_EGG"),
     CHAIN(16),
     CHAINMAIL_BOOTS(8),
     CHAINMAIL_CHESTPLATE(8),
@@ -205,29 +205,29 @@ public enum ItemMaterialTag {
     CHAINMAIL_LEGGINGS(8),
     CHAIN_COMMAND_BLOCK(9, "COMMAND_CHAIN"),
     CHARCOAL(13, "COAL:1", 8),
-    CHERRY_BOAT(11903),
-    CHERRY_BUTTON(11903),
-    CHERRY_CHEST_BOAT(11903),
-    CHERRY_DOOR(11903),
-    CHERRY_FENCE(11903),
-    CHERRY_FENCE_GATE(11903),
-    CHERRY_HANGING_SIGN(11903),
-    CHERRY_LEAVES(11903),
-    CHERRY_LOG(11903),
-    CHERRY_PLANKS(11903),
-    CHERRY_PRESSURE_PLATE(11903),
-    CHERRY_SAPLING(11903),
-    CHERRY_SIGN(11903),
-    CHERRY_SLAB(11903),
-    CHERRY_STAIRS(11903),
-    CHERRY_TRAPDOOR(11903),
-    CHERRY_WOOD(11903),
+    CHERRY_BOAT(19.3),
+    CHERRY_BUTTON(19.3),
+    CHERRY_CHEST_BOAT(19.3),
+    CHERRY_DOOR(19.3),
+    CHERRY_FENCE(19.3),
+    CHERRY_FENCE_GATE(19.3),
+    CHERRY_HANGING_SIGN(19.3),
+    CHERRY_LEAVES(19.3),
+    CHERRY_LOG(19.3),
+    CHERRY_PLANKS(19.3),
+    CHERRY_PRESSURE_PLATE(19.3),
+    CHERRY_SAPLING(19.3),
+    CHERRY_SIGN(19.3),
+    CHERRY_SLAB(19.3),
+    CHERRY_STAIRS(19.3),
+    CHERRY_TRAPDOOR(19.3),
+    CHERRY_WOOD(19.3),
     CHEST(8),
     CHEST_MINECART(8, "STORAGE_MINECART"),
     CHICKEN(8, "RAW_CHICKEN"),
     CHICKEN_SPAWN_EGG(13, "SPAWN_EGG=Chicken", 9, "SPAWN_EGG:93", 8, "MONSTER_EGG"),
     CHIPPED_ANVIL(13, "ANVIL:1", 8),
-    CHISELED_BOOKSHELF(11902),
+    CHISELED_BOOKSHELF(19.2),
     CHISELED_DEEPSLATE(17),
     CHISELED_NETHER_BRICKS(16),
     CHISELED_POLISHED_BLACKSTONE(16),
@@ -245,7 +245,7 @@ public enum ItemMaterialTag {
     COAL_BLOCK(8),
     COAL_ORE(8),
     COARSE_DIRT(13, "DIRT:1", 8),
-    COAST_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    COAST_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     COBBLED_DEEPSLATE(17),
     COBBLED_DEEPSLATE_SLAB(17),
     COBBLED_DEEPSLATE_STAIRS(17),
@@ -293,7 +293,7 @@ public enum ItemMaterialTag {
     CRIMSON_FENCE(16),
     CRIMSON_FENCE_GATE(16),
     CRIMSON_FUNGUS(16),
-    CRIMSON_HANGING_SIGN(11902),
+    CRIMSON_HANGING_SIGN(19.2),
     CRIMSON_HYPHAE(16),
     CRIMSON_NYLIUM(16),
     CRIMSON_PLANKS(16),
@@ -335,7 +335,7 @@ public enum ItemMaterialTag {
     DARK_OAK_DOOR(8, "DARK_OAK_DOOR_ITEM"),
     DARK_OAK_FENCE(8),
     DARK_OAK_FENCE_GATE(8),
-    DARK_OAK_HANGING_SIGN(11902),
+    DARK_OAK_HANGING_SIGN(19.2),
     DARK_OAK_LEAVES(13, "LEAVES2:1", 8, "LEAVES_2"),
     DARK_OAK_LOG(13, "LOG2:1", 8, "LOG_2"),
     DARK_OAK_PLANKS(13, "PLANKS:5", 8, "WOOD"),
@@ -369,7 +369,7 @@ public enum ItemMaterialTag {
     DEAD_TUBE_CORAL_BLOCK(13),
     DEAD_TUBE_CORAL_FAN(13),
     DEBUG_STICK(13),
-    DECORATED_POT(11903),
+    DECORATED_POT(19.3),
     DEEPSLATE(17),
     DEEPSLATE_BRICKS(17),
     DEEPSLATE_BRICK_SLAB(17),
@@ -419,7 +419,7 @@ public enum ItemMaterialTag {
     DRIPSTONE_BLOCK(17),
     DROPPER(8),
     DROWNED_SPAWN_EGG(13),
-    DUNE_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    DUNE_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     ECHO_SHARD(19),
     EGG(8),
     ELDER_GUARDIAN_SPAWN_EGG(13, "SPAWN_EGG=elder_guardian", 11, "MONSTER_EGG"),
@@ -433,7 +433,7 @@ public enum ItemMaterialTag {
     ENDERMAN_SPAWN_EGG(13, "SPAWN_EGG=Enderman", 9, "SPAWN_EGG:58", 8, "MONSTER_EGG"),
     ENDERMITE_SPAWN_EGG(13, "SPAWN_EGG=Endermite", 9, "SPAWN_EGG:67", 8, "MONSTER_EGG"),
     ENDER_CHEST(8),
-    ENDER_DRAGON_SPAWN_EGG(11902),
+    ENDER_DRAGON_SPAWN_EGG(19.2),
     ENDER_EYE(8, "EYE_OF_ENDER"),
     ENDER_PEARL(8),
     END_CRYSTAL(9),
@@ -451,7 +451,7 @@ public enum ItemMaterialTag {
     EXPOSED_CUT_COPPER(17),
     EXPOSED_CUT_COPPER_SLAB(17),
     EXPOSED_CUT_COPPER_STAIRS(17),
-    EYE_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    EYE_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     FARMLAND(8, "SOIL"),
     FEATHER(8),
     FERMENTED_SPIDER_EYE(8),
@@ -567,7 +567,7 @@ public enum ItemMaterialTag {
     HORN_CORAL(13),
     HORN_CORAL_BLOCK(13),
     HORN_CORAL_FAN(13),
-    HORSE_SPAWN_EGG(13, Map.of("SPAWN_EGG=horse", 11, "SPAWN_EGG=EntityHorse", 9, "SPAWN_EGG:100", 8), "MONSTER_EGG"),
+    HORSE_SPAWN_EGG(13, Map.of("SPAWN_EGG=horse", 11D, "SPAWN_EGG=EntityHorse", 9D, "SPAWN_EGG:100", 8D), "MONSTER_EGG"),
     HOST_ARMOR_TRIM_SMITHING_TEMPLATE(20),
     HOWL_POTTERY_SHERD(20),
     HUSK_SPAWN_EGG(13, "SPAWN_EGG=husk", 11, "MONSTER_EGG"),
@@ -586,7 +586,7 @@ public enum ItemMaterialTag {
     IRON_BOOTS(8),
     IRON_CHESTPLATE(8),
     IRON_DOOR(8),
-    IRON_GOLEM_SPAWN_EGG(11902),
+    IRON_GOLEM_SPAWN_EGG(19.2),
     IRON_HELMET(8),
     IRON_HOE(8),
     IRON_HORSE_ARMOR(8, "IRON_BARDING"),
@@ -609,7 +609,7 @@ public enum ItemMaterialTag {
     JUNGLE_DOOR(8, "JUNGLE_DOOR_ITEM"),
     JUNGLE_FENCE(8),
     JUNGLE_FENCE_GATE(8),
-    JUNGLE_HANGING_SIGN(11902),
+    JUNGLE_HANGING_SIGN(19.2),
     JUNGLE_LEAVES(13, "LEAVES:3", 8),
     JUNGLE_LOG(13, "LOG:3", 8),
     JUNGLE_PLANKS(13, "PLANKS:3", 8, "WOOD"),
@@ -706,14 +706,14 @@ public enum ItemMaterialTag {
     MAGENTA_WOOL(13, "WOOL:2", 8),
     MAGMA_BLOCK(13, "MAGMA", 10),
     MAGMA_CREAM(8),
-    MAGMA_CUBE_SPAWN_EGG(13, Map.of("SPAWN_EGG=magma_cube", 11, "SPAWN_EGG=LavaSlime", 9, "SPAWN_EGG:62", 8), "MONSTER_EGG"),
+    MAGMA_CUBE_SPAWN_EGG(13, Map.of("SPAWN_EGG=magma_cube", 11D, "SPAWN_EGG=LavaSlime", 9D, "SPAWN_EGG:62", 8D), "MONSTER_EGG"),
     MANGROVE_BOAT(19),
     MANGROVE_BUTTON(19),
     MANGROVE_CHEST_BOAT(19),
     MANGROVE_DOOR(19),
     MANGROVE_FENCE(19),
     MANGROVE_FENCE_GATE(19),
-    MANGROVE_HANGING_SIGN(11902),
+    MANGROVE_HANGING_SIGN(19.2),
     MANGROVE_LEAVES(19),
     MANGROVE_LOG(19),
     MANGROVE_PLANKS(19),
@@ -739,7 +739,7 @@ public enum ItemMaterialTag {
     MINECART(8),
     MINER_POTTERY_SHERD(20),
     MOJANG_BANNER_PATTERN(14),
-    MOOSHROOM_SPAWN_EGG(13, Map.of("SPAWN_EGG=mooshroom", 11, "SPAWN_EGG=MushroomCow", 9, "SPAWN_EGG:96", 8), "MONSTER_EGG"),
+    MOOSHROOM_SPAWN_EGG(13, Map.of("SPAWN_EGG=mooshroom", 11D, "SPAWN_EGG=MushroomCow", 9D, "SPAWN_EGG:96", 8D), "MONSTER_EGG"),
     MOSSY_COBBLESTONE(8),
     MOSSY_COBBLESTONE_SLAB(14),
     MOSSY_COBBLESTONE_STAIRS(14),
@@ -792,7 +792,7 @@ public enum ItemMaterialTag {
     NETHERITE_SCRAP(16),
     NETHERITE_SHOVEL(16),
     NETHERITE_SWORD(16),
-    NETHERITE_UPGRADE_SMITHING_TEMPLATE(11903),
+    NETHERITE_UPGRADE_SMITHING_TEMPLATE(19.3),
     NETHERRACK(8),
     //     1.12            1.13
     // NETHER_BRICK -> NETHER_BRICKS
@@ -819,7 +819,7 @@ public enum ItemMaterialTag {
     OAK_DOOR(13, "WOODEN_DOOR", 8, "WOOD_DOOR"),
     OAK_FENCE(13, "FENCE", 8),
     OAK_FENCE_GATE(13, "FENCE_GATE", 8),
-    OAK_HANGING_SIGN(11902),
+    OAK_HANGING_SIGN(19.2),
     OAK_LEAVES(13, "LEAVES", 8),
     OAK_LOG(13, "LOG", 8),
     OAK_PLANKS(13, "PLANKS", 8, "WOOD"),
@@ -832,7 +832,7 @@ public enum ItemMaterialTag {
     OAK_WOOD(13, "LOG:12", 8),
     OBSERVER(11),
     OBSIDIAN(8),
-    OCELOT_SPAWN_EGG(13, Map.of("SPAWN_EGG=ocelot", 11, "SPAWN_EGG=Ozelot", 9, "SPAWN_EGG:98", 8), "MONSTER_EGG"),
+    OCELOT_SPAWN_EGG(13, Map.of("SPAWN_EGG=ocelot", 11D, "SPAWN_EGG=Ozelot", 9D, "SPAWN_EGG:98", 8D), "MONSTER_EGG"),
     OCHRE_FROGLIGHT(19),
     ORANGE_BANNER(13, "BANNER:14", 8),
     ORANGE_BED(13, "BED:1", 12),
@@ -866,7 +866,7 @@ public enum ItemMaterialTag {
     PHANTOM_SPAWN_EGG(13),
     PIGLIN_BANNER_PATTERN(16),
     PIGLIN_BRUTE_SPAWN_EGG(16),
-    PIGLIN_HEAD(11902),
+    PIGLIN_HEAD(19.2),
     PIGLIN_SPAWN_EGG(16),
     PIG_SPAWN_EGG(13, "SPAWN_EGG=Pig", 9, "SPAWN_EGG:90", 8, "MONSTER_EGG"),
     PILLAGER_SPAWN_EGG(14),
@@ -878,7 +878,7 @@ public enum ItemMaterialTag {
     PINK_CONCRETE_POWDER(13, "CONCRETE_POWDER:6", 12),
     PINK_DYE(13, "DYE:9", 8, "INK_SACK"),
     PINK_GLAZED_TERRACOTTA(12),
-    PINK_PETALS(11903),
+    PINK_PETALS(19.3),
     PINK_SHULKER_BOX(11),
     PINK_STAINED_GLASS(13, "STAINED_GLASS:6", 8),
     PINK_STAINED_GLASS_PANE(13, "STAINED_GLASS_PANE:6", 8),
@@ -935,7 +935,7 @@ public enum ItemMaterialTag {
     PRISMARINE_SLAB(13),
     PRISMARINE_STAIRS(13),
     PRISMARINE_WALL(14),
-    PRIZE_POTTERY_SHERD(20, "POTTERY_SHARD_PRIZE", 11903),
+    PRIZE_POTTERY_SHERD(20, "POTTERY_SHARD_PRIZE", 19.3),
     PUFFERFISH(13, "FISH:3", 8, "RAW_FISH"),
     PUFFERFISH_BUCKET(13),
     PUFFERFISH_SPAWN_EGG(13),
@@ -1015,7 +1015,7 @@ public enum ItemMaterialTag {
     REPEATER(8, "DIODE"),
     REPEATING_COMMAND_BLOCK(9, "COMMAND_REPEATING"),
     RESPAWN_ANCHOR(16),
-    RIB_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    RIB_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     ROOTED_DIRT(17),
     ROSE_BUSH(13, "DOUBLE_PLANT:4", 8),
     ROTTEN_FLESH(8),
@@ -1038,7 +1038,7 @@ public enum ItemMaterialTag {
     SEAGRASS(13),
     SEA_LANTERN(8),
     SEA_PICKLE(13),
-    SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE(20),
     SHEAF_POTTERY_SHERD(20),
     SHEARS(8),
@@ -1055,7 +1055,7 @@ public enum ItemMaterialTag {
     SKELETON_SKULL(13, "SKULL", 8, "SKULL_ITEM"),
     SKELETON_SPAWN_EGG(13, "SPAWN_EGG=Skeleton", 9, "SPAWN_EGG:51", 8, "MONSTER_EGG"),
     SKULL_BANNER_PATTERN(14),
-    SKULL_POTTERY_SHERD(20, "POTTERY_SHARD_SKULL", 11903),
+    SKULL_POTTERY_SHERD(20, "POTTERY_SHARD_SKULL", 19.3),
     SLIME_BALL(8),
     // "SLIME_BLOCK" is an alias on legacy versions
     SLIME_BLOCK(13, "SLIME", 8),
@@ -1077,9 +1077,9 @@ public enum ItemMaterialTag {
     SMOOTH_STONE(13),
     SMOOTH_STONE_SLAB(14),
     SNIFFER_EGG(20),
-    SNIFFER_SPAWN_EGG(11903),
+    SNIFFER_SPAWN_EGG(19.3),
     SNORT_POTTERY_SHERD(20),
-    SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     //    1.12          1.13
     // SNOW       -> SNOW_BLOCK
     // SNOW_LAYER -> SNOW
@@ -1088,7 +1088,7 @@ public enum ItemMaterialTag {
     SNOW(13, "SNOW_LAYER", 8),
     SNOWBALL(8, "SNOW_BALL"),
     SNOW_BLOCK(13, "SNOW", 8),
-    SNOW_GOLEM_SPAWN_EGG(11902),
+    SNOW_GOLEM_SPAWN_EGG(19.2),
     SOUL_CAMPFIRE(16),
     SOUL_LANTERN(16),
     SOUL_SAND(8),
@@ -1098,7 +1098,7 @@ public enum ItemMaterialTag {
     SPECTRAL_ARROW(9),
     SPIDER_EYE(8),
     SPIDER_SPAWN_EGG(13, "SPAWN_EGG=Spider", 9, "SPAWN_EGG:52", 8, "MONSTER_EGG"),
-    SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     SPLASH_POTION(9),
     SPONGE(8),
     SPORE_BLOSSOM(17),
@@ -1108,7 +1108,7 @@ public enum ItemMaterialTag {
     SPRUCE_DOOR(8, "SPRUCE_DOOR_ITEM"),
     SPRUCE_FENCE(8),
     SPRUCE_FENCE_GATE(8),
-    SPRUCE_HANGING_SIGN(11902),
+    SPRUCE_HANGING_SIGN(19.2),
     SPRUCE_LEAVES(13, "LEAVES:1", 8),
     SPRUCE_LOG(13, "LOG:1", 8),
     SPRUCE_PLANKS(13, "PLANKS:1", 8, "WOOD"),
@@ -1143,11 +1143,11 @@ public enum ItemMaterialTag {
     STRING(8),
     STRIPPED_ACACIA_LOG(13),
     STRIPPED_ACACIA_WOOD(13),
-    STRIPPED_BAMBOO_BLOCK(11902),
+    STRIPPED_BAMBOO_BLOCK(19.2),
     STRIPPED_BIRCH_LOG(13),
     STRIPPED_BIRCH_WOOD(13),
-    STRIPPED_CHERRY_LOG(11903),
-    STRIPPED_CHERRY_WOOD(11903),
+    STRIPPED_CHERRY_LOG(19.3),
+    STRIPPED_CHERRY_WOOD(19.3),
     STRIPPED_CRIMSON_HYPHAE(16),
     STRIPPED_CRIMSON_STEM(16),
     STRIPPED_DARK_OAK_LOG(13),
@@ -1169,7 +1169,7 @@ public enum ItemMaterialTag {
     SUGAR_CANE(13, "REEDS", 8),
     SUNFLOWER(13, "DOUBLE_PLANT", 8),
     SUSPICIOUS_GRAVEL(20),
-    SUSPICIOUS_SAND(11903),
+    SUSPICIOUS_SAND(19.3),
     SUSPICIOUS_STEW(14),
     SWEET_BERRIES(14),
     TADPOLE_BUCKET(19),
@@ -1177,14 +1177,14 @@ public enum ItemMaterialTag {
     TALL_GRASS(13, "DOUBLE_PLANT:2", 8),
     TARGET(16),
     TERRACOTTA(13, "HARDENED_CLAY", 8, "HARD_CLAY"),
-    TIDE_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    TIDE_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     TINTED_GLASS(17),
     TIPPED_ARROW(9),
     TNT(8),
     TNT_MINECART(8, "EXPLOSIVE_MINECART"),
     TORCH(8),
-    TORCHFLOWER(11903),
-    TORCHFLOWER_SEEDS(11903),
+    TORCHFLOWER(19.3),
+    TORCHFLOWER_SEEDS(19.3),
     TOTEM_OF_UNDYING(11, "TOTEM"),
     TRADER_LLAMA_SPAWN_EGG(14),
     TRAPPED_CHEST(8),
@@ -1202,21 +1202,21 @@ public enum ItemMaterialTag {
     TURTLE_SPAWN_EGG(13),
     TWISTING_VINES(16),
     VERDANT_FROGLIGHT(19),
-    VEX_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    VEX_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     VEX_SPAWN_EGG(13, "SPAWN_EGG=vex", 11, "MONSTER_EGG"),
     VILLAGER_SPAWN_EGG(13, "SPAWN_EGG=Villager", 9, "SPAWN_EGG:120", 8, "MONSTER_EGG"),
     VINDICATOR_SPAWN_EGG(13, "SPAWN_EGG=vindication_illager", 11, "MONSTER_EGG"),
     VINE(8),
     WANDERING_TRADER_SPAWN_EGG(14),
     WARDEN_SPAWN_EGG(19),
-    WARD_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    WARD_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     WARPED_BUTTON(16),
     WARPED_DOOR(16),
     WARPED_FENCE(16),
     WARPED_FENCE_GATE(16),
     WARPED_FUNGUS(16),
     WARPED_FUNGUS_ON_A_STICK(16),
-    WARPED_HANGING_SIGN(11902),
+    WARPED_HANGING_SIGN(19.2),
     WARPED_HYPHAE(16),
     WARPED_NYLIUM(16),
     WARPED_PLANKS(16),
@@ -1268,12 +1268,12 @@ public enum ItemMaterialTag {
     WHITE_TERRACOTTA(13, "STAINED_HARDENED_CLAY", 8, "STAINED_CLAY"),
     WHITE_TULIP(13, "RED_FLOWER:6", 8, "RED_ROSE"),
     WHITE_WOOL(13, "WOOL", 8),
-    WILD_ARMOR_TRIM_SMITHING_TEMPLATE(11903),
+    WILD_ARMOR_TRIM_SMITHING_TEMPLATE(19.3),
     WITCH_SPAWN_EGG(13, "SPAWN_EGG=Witch", 9, "SPAWN_EGG:66", 8, "MONSTER_EGG"),
     WITHER_ROSE(14),
     WITHER_SKELETON_SKULL(13, "SKULL:1", 8, "SKULL_ITEM"),
     WITHER_SKELETON_SPAWN_EGG(13, "SPAWN_EGG=wither_skeleton", 11, "MONSTER_EGG"),
-    WITHER_SPAWN_EGG(11902),
+    WITHER_SPAWN_EGG(19.2),
     WOLF_SPAWN_EGG(13, "SPAWN_EGG=Wolf", 9, "SPAWN_EGG:95", 8, "MONSTER_EGG"),
     WOODEN_AXE(8, "WOOD_AXE"),
     WOODEN_HOE(8, "WOOD_HOE"),
@@ -1300,7 +1300,7 @@ public enum ItemMaterialTag {
     ZOMBIE_HORSE_SPAWN_EGG(13, "SPAWN_EGG=zombie_horse", 11, "MONSTER_EGG"),
     ZOMBIE_SPAWN_EGG(13, "SPAWN_EGG=Zombie", 9, "SPAWN_EGG:54", 8, "MONSTER_EGG"),
     ZOMBIE_VILLAGER_SPAWN_EGG(13, "SPAWN_EGG=zombie_villager", 11, "MONSTER_EGG"),
-    ZOMBIFIED_PIGLIN_SPAWN_EGG(16, Map.of("ZOMBIE_PIGMAN_SPAWN_EGG", 13, "SPAWN_EGG=zombie_pigman", 11, "SPAWN_EGG=PigZombie", 9, "SPAWN_EGG:57", 8), "MONSTER_EGG");
+    ZOMBIFIED_PIGLIN_SPAWN_EGG(16, Map.of("ZOMBIE_PIGMAN_SPAWN_EGG", 13D, "SPAWN_EGG=zombie_pigman", 11D, "SPAWN_EGG=PigZombie", 9D, "SPAWN_EGG:57", 8D), "MONSTER_EGG");
 
     /**
      * Cached values of {@link ItemMaterialTag#values()}
@@ -1311,21 +1311,22 @@ public enum ItemMaterialTag {
      * only server version compatible materials.
      */
     public static final Map<String, ItemMaterialTag> SERVER_VALUES;
+    private static final double DOUBLE_VERSION = Double.parseDouble(ServerInstance.verNumber + "." + ServerInstance.release);
 
-    private final TreeMap<Integer, String> names;
+    private final TreeMap<Double, String> names;
     private final String[] aliases;
 
     static {
         final Map<String, ItemMaterialTag> compatible = new HashMap<>();
         for (ItemMaterialTag tag : VALUES) {
-            final TreeMap<Integer, String> names = tag.getNames();
+            final TreeMap<Double, String> names = tag.getNames();
             // Fix legacy SPAWN_EGG entity name for MC 1.11 & 1.12
             if (tag.name().contains("SPAWN_EGG") && names.size() > 1) {
-                final int version = names.containsKey(11) ? 11 : names.containsKey(10) ? 10 : names.containsKey(9) ? 9 : 0;
+                final double version = names.containsKey(11D) ? 11 : names.containsKey(10D) ? 10 : names.containsKey(9D) ? 9 : 0;
                 if (version != 0) {
                     String entity = names.get(version).split("=", 2)[1].toLowerCase();
-                    names.put(11, "SPAWN_EGG=minecraft:" + entity);
-                    names.put(12, "SPAWN_EGG=" + entity);
+                    names.put(11D, "SPAWN_EGG=minecraft:" + entity);
+                    names.put(12D, "SPAWN_EGG=" + entity);
                 }
             }
             final String name = tag.getValidMaterial();
@@ -1351,21 +1352,21 @@ public enum ItemMaterialTag {
         return finalName;
     }
 
-    ItemMaterialTag(int version, String name1, int ver1, String name2, int ver2, String... aliases) {
+    ItemMaterialTag(double version, String name1, double ver1, String name2, double ver2, String... aliases) {
         this(version, Map.of(name1, ver1, name2, ver2), aliases);
     }
 
-    ItemMaterialTag(int version, String name1, int ver1, String... aliases) {
+    ItemMaterialTag(double version, String name1, double ver1, String... aliases) {
         this(version, Map.of(name1, ver1), aliases);
     }
 
-    ItemMaterialTag(int version, String... aliases) {
+    ItemMaterialTag(double version, String... aliases) {
         this.names = new TreeMap<>();
         names.put(version, this.name());
         this.aliases = aliases;
     }
 
-    ItemMaterialTag(int version, Map<String, Integer> names, String... aliases) {
+    ItemMaterialTag(double version, Map<String, Double> names, String... aliases) {
         this.names = new TreeMap<>();
         this.names.put(version, this.name());
         names.forEach((name, ver) -> this.names.put(ver, name));
@@ -1377,7 +1378,7 @@ public enum ItemMaterialTag {
      *
      * @return A TreeMap with material names.
      */
-    public TreeMap<Integer, String> getNames() {
+    public TreeMap<Double, String> getNames() {
         return names;
     }
 
@@ -1397,9 +1398,9 @@ public enum ItemMaterialTag {
      * @return A material name or null.
      */
     public String getValidMaterial() {
-        for (Integer version : names.descendingKeySet()) {
+        for (Double version : names.descendingKeySet()) {
             // Found valid version
-            if (version <= (version >= 10000 ? ServerInstance.fullVersion : ServerInstance.verNumber)) {
+            if (version <= DOUBLE_VERSION) {
                 final String s = names.get(version);
                 // Find valid material using minecraft names as aliases
                 for (String name : names.values()) {

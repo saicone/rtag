@@ -52,28 +52,28 @@ public class IMaterialMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, int from, int to) {
+    public void upgrade(Object compound, String id, double from, double to) {
         resolveMaterial(compound, id, getDamage(compound, null, from), null, from, to);
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) {
+    public void upgrade(Object compound, String id, Object tag, double from, double to) {
         resolveSaved(compound, id, getDamage(compound, tag, from), tag, from, to);
     }
 
     @Override
-    public void downgrade(Object compound, String id, int from, int to) {
+    public void downgrade(Object compound, String id, double from, double to) {
         // Compatibility with IPotionMirror
-        if (to <= 8 && id.equals("minecraft:potion")) {
+        if (to < 9 && id.equals("minecraft:potion")) {
             return;
         }
         resolveMaterial(compound, id, getDamage(compound, null, from), null, from, to);
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) {
+    public void downgrade(Object compound, String id, Object tag, double from, double to) {
         // Compatibility with IPotionMirror
-        if (to <= 8 && id.equals("minecraft:potion")) {
+        if (to < 9 && id.equals("minecraft:potion")) {
             return;
         }
         resolveSaved(compound, id, getDamage(compound, tag, from), tag, from, to);
@@ -89,8 +89,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    public void resolveSaved(Object compound, String id, int damage, Object tag, int from, int to) {
-        String savedID = (String) TagBase.getValue(TagCompound.get(tag, "savedID"));
+    public void resolveSaved(Object compound, String id, int damage, Object tag, double from, double to) {
+        final String savedID = (String) TagBase.getValue(TagCompound.get(tag, "savedID"));
         if (savedID != null) {
             String material = translate(savedID, from, to);
             if (!material.equals("null")) {
@@ -112,18 +112,18 @@ public class IMaterialMirror implements ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    public void resolveMaterial(Object compound, String id, int damage, Object tag, int from, int to) {
-        String material;
-        boolean isEgg;
-        if ((isEgg = (from <= 12 && from >= 9) && id.equalsIgnoreCase("minecraft:spawn_egg"))) {
+    public void resolveMaterial(Object compound, String id, int damage, Object tag, double from, double to) {
+        final String material;
+        final boolean isEgg = (from < 13 && from >= 9) && id.equalsIgnoreCase("minecraft:spawn_egg");
+        if (isEgg) {
             material = id + "=" + getEggEntity(compound, from);
         } else {
             material = id + (damage > 0 ? ":" + damage : "");
         }
 
-        String newMaterial = translate(material, from, to);
+        final String newMaterial = translate(material, from, to);
         if (!material.equals(newMaterial)) {
-            if (isEgg && (to >= 13 || to <= 8)) {
+            if (isEgg && (to >= 13 || to < 9)) {
                 TagCompound.remove(compound, "EntityTag");
             }
             if (newMaterial.equals("null")) {
@@ -146,8 +146,8 @@ public class IMaterialMirror implements ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    public void resolveItem(Object compound, String material, Object tag, int from, int to) {
-        String[] split;
+    public void resolveItem(Object compound, String material, Object tag, double from, double to) {
+        final String[] split;
         if (material.startsWith("spawn_egg=")) {
             split = material.split("=", 2);
             Rtag.INSTANCE.set(compound, split[1], "EntityTag", "id");
@@ -169,14 +169,14 @@ public class IMaterialMirror implements ItemMirror {
      * @param from     Version specified in compound
      * @param to       Version to convert.
      */
-    public void setDamage(Object compound, Object tag, int damage, int from, int to) {
+    public void setDamage(Object compound, Object tag, int damage, double from, double to) {
         if (to >= 13) {
-            if (from <= 12) {
+            if (from < 13) {
                 TagCompound.remove(compound, "Damage");
             }
             Rtag.INSTANCE.set(compound, damage, "tag", "Damage");
         } else {
-            if (tag != null && from <= 13) {
+            if (tag != null && from < 14) {
                 TagCompound.remove(tag, "Damage");
             }
             TagCompound.set(compound, "Damage", TagBase.newTag((short) damage));
@@ -191,10 +191,10 @@ public class IMaterialMirror implements ItemMirror {
      * @param version  Version of the item.
      * @return         A integer representing item damage.
      */
-    public int getDamage(Object compound, Object tag, int version) {
+    public int getDamage(Object compound, Object tag, double version) {
         Object damage = null;
         // On legacy versions "Damage" is outside tag
-        if (version <= 12) {
+        if (version < 13) {
             damage = TagCompound.get(compound, "Damage");
         } else if (tag != null) {
             damage = TagCompound.get(tag, "Damage");
@@ -222,24 +222,23 @@ public class IMaterialMirror implements ItemMirror {
      * @param version  Item version
      * @return         A string representing entity id.
      */
-    public String getEggEntity(Object compound, int version) {
+    public String getEggEntity(Object compound, double version) {
         String entity = Rtag.INSTANCE.get(compound, "EntityTag", "id");
         if (entity != null) {
             return entity;
         }
         // Return another entity to avoid blank SPAWN_EGG
-        switch (version) {
-            case 12:
-                return "pig";
-            case 11:
-                return "minecraft:pig";
-            default:
-                return "Pig";
+        if (version < 11) {
+            return "Pig";
+        } else if (version < 12) {
+            return "minecraft:pig";
+        } else {
+            return "pig";
         }
     }
 
     /**
-     * Translate given pair of material and version into
+     * Translate given material and version pair into
      * current server version.
      *
      * @param material Material to translate.
@@ -247,7 +246,7 @@ public class IMaterialMirror implements ItemMirror {
      * @param to       Version to convert.
      * @return         A string representing current server version material.
      */
-    public String translate(String material, int from, int to) {
+    public String translate(String material, double from, double to) {
         String mat = cache.getIfPresent(material);
         if (mat == null) {
             if (ItemMaterialTag.SERVER_VALUES.containsKey(material)) {
@@ -260,10 +259,10 @@ public class IMaterialMirror implements ItemMirror {
         return mat;
     }
 
-    private void compute(String key, String value, int from, int to) {
+    private void compute(String key, String value, double from, double to) {
         for (ItemMaterialTag tag : ItemMaterialTag.SERVER_VALUES.values()) {
-            TreeMap<Integer, String> names = tag.getNames();
-            for (Integer tagVersion : names.descendingKeySet()) {
+            final TreeMap<Double, String> names = tag.getNames();
+            for (Double tagVersion : names.descendingKeySet()) {
                 if (tagVersion <= from) {
                     String tagName = names.get(tagVersion);
                     if (tagName.equals(value)) {

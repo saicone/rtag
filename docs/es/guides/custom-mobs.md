@@ -21,17 +21,19 @@ RtagEntity.edit(entity, tag -> {
 	// Hacer que brille
 	tag.set(true, "Glowing");
 
-	// En case de que la entidad sea un mob o un jugador
-	// puede recibir efectos de poción
+	// En case de que la entidad sea un mob o un jugador puede recibir efectos de poción
+	// Nota: Este ejemplo solo aplica para Minecraft 1.20.2 o superior,
+	//       así que se sugiere utilizar la API de Bukkit para añadir efectos de poción
+	//       (O puedes revisar la wiki de MC y ver los tags viejos para hacer tu propio método)
 	Map<String, Object> effect = Map.of(
-		"Ambient", false,
-		"Amplifier", false,
-		"Duration", 200, // 10 segundos = 200 ticks
-		"Id", (byte) 25,
-		"ShowIcon", false,
-		"ShowParticles", true,
+		"ambient", false,
+		"amplifier", false,
+		"duration", 200, // 10 segundos = 200 ticks
+		"id", "minecraft:levitation",
+		"show_icon", false,
+		"show_particles", true,
 		);
-	tag.add(effect, "ActiveEffects");
+	tag.add(effect, "active_effects");
 });
 ```
 

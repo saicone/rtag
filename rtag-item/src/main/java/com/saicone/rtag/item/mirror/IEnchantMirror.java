@@ -68,20 +68,20 @@ public class IEnchantMirror implements ItemMirror {
     }
 
     @Override
-    public int getDeprecationVersion() {
+    public double getDeprecationVersion() {
         return 13;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) {
-        if (from <= 12) {
+    public void upgrade(Object compound, String id, Object tag, double from, double to) {
+        if (from < 13) {
             processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) {
-        if (from > 12) {
+    public void downgrade(Object compound, String id, Object tag, double from, double to) {
+        if (to < 13) {
             processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }

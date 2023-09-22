@@ -15,17 +15,17 @@ import com.saicone.rtag.util.ChatComponent;
 public class IDisplayMirror implements ItemMirror {
 
     @Override
-    public int getDeprecationVersion() {
+    public double getDeprecationVersion() {
         return 14;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, int from, int to) {
+    public void upgrade(Object compound, String id, Object tag, double from, double to) {
         processDisplay(tag, from, true);
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, int from, int to) {
+    public void downgrade(Object compound, String id, Object tag, double from, double to) {
         processDisplay(tag, to, false);
     }
 
@@ -36,15 +36,15 @@ public class IDisplayMirror implements ItemMirror {
      * @param version Version to convert.
      * @param toJson  True to convert texts into Json component.
      */
-    public void processDisplay(Object tag, int version, boolean toJson) {
-        if (version <= 13) {
+    public void processDisplay(Object tag, double version, boolean toJson) {
+        if (version < 14) {
             Object display = TagCompound.get(tag, "display");
             if (display == null) return;
 
             // Since 1.14
             // display.Lore = Json text component
             processLore(display, toJson);
-            if (version <= 12) {
+            if (version < 13) {
                 // Since 1.13
                 // display.Name = Json text component
                 processName(display, toJson);

@@ -43,42 +43,45 @@ public class ItemTagStream extends TStream<ItemStack> {
         }
         if (ServerInstance.verNumber >= 9) {
             mirror.add(new IShulkerMirror(INSTANCE));
-            if (ServerInstance.verNumber >= 17) {
-                mirror.add(new IBundleMirror(INSTANCE));
+            if (ServerInstance.verNumber >= 14) {
+                mirror.add(new IEffectMirror());
+                if (ServerInstance.verNumber >= 17) {
+                    mirror.add(new IBundleMirror(INSTANCE));
+                }
             }
         }
         INSTANCE.getMirror().addAll(mirror);
     }
 
     private final List<ItemMirror> mirror;
-    private final int version;
+    private final double version;
     private final String versionKey;
 
     /**
-     * Constructs an simple Rtag without any {@link ItemMirror}.
+     * Constructs a simple ItemTagStream without any {@link ItemMirror}.
      */
     public ItemTagStream() {
         this(new ArrayList<>());
     }
 
     /**
-     * Constructs an Rtag with specified {@link ItemMirror} list.
+     * Constructs am ItemTagStream with specified {@link ItemMirror} list.
      *
      * @param mirror Mirror list.
      */
     public ItemTagStream(List<ItemMirror> mirror) {
-        this(mirror, ServerInstance.verNumber, "rtagDataVersion");
+        this(mirror, Double.parseDouble(ServerInstance.verNumber + "." + ServerInstance.release), "rtagDataVersion");
     }
 
     /**
-     * Constructs an Rtag with specified {@link ItemMirror} list
+     * Constructs an ItemTagStream with specified {@link ItemMirror} list
      * and additional parameters.
      *
      * @param mirror     Mirror list.
      * @param version    Server version.
      * @param versionKey Version key identifier from compound.
      */
-    public ItemTagStream(List<ItemMirror> mirror, int version, String versionKey) {
+    public ItemTagStream(List<ItemMirror> mirror, double version, String versionKey) {
         this.mirror = mirror;
         this.version = version;
         this.versionKey = versionKey;
@@ -98,7 +101,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      *
      * @return Server version.
      */
-    public int getVersion() {
+    public double getVersion() {
         return version;
     }
 
@@ -108,11 +111,11 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param compound NBTTagCompound to read.
      * @return         A valid version number or null.
      */
-    protected Integer getVersion(Object compound) {
+    protected Double getVersion(Object compound) {
         final Map<String, Object> value = TagCompound.getValue(compound);
         Object version = TagBase.getValue(value.get(getVersionKey()));
-        if (version instanceof Integer) {
-            return (Integer) version;
+        if (version instanceof Number) {
+            return ((Number) version).doubleValue();
         }
 
         version = TagBase.getValue(value.get("DataVersion"));
@@ -120,8 +123,9 @@ public class ItemTagStream extends TStream<ItemStack> {
             version = TagBase.getValue(value.get("v"));
         }
 
-        if (version instanceof Integer) {
-            return ServerInstance.verNumber((Integer) version);
+        if (version instanceof Number) {
+            final int dataVersion = ((Number) version).intValue();
+            return Double.parseDouble(ServerInstance.verNumber(dataVersion) + "." + ServerInstance.release(dataVersion));
         }
 
         return null;
@@ -228,8 +232,8 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param compound NBTTagCompound with item information.
      */
     public void onLoad(Object compound) {
-        final Integer version = getVersion(compound);
-        if (version != null && version != getVersion()) {
+        final Double version = getVersion(compound);
+        if (version != null && (version > getVersion() || getVersion() > version)) {
             onLoad(compound, version, getVersion());
         }
     }
@@ -241,7 +245,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    public void onLoad(Object compound, int from, int to) {
+    public void onLoad(Object compound, double from, double to) {
         String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
         if (id == null) return;
 

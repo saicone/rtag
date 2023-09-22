@@ -84,6 +84,7 @@ public class ServerInstance {
             split[2] = '0' + split[2];
         }
         fullVersion = Integer.parseInt(String.join("", split));
+        
         isLegacy = verNumber <= 12;
         isUniversal = verNumber >= 17;
         boolean spigot = false;
@@ -125,6 +126,7 @@ public class ServerInstance {
         DATA_VERSION.put(3218, new Integer[] {19, 2, 11902});
         DATA_VERSION.put(3337, new Integer[] {19, 3, 11903});
         DATA_VERSION.put(3463, new Integer[] {20, 1, 12001});
+        DATA_VERSION.put(3578, new Integer[] {20, 2, 12002});
 
         dataVersion = dataVersion(fullVersion);
     }
@@ -177,7 +179,7 @@ public class ServerInstance {
      * Convert server version into data version number.
      *
      * @param version A simplified or formatted server version number.
-     * @return        A minecraft data version or -1 if fails.
+     * @return        A minecraft data version or {@link Integer#MIN_VALUE} if fails.
      */
     public static int dataVersion(int version) {
         if (version >= 10000) {
@@ -195,7 +197,7 @@ public class ServerInstance {
                 rel = version;
             } else {
                 ver = version;
-                rel = 0;
+                rel = 1;
             }
             for (Integer key : DATA_VERSION.descendingKeySet()) {
                 final Integer[] value = DATA_VERSION.get(key);
@@ -204,6 +206,6 @@ public class ServerInstance {
                 }
             }
         }
-        return -1;
+        return Integer.MIN_VALUE;
     }
 }

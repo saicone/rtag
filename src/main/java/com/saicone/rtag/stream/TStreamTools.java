@@ -32,6 +32,15 @@ public class TStreamTools {
         // Getters
         MethodHandle get$unlimited = null;
         try {
+            // Old names
+            String read = "a";
+            String write = "a";
+            // New names
+            if (ServerInstance.fullVersion >= 12002) {
+                read = "c";
+                write = "b";
+            }
+
             EasyLookup.addNMSClass("nbt.NBTCompressedStreamTools");
             EasyLookup.addNMSClass("nbt.NBTReadLimiter");
             if (USE_FAST_STREAM) {
@@ -39,12 +48,25 @@ public class TStreamTools {
                 new$FastInputStream = EasyLookup.constructor("FastBufferedInputStream", InputStream.class);
             }
 
-            // Private method
-            method$read = EasyLookup.staticMethod("NBTCompressedStreamTools", "a", "NBTBase", DataInput.class, int.class, "NBTReadLimiter");
+            if (ServerInstance.fullVersion >= 12002) {
+                // Private method
+                // Note: The "unused" integer was removed, and also was added a new method (DataInput, NBTReadLimiter, byte)
+                //       to specify the id of NBT you're reading (probably add it here)
+                method$read = EasyLookup.staticMethod("NBTCompressedStreamTools", read, "NBTBase", DataInput.class, "NBTReadLimiter");
+            } else {
+                // Private method
+                method$read = EasyLookup.staticMethod("NBTCompressedStreamTools", read, "NBTBase", DataInput.class, int.class, "NBTReadLimiter");
+            }
             // (1.8 - 1.17) private method
-            method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", "a", void.class, "NBTBase", DataOutput.class);
+            // (1.20.2) Note: There is a new method to write NBT without adding an empty String after write NBT id,
+            //                only used to send serialized packets
+            method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", write, void.class, "NBTBase", DataOutput.class);
 
-            get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", "a", "NBTReadLimiter");
+            if (ServerInstance.fullVersion >= 12002) {
+                get$unlimited = EasyLookup.staticMethod("NBTReadLimiter", "a", "NBTReadLimiter");
+            } else {
+                get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", "a", "NBTReadLimiter");
+            }
         } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -59,7 +81,11 @@ public class TStreamTools {
                 readLimiter = get$unlimited.invoke();
             } else {
                 // Fallback instance constructor
-                readLimiter = EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class).newInstance(Long.MAX_VALUE);
+                if (ServerInstance.fullVersion >= 12002) {
+                    readLimiter = EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class, int.class).newInstance(Long.MAX_VALUE, 512);
+                } else {
+                    readLimiter = EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class).newInstance(Long.MAX_VALUE);
+                }
             }
         } catch (Throwable t) {
             t.printStackTrace();
@@ -256,7 +282,11 @@ public class TStreamTools {
      */
     public static Object read(DataInput input) throws IOException {
         try {
-            return readNBT.invoke(input, 0, getReadLimiter());
+            if (ServerInstance.fullVersion >= 12002) {
+                return readNBT.invoke(input, getReadLimiter());
+            } else {
+                return readNBT.invoke(input, 0, getReadLimiter());
+            }
         } catch (IOException e) {
             throw e;
         } catch (Throwable t) {
