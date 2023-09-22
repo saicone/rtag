@@ -362,9 +362,17 @@ public class OptionalType extends IterableType<Object> {
             return (C) value;
         } catch (ClassCastException ignored) { }
         if (isIterable()) {
-            forEach(object -> collection.add(function.apply(OptionalType.of(object))));
+            forEach(object -> {
+                final T result = function.apply(OptionalType.of(object));
+                if (result != null) {
+                    collection.add(result);
+                }
+            });
         } else {
-            collection.add(function.apply(this));
+            final T result = function.apply(this);
+            if (result != null) {
+                collection.add(result);
+            }
         }
         return collection;
     }
@@ -484,7 +492,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Byte value or default value.
      */
     public Byte asByte(Byte def) {
-        return by(Byte.class, object -> Byte.parseByte(String.valueOf(object)), def);
+        return by(Byte.class, object -> object instanceof Number ? ((Number) object).byteValue() : Byte.parseByte(String.valueOf(object)), def);
     }
 
     /**
@@ -503,7 +511,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Short value or default value.
      */
     public Short asShort(Short def) {
-        return by(Short.class, object -> Short.parseShort(String.valueOf(object)), def);
+        return by(Short.class, object -> object instanceof Number ? ((Number) object).shortValue() : Short.parseShort(String.valueOf(object)), def);
     }
 
     /**
@@ -522,7 +530,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Integer value or default value.
      */
     public Integer asInt(Integer def) {
-        return by(Integer.class, object -> Integer.parseInt(String.valueOf(object)), def);
+        return by(Integer.class, object -> object instanceof Number ? ((Number) object).intValue() : Integer.parseInt(String.valueOf(object)), def);
     }
 
     /**
@@ -541,7 +549,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Float value or default value.
      */
     public Float asFloat(Float def) {
-        return by(Float.class, object -> Float.parseFloat(String.valueOf(object)), def);
+        return by(Float.class, object -> object instanceof Number ? ((Number) object).floatValue() : Float.parseFloat(String.valueOf(object)), def);
     }
 
     /**
@@ -560,7 +568,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Long value or default value.
      */
     public Long asLong(Long def) {
-        return by(Long.class, object -> Long.parseLong(String.valueOf(object)), def);
+        return by(Long.class, object -> object instanceof Number ? ((Number) object).longValue() : Long.parseLong(String.valueOf(object)), def);
     }
 
     /**
@@ -579,7 +587,7 @@ public class OptionalType extends IterableType<Object> {
      * @return    A Double value or default value.
      */
     public Double asDouble(Double def) {
-        return by(Double.class, object -> Double.parseDouble(String.valueOf(object)), def);
+        return by(Double.class, object -> object instanceof Number ? ((Number) object).doubleValue() : Double.parseDouble(String.valueOf(object)), def);
     }
 
     /**
