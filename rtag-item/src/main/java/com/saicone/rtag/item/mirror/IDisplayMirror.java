@@ -21,9 +21,9 @@ public class IDisplayMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, Object tag, float from, float to) {
-        if (to >= 13f && from < 13f) {
-            // display.Name to json text component
-            if (!processName(TagCompound.get(tag, "display"), true)) return;
+        // display.Name to json text component
+        if (to >= 13f && from < 13f && !processName(TagCompound.get(tag, "display"), true)) {
+            return;
         }
         if (to >= 14f && from < 14f) {
             // display.Lore to json text component
@@ -33,9 +33,9 @@ public class IDisplayMirror implements ItemMirror {
 
     @Override
     public void downgrade(Object compound, String id, Object tag, float from, float to) {
-        if (from >= 13f && to < 13f) {
-            // display.Name to legacy text
-            if (!processName(TagCompound.get(tag, "display"), false)) return;
+        // display.Name to legacy text
+        if (from >= 13f && to < 13f && !processName(TagCompound.get(tag, "display"), false)) {
+            return;
         }
         if (from >= 14f && to < 14f) {
             // display.Lore to legacy text

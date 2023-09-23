@@ -44,7 +44,9 @@ public class TagList {
             String type = "type";
             String list = "list";
             // New names
-            if (ServerInstance.isUniversal) {
+            if (ServerInstance.isMojangMapped) {
+                clone = "copy";
+            } else if (ServerInstance.isUniversal) {
                 list = "c";
                 type = "w";
                 if (ServerInstance.fullVersion >= 11903) {

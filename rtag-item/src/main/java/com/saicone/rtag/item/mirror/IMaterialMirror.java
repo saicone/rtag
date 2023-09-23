@@ -268,9 +268,14 @@ public class IMaterialMirror implements ItemMirror {
             final TreeMap<Float, String> names = tag.getNames();
             for (Float tagVersion : names.descendingKeySet()) {
                 if (tagVersion <= from) {
-                    String tagName = names.get(tagVersion);
+                    final String tagName = names.get(tagVersion);
                     if (tagName.equals(value)) {
-                        cache.put(key, ItemMaterialTag.changeNameCase(names.floorEntry(to).getValue(), false));
+                        final var entry = names.floorEntry(to);
+                        if (entry == null) {
+                            cache.put(key, "null");
+                        } else {
+                            cache.put(key, ItemMaterialTag.changeNameCase(entry.getValue(), false));
+                        }
                         return;
                     }
                 }

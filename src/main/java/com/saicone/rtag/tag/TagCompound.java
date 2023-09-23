@@ -53,13 +53,17 @@ public class TagCompound {
         MethodHandle method$parse = null;
         MethodHandle method$clone = null;
         try {
-            EasyLookup.addNMSClass("nbt.MojangsonParser");
+            EasyLookup.addNMSClass("nbt.MojangsonParser", "TagParser");
             // Old names
             String map = "map";
             String parse = "parse";
             String clone = "clone";
             // New names
-            if (ServerInstance.isUniversal) {
+            if (ServerInstance.isMojangMapped) {
+                map = "tags";
+                parse = "parseTag";
+                clone = "copy";
+            } else if (ServerInstance.isUniversal) {
                 map = "x";
                 if (ServerInstance.verNumber >= 18) {
                     parse = "a";

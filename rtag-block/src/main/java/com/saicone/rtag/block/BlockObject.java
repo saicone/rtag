@@ -46,7 +46,11 @@ public class BlockObject {
             String save = "b";
             String load = "a";
             // New method names
-            if (ServerInstance.verNumber >= 18) {
+            if (ServerInstance.isMojangMapped) {
+                getTileEntity = "getBlockEntity";
+                save = "saveWithoutMetadata";
+                load = "load";
+            } else if (ServerInstance.verNumber >= 18) {
                 getTileEntity = "c_";
                 if (ServerInstance.fullVersion >= 11903) {
                     save = "o";

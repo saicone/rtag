@@ -49,9 +49,18 @@ public class ChatComponent {
         MethodHandle method$fromJson = null;
         MethodHandle method$toJson = null;
         try {
-            Class<?> clazz = EasyLookup.addNMSClass("network.chat.IChatBaseComponent");
-            EasyLookup.addClass("ChatSerializer", clazz.getDeclaredClasses()[0]);
+            Class<?> clazz = EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
+            EasyLookup.addClassId("ChatSerializer", clazz.getDeclaredClasses()[0]);
             EasyLookup.addOBCClass("util.CraftChatMessage");
+
+            // Old names
+            String fromJson = "a";
+            String toJson = "a";
+            // New names
+            if (ServerInstance.isMojangMapped) {
+                fromJson = "fromJson";
+                toJson = "toJson";
+            }
 
             if (ServerInstance.verNumber >= 13) {
                 method$fromString = EasyLookup.staticMethod("CraftChatMessage", "fromStringOrNull", "IChatBaseComponent", String.class);
@@ -65,8 +74,8 @@ public class ChatComponent {
             // Unreflect reason:
             // (1.8 - 1.15) return IChatBaseComponent
             // Other versions return IChatMutableComponent
-            method$fromJson = EasyLookup.unreflectMethod("ChatSerializer", "a", String.class);
-            method$toJson = EasyLookup.staticMethod("ChatSerializer", "a", String.class, "IChatBaseComponent");
+            method$fromJson = EasyLookup.unreflectMethod("ChatSerializer", fromJson, String.class);
+            method$toJson = EasyLookup.staticMethod("ChatSerializer", toJson, String.class, "IChatBaseComponent");
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }

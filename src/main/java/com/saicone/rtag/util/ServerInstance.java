@@ -64,6 +64,10 @@ public class ServerInstance {
      * <a href="https://papermc.io/software/folia">PaperMC.io</a>
      */
     public static final boolean isFolia;
+    /**
+     * Return true if server instance is mojang mapped.
+     */
+    public static final boolean isMojangMapped;
 
     private static final TreeMap<Integer, Integer[]> DATA_VERSION = new TreeMap<>();
 
@@ -84,12 +88,13 @@ public class ServerInstance {
             split[2] = '0' + split[2];
         }
         fullVersion = Integer.parseInt(String.join("", split));
-        
+
         isLegacy = verNumber <= 12;
         isUniversal = verNumber >= 17;
         boolean spigot = false;
         boolean paper = false;
         boolean folia = false;
+        boolean mojmap = false;
         try {
             Class.forName("org.spigotmc.SpigotConfig");
             spigot = true;
@@ -102,9 +107,14 @@ public class ServerInstance {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
             folia = true;
         } catch (ClassNotFoundException ignored) { }
+        try {
+            Class.forName("net.minecraft.nbt.CompoundTag");
+            mojmap = true;
+        } catch (ClassNotFoundException ignored) { }
         isSpigot = spigot;
         isPaper = paper;
         isFolia = folia;
+        isMojangMapped = mojmap;
 
         // Original data versions start by 100 until 15w32a
         DATA_VERSION.put(Integer.MIN_VALUE, new Integer[] {verNumber, release, fullVersion});

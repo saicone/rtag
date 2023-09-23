@@ -50,7 +50,10 @@ public class ItemObject {
             String setTag = "setTag";
 
             // New method names
-            if (ServerInstance.verNumber >= 11) {
+            if (ServerInstance.isMojangMapped) {
+                createStack = "of";
+                load = "load";
+            } else if (ServerInstance.verNumber >= 11) {
                 load = "load";
                 if (ServerInstance.verNumber >= 13) {
                     createStack = "a";

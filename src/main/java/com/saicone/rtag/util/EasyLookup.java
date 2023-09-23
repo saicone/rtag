@@ -29,36 +29,38 @@ public class EasyLookup {
             (m, type, params) -> Arrays.equals(m.getParameterTypes(), params),
             (m, type, params) -> isAssignableFrom(m.getParameterTypes(), params)
     };
+    private static final String nmsPackage = ServerInstance.isUniversal ? "net.minecraft." : ("net.minecraft.server." + ServerInstance.version + ".");
+    private static final String obcPackage = "org.bukkit.craftbukkit." + ServerInstance.version + ".";
 
     static {
         try {
             // Java
-            addClass("byte[]", "[B");
-            addClass("int[]", "[I");
-            addClass("long[]", "[J");
+            addClassId("byte[]", "[B");
+            addClassId("int[]", "[I");
+            addClassId("long[]", "[J");
             // Minecraft Server
-            addNMSClass("nbt.NBTBase");
-            addNMSClass("nbt.NBTTagByte");
-            addNMSClass("nbt.NBTTagByteArray");
-            addNMSClass("nbt.NBTTagCompound");
-            addNMSClass("nbt.NBTTagDouble");
-            addNMSClass("nbt.NBTTagFloat");
-            addNMSClass("nbt.NBTTagInt");
-            addNMSClass("nbt.NBTTagIntArray");
-            addNMSClass("nbt.NBTTagList");
-            addNMSClass("nbt.NBTTagLong");
+            addNMSClass("nbt.NBTBase", "Tag");
+            addNMSClass("nbt.NBTTagByte", "ByteTag");
+            addNMSClass("nbt.NBTTagByteArray", "ByteArrayTag");
+            addNMSClass("nbt.NBTTagCompound", "CompoundTag");
+            addNMSClass("nbt.NBTTagDouble", "DoubleTag");
+            addNMSClass("nbt.NBTTagFloat", "FloatTag");
+            addNMSClass("nbt.NBTTagInt", "IntTag");
+            addNMSClass("nbt.NBTTagIntArray", "IntArrayTag");
+            addNMSClass("nbt.NBTTagList", "ListTag");
+            addNMSClass("nbt.NBTTagLong", "LongTag");
             if (ServerInstance.verNumber >= 12) {
-                addNMSClass("nbt.NBTTagLongArray");
+                addNMSClass("nbt.NBTTagLongArray", "LongArrayTag");
             }
-            addNMSClass("nbt.NBTTagShort");
-            addNMSClass("nbt.NBTTagString");
+            addNMSClass("nbt.NBTTagShort", "ShortTag");
+            addNMSClass("nbt.NBTTagString", "StringTag");
             addNMSClass("world.item.ItemStack");
             addNMSClass("world.entity.Entity");
-            addNMSClass("world.level.block.entity.TileEntity");
-            addNMSClass("world.level.block.state.IBlockData");
-            addNMSClass("core.BlockPosition");
-            addNMSClass("world.level.World");
-            addNMSClass("server.level.WorldServer");
+            addNMSClass("world.level.block.entity.TileEntity", "BlockEntity");
+            addNMSClass("world.level.block.state.IBlockData", "BlockState");
+            addNMSClass("core.BlockPosition", "BlockPos");
+            addNMSClass("world.level.World", "Level");
+            addNMSClass("server.level.WorldServer", "ServerLevel");
             // Bukkit Server
             addOBCClass("CraftServer");
             addOBCClass("inventory.CraftItemStack");
@@ -71,6 +73,21 @@ public class EasyLookup {
     }
 
     EasyLookup() {
+    }
+
+    /**
+     * Test the availability of provided class name using {@link Class#forName(String)}.
+     *
+     * @param name Class name.
+     * @return     true if the provided class exists.
+     */
+    public static boolean testClass(String name) {
+        boolean test = false;
+        try {
+            Class.forName(name);
+            test = true;
+        } catch (Throwable ignored) { }
+        return test;
     }
 
     /**
@@ -116,25 +133,44 @@ public class EasyLookup {
     /**
      * Same has {@link Class#forName(String)} but save the class into memory.
      *
-     * @param name Class name.
-     * @return     Added class.
+     * @param name    Class name.
+     * @param aliases Alternative class names.
+     * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static Class<?> addClass(String name) throws ClassNotFoundException {
-        return addClass(name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name, name);
+    public static Class<?> addClass(String name, String... aliases) throws ClassNotFoundException {
+        return addClassId(name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name, name, aliases);
     }
 
     /**
      * Same has {@link Class#forName(String)} but save the class into memory
      * with provided ID to get from {@link #classById(String)}.
      *
-     * @param id   Class ID.
-     * @param name Class name.
-     * @return     Added class.
+     * @param id      Class ID.
+     * @param name    Class name.
+     * @param aliases Alternative class names.
+     * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static Class<?> addClass(String id, String name) throws ClassNotFoundException {
-        return addClass(id, Class.forName(name));
+    public static Class<?> addClassId(String id, String name, String... aliases) throws ClassNotFoundException {
+        String finalName = null;
+        if (testClass(name)) {
+            finalName = name;
+        } else if (aliases.length > 0) {
+            final String pkg = name.contains(".") ? name.substring(0, name.lastIndexOf('.') + 1) : "";
+            for (String alias : aliases) {
+                final String aliasName = (alias.contains(".") ? "" : pkg) + alias;
+                if (testClass(aliasName)) {
+                    finalName = aliasName;
+                    break;
+                }
+            }
+        }
+
+        if (finalName == null) {
+            throw new ClassNotFoundException(name);
+        }
+        return addClassId(id, Class.forName(finalName));
     }
 
     /**
@@ -144,7 +180,7 @@ public class EasyLookup {
      * @param clazz Class object.
      * @return      Added class.
      */
-    public static Class<?> addClass(String id, Class<?> clazz) {
+    public static Class<?> addClassId(String id, Class<?> clazz) {
         if (!classes.containsKey(id)) {
             classes.put(id, clazz);
         }
@@ -156,12 +192,13 @@ public class EasyLookup {
      * For +1.17 servers compatibility the name must be the full class path
      * after "net.minecraft."
      *
-     * @param name Class name.
-     * @return     Added class.
+     * @param name    Class name.
+     * @param aliases Alternative class names.
+     * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static Class<?> addNMSClass(String name) throws ClassNotFoundException {
-        return addClass(nmsClass(name));
+    public static Class<?> addNMSClass(String name, String... aliases) throws ClassNotFoundException {
+        return addClass(nmsClass(name, aliases), aliases);
     }
 
     /**
@@ -169,20 +206,27 @@ public class EasyLookup {
      * For +1.17 servers compatibility the name must be the full class path
      * after "net.minecraft."
      *
-     * @param id   Class ID.
-     * @param name Class name.
-     * @return     Added class.
+     * @param id      Class ID.
+     * @param name    Class name.
+     * @param aliases Alternative class names.
+     * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static Class<?> addNMSClass(String id, String name) throws ClassNotFoundException {
-        return addClass(id, nmsClass(name));
+    public static Class<?> addNMSClassId(String id, String name, String... aliases) throws ClassNotFoundException {
+        return addClassId(id, nmsClass(name, aliases), aliases);
     }
 
-    private static String nmsClass(String name) {
+    private static String nmsClass(String name, String... aliases) {
+        for (int i = 0; i < aliases.length; i++) {
+            final String alias = aliases[i];
+            if (alias.contains(".")) {
+                aliases[i] = nmsPackage + alias;
+            }
+        }
         if (ServerInstance.isUniversal) {
-            return "net.minecraft." + name;
+            return nmsPackage + name;
         } else {
-            return "net.minecraft.server." + ServerInstance.version + "." + (name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name);
+            return nmsPackage + (name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name);
         }
     }
 
@@ -190,29 +234,37 @@ public class EasyLookup {
      * Save the typically org.bukkit.craftbukkit class into memory.<br>
      * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
      *
-     * @param name Class name.
-     * @return     Added class.
+     * @param name    Class name.
+     * @param aliases Alternative class names.
+     * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static Class<?> addOBCClass(String name) throws ClassNotFoundException {
-        return addClass(obcClass(name));
+    public static Class<?> addOBCClass(String name, String... aliases) throws ClassNotFoundException {
+        return addClass(obcClass(name, aliases), aliases);
     }
 
     /**
      * Save the typically org.bukkit.craftbukkit class into memory with specified ID.<br>
      * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
      *
-     * @param id   Class ID.
-     * @param name Class name.
-     * @return     Added class.
+     * @param id      Class ID.
+     * @param name    Class name.
+     * @param aliases Alternative class names.
+     * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
      */
-    public static Class<?> addOBCClass(String id, String name) throws ClassNotFoundException {
-        return addClass(id, obcClass(name));
+    public static Class<?> addOBCClassId(String id, String name, String... aliases) throws ClassNotFoundException {
+        return addClassId(id, obcClass(name, aliases), aliases);
     }
 
-    private static String obcClass(String name) {
-        return "org.bukkit.craftbukkit." + ServerInstance.version + "." + name;
+    private static String obcClass(String name, String... aliases) {
+        for (int i = 0; i < aliases.length; i++) {
+            final String alias = aliases[i];
+            if (alias.contains(".")) {
+                aliases[i] = obcPackage + alias;
+            }
+        }
+        return obcPackage + name;
     }
 
     /**

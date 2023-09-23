@@ -34,7 +34,10 @@ public class EntityObject {
             String save = "e";
             String load = "f";
             // New method names
-            if (ServerInstance.verNumber >= 18) {
+            if (ServerInstance.isMojangMapped) {
+                save = "saveWithoutId";
+                load = "load";
+            } else if (ServerInstance.verNumber >= 18) {
                 save = "f";
                 load = "g";
             } else if (ServerInstance.verNumber >= 12) {

@@ -32,17 +32,23 @@ public class TStreamTools {
         // Getters
         MethodHandle get$unlimited = null;
         try {
+            EasyLookup.addNMSClass("nbt.NBTCompressedStreamTools", "NbtIo");
+            EasyLookup.addNMSClass("nbt.NBTReadLimiter", "NbtAccounter");
+
             // Old names
             String read = "a";
             String write = "a";
+            String unlimited = "a";
             // New names
-            if (ServerInstance.fullVersion >= 12002) {
+            if (ServerInstance.isMojangMapped) {
+                read = "readUnnamedTag";
+                write = "writeUnnamedTag";
+                unlimited = ServerInstance.fullVersion >= 12002 ? "unlimitedHeap" : "UNLIMITED";
+            } else if (ServerInstance.fullVersion >= 12002) {
                 read = "c";
                 write = "b";
             }
 
-            EasyLookup.addNMSClass("nbt.NBTCompressedStreamTools");
-            EasyLookup.addNMSClass("nbt.NBTReadLimiter");
             if (USE_FAST_STREAM) {
                 EasyLookup.addNMSClass("util.FastBufferedInputStream");
                 new$FastInputStream = EasyLookup.constructor("FastBufferedInputStream", InputStream.class);
@@ -63,9 +69,9 @@ public class TStreamTools {
             method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", write, void.class, "NBTBase", DataOutput.class);
 
             if (ServerInstance.fullVersion >= 12002) {
-                get$unlimited = EasyLookup.staticMethod("NBTReadLimiter", "a", "NBTReadLimiter");
+                get$unlimited = EasyLookup.staticMethod("NBTReadLimiter", unlimited, "NBTReadLimiter");
             } else {
-                get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", "a", "NBTReadLimiter");
+                get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", unlimited, "NBTReadLimiter");
             }
         } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();

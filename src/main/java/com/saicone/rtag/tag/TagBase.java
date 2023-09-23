@@ -92,7 +92,10 @@ public class TagBase {
             String asString = data;
 
             // New names
-            if (ServerInstance.isUniversal) {
+            if (ServerInstance.isMojangMapped) {
+                getTypeId = "getId";
+                asLongArray = "data";
+            } else if (ServerInstance.isUniversal) {
                 if (ServerInstance.fullVersion >= 11902) { // v1_19_R2
                     getTypeId = "b";
                 } else if (ServerInstance.verNumber >= 18) {
