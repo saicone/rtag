@@ -134,6 +134,17 @@ public class EasyLookup {
      * Same has {@link Class#forName(String)} but save the class into memory.
      *
      * @param name    Class name.
+     * @return        Added class.
+     * @throws ClassNotFoundException if the class cannot be located.
+     */
+    public static Class<?> addClass(String name) throws ClassNotFoundException {
+        return addClass(name, new String[0]);
+    }
+
+    /**
+     * Same has {@link Class#forName(String)} but save the class into memory.
+     *
+     * @param name    Class name.
      * @param aliases Alternative class names.
      * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
@@ -193,6 +204,19 @@ public class EasyLookup {
      * after "net.minecraft."
      *
      * @param name    Class name.
+     * @return        Added class.
+     * @throws ClassNotFoundException if the class cannot be located.
+     */
+    public static Class<?> addNMSClass(String name) throws ClassNotFoundException {
+        return addNMSClass(name, new String[0]);
+    }
+
+    /**
+     * Save the typically net.minecraft.server class into memory.<br>
+     * For +1.17 servers compatibility the name must be the full class path
+     * after "net.minecraft."
+     *
+     * @param name    Class name.
      * @param aliases Alternative class names.
      * @return        Added class.
      * @throws ClassNotFoundException if the class cannot be located.
@@ -228,6 +252,18 @@ public class EasyLookup {
         } else {
             return nmsPackage + (name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name);
         }
+    }
+
+    /**
+     * Save the typically org.bukkit.craftbukkit class into memory.<br>
+     * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
+     *
+     * @param name    Class name.
+     * @return        Added class.
+     * @throws ClassNotFoundException if the class cannot be located.
+     */
+    public static Class<?> addOBCClass(String name) throws ClassNotFoundException {
+        return addOBCClass(name, new String[0]);
     }
 
     /**
