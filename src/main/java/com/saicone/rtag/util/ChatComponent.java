@@ -156,7 +156,11 @@ public class ChatComponent {
      */
     public static String toJson(Object component) throws IllegalArgumentException {
         if (component instanceof String) {
-            return toJson(fromString((String) component));
+            final Object o = fromString((String) component);
+            if (o == null) {
+                return "{\"text\":\"\"}";
+            }
+            return toJson(o);
         }
         Objects.requireNonNull(component, "The provided object cannot be null");
         if (!CHAT_BASE_COMPONENT.isInstance(component)) {
@@ -192,7 +196,11 @@ public class ChatComponent {
      */
     public static String toString(Object component) throws IllegalArgumentException {
         if (component instanceof String) {
-            return toString(fromJson((String) component));
+            final Object o = fromJson((String) component);
+            if (o == null) {
+                return "";
+            }
+            return toString(o);
         }
         Objects.requireNonNull(component, "The provided object cannot be null");
         if (!CHAT_BASE_COMPONENT.isInstance(component)) {
