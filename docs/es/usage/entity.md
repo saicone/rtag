@@ -8,7 +8,7 @@ description: Editar el NBT de las entidades
 
 Para entender esta página primero debes ver [la guía de RtagEditor](../../usage/editor/).
 
-Para entender sobre los tags comunes en las entidades se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.fandom.com/wiki/Entity_format).
+Para entender sobre los tags comunes en las entidades se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.wiki/w/Entity_format).
 
 :::
 

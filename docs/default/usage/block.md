@@ -8,7 +8,7 @@ description: Edit block NBT
 
 To understand this page you should see [RtagEditor guide](../../usage/editor/).
 
-For better understand about some tile entity tags it's suggested to visit the [Minecraft wiki page](https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format).
+For better understand about some tile entity tags it's suggested to visit the [Minecraft wiki page](https://minecraft.wiki/w/Chunk_format#Block_entity_format).
 
 :::
 

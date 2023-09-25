@@ -8,7 +8,7 @@ description: Edit item NBT
 
 To understand this page you should see [RtagEditor guide](../../usage/editor/).
 
-For better understand about some item tags it's suggested to visit the [Minecraft wiki page](https://minecraft.fandom.com/wiki/Player.dat_format#Item_structure).
+For better understand about some item tags it's suggested to visit the [Minecraft wiki page](https://minecraft.wiki/w/Player.dat_format#Item_structure).
 
 :::
 

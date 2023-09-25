@@ -686,7 +686,7 @@ public enum ItemMaterialTag {
     LIME_WOOL(13, "WOOL:5", 8),
     LINGERING_POTION(9),
     // Removed in 1.9
-    // Information: https://minecraft.fandom.com/wiki/Furnace#Lit_furnace_.22item.22
+    // Information: https://minecraft.wiki/w/Furnace#Lit_furnace_%22item%22
     LIT_FURNACE(8, "BURNING_FURNACE"),
     LLAMA_SPAWN_EGG(13, "SPAWN_EGG=llama", 11, "MONSTER_EGG"),
     LODESTONE(16),
