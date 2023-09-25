@@ -14,7 +14,7 @@ Por ahora el RtagBlock solo puede ser utilizado para editar los tags de "tile en
 
 Para entender esta página primero debes ver [la guía de RtagEditor](../../usage/editor/).
 
-Para entender sobre los tags comunes en las "tile entities" se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format).
+Para entender sobre los tags comunes en las "tile entities" se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.wiki/w/Chunk_format#Block_entity_format).
 
 :::
 

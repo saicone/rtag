@@ -8,7 +8,7 @@ description: Editar el NBT de los items
 
 Para entender esta página primero debes ver [la guía de RtagEditor](../../usage/editor/).
 
-Para entender sobre los tags comunes en los items se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.fandom.com/wiki/Player.dat_format#Item_structure).
+Para entender sobre los tags comunes en los items se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.wiki/w/Player.dat_format#Item_structure).
 
 :::
 
