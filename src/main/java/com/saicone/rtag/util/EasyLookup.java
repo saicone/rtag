@@ -1,5 +1,7 @@
 package com.saicone.rtag.util;
 
+import org.bukkit.Bukkit;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -30,7 +32,7 @@ public class EasyLookup {
             (m, type, params) -> isAssignableFrom(m.getParameterTypes(), params)
     };
     private static final String nmsPackage = ServerInstance.isUniversal ? "net.minecraft." : ("net.minecraft.server." + ServerInstance.version + ".");
-    private static final String obcPackage = "org.bukkit.craftbukkit." + ServerInstance.version + ".";
+    private static final String obcPackage = Bukkit.getServer().getClass().getPackage().getName() + ".";
 
     static {
         try {
@@ -256,7 +258,7 @@ public class EasyLookup {
 
     /**
      * Save the typically org.bukkit.craftbukkit class into memory.<br>
-     * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
+     * Name must be the full path after craftbukkit package.
      *
      * @param name    Class name.
      * @return        Added class.
@@ -268,7 +270,7 @@ public class EasyLookup {
 
     /**
      * Save the typically org.bukkit.craftbukkit class into memory.<br>
-     * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
+     * Name must be the full path after craftbukkit package.
      *
      * @param name    Class name.
      * @param aliases Alternative class names.
@@ -281,7 +283,7 @@ public class EasyLookup {
 
     /**
      * Save the typically org.bukkit.craftbukkit class into memory with specified ID.<br>
-     * Name must be the full path after "org.bukkit.craftbukkit.{@link ServerInstance#version}."
+     * Name must be the full path after craftbukkit package.
      *
      * @param id      Class ID.
      * @param name    Class name.

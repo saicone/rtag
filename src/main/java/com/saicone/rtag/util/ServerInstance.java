@@ -72,22 +72,72 @@ public class ServerInstance {
     private static final TreeMap<Integer, Integer[]> DATA_VERSION = new TreeMap<>();
 
     static {
-        version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
-        final String[] split = version.split("_");
-        verNumber = Integer.parseInt(split[1]);
-        // R1 -> 1  |  R2 - 2
-        split[2] = split[2].substring(1);
-        release = Integer.parseInt(split[2]);
-        // v1 -> 1
-        split[0] = split[0].substring(1);
-        // 8 -> 08  |  9 -> 09
-        if (split[1].length() <= 1) {
-            split[1] = '0' + split[1];
+        // Original data versions start by 100 until 15w32a
+        DATA_VERSION.put(98, new Integer[] {8, 3, 10803}); // 1.8 doesn't have data version, so 98 will be used by default
+        DATA_VERSION.put(169, new Integer[] {9, 1, 10901});
+        DATA_VERSION.put(183, new Integer[] {9, 2, 10902});
+        DATA_VERSION.put(510, new Integer[] {10, 1, 11001});
+        DATA_VERSION.put(819, new Integer[] {11, 1, 11101});
+        DATA_VERSION.put(1139, new Integer[] {12, 1, 11201});
+        DATA_VERSION.put(1519, new Integer[] {13, 1, 11301});
+        DATA_VERSION.put(1631, new Integer[] {13, 2, 11302});
+        DATA_VERSION.put(1952, new Integer[] {14, 1, 11401});
+        DATA_VERSION.put(2225, new Integer[] {15, 1, 11501});
+        DATA_VERSION.put(2566, new Integer[] {16, 1, 11601});
+        DATA_VERSION.put(2578, new Integer[] {16, 2, 11602});
+        DATA_VERSION.put(2584, new Integer[] {16, 3, 11603});
+        DATA_VERSION.put(2724, new Integer[] {17, 1, 11701});
+        DATA_VERSION.put(2860, new Integer[] {18, 1, 11801});
+        DATA_VERSION.put(2975, new Integer[] {18, 2, 11802});
+        DATA_VERSION.put(3105, new Integer[] {19, 1, 11901});
+        DATA_VERSION.put(3218, new Integer[] {19, 2, 11902});
+        DATA_VERSION.put(3337, new Integer[] {19, 3, 11903});
+        DATA_VERSION.put(3463, new Integer[] {20, 1, 12001});
+        DATA_VERSION.put(3578, new Integer[] {20, 2, 12002});
+
+        final String serverPackage = Bukkit.getServer().getClass().getPackage().getName();
+        if (serverPackage.startsWith("org.bukkit.craftbukkit.v1_")) {
+            version = serverPackage.split("\\.")[3];
+
+            final String[] split = version.split("_");
+            verNumber = Integer.parseInt(split[1]);
+
+            // R1 -> 1  |  R2 - 2
+            split[2] = split[2].substring(1);
+            release = Integer.parseInt(split[2]);
+
+            // v1 -> 1
+            split[0] = split[0].substring(1);
+            // 8 -> 08  |  9 -> 09
+            if (split[1].length() <= 1) {
+                split[1] = '0' + split[1];
+            }
+            if (split[2].length() <= 1) {
+                split[2] = '0' + split[2];
+            }
+            fullVersion = Integer.parseInt(String.join("", split));
+
+            dataVersion = dataVersion(fullVersion);
+        } else {
+            // CraftBukkit without relocation detected, let's get data version first (only for +1.13 servers)
+            int data = Integer.MAX_VALUE;
+            try {
+                final Class<?> magicNumbersClass = Class.forName(serverPackage + ".util.CraftMagicNumbers");
+                final Object craftMagicNumbers = magicNumbersClass.getDeclaredField("INSTANCE").get(null);
+                data = (int) magicNumbersClass.getDeclaredMethod("getDataVersion").invoke(craftMagicNumbers);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+            dataVersion = data;
+
+            // Get all version values using data version
+            version = version(dataVersion);
+            fullVersion = fullVersion(dataVersion);
+            verNumber = verNumber(dataVersion);
+            release = release(dataVersion);
         }
-        if (split[2].length() <= 1) {
-            split[2] = '0' + split[2];
-        }
-        fullVersion = Integer.parseInt(String.join("", split));
+
+        DATA_VERSION.put(Integer.MIN_VALUE, new Integer[] {verNumber, release, fullVersion});
 
         isLegacy = verNumber <= 12;
         isUniversal = verNumber >= 17;
@@ -115,30 +165,6 @@ public class ServerInstance {
         isPaper = paper;
         isFolia = folia;
         isMojangMapped = mojmap;
-
-        // Original data versions start by 100 until 15w32a
-        DATA_VERSION.put(Integer.MIN_VALUE, new Integer[] {verNumber, release, fullVersion});
-        DATA_VERSION.put(98, new Integer[] {8, 3, 10803}); // 1.8 doesn't have data version, so 98 will be used by default
-        DATA_VERSION.put(169, new Integer[] {9, 1, 10901});
-        DATA_VERSION.put(183, new Integer[] {9, 2, 10902});
-        DATA_VERSION.put(510, new Integer[] {10, 1, 11001});
-        DATA_VERSION.put(819, new Integer[] {11, 1, 11101});
-        DATA_VERSION.put(1139, new Integer[] {12, 1, 11201});
-        DATA_VERSION.put(1519, new Integer[] {13, 1, 11301});
-        DATA_VERSION.put(1952, new Integer[] {14, 1, 11401});
-        DATA_VERSION.put(2225, new Integer[] {15, 1, 11501});
-        DATA_VERSION.put(2566, new Integer[] {16, 1, 11601});
-        DATA_VERSION.put(2578, new Integer[] {16, 2, 11602});
-        DATA_VERSION.put(2584, new Integer[] {16, 3, 11603});
-        DATA_VERSION.put(2724, new Integer[] {17, 1, 11701});
-        DATA_VERSION.put(2860, new Integer[] {18, 1, 11801});
-        DATA_VERSION.put(3105, new Integer[] {19, 1, 11901});
-        DATA_VERSION.put(3218, new Integer[] {19, 2, 11902});
-        DATA_VERSION.put(3337, new Integer[] {19, 3, 11903});
-        DATA_VERSION.put(3463, new Integer[] {20, 1, 12001});
-        DATA_VERSION.put(3578, new Integer[] {20, 2, 12002});
-
-        dataVersion = dataVersion(fullVersion);
     }
 
     ServerInstance() {
