@@ -209,30 +209,25 @@ public class ItemObject {
      *
      * @param item   Bukkit ItemStack.
      * @param handle Minecraft ItemStack.
-     * @throws IllegalArgumentException if handle is not a Minecraft ItemStack.
      */
     @SuppressWarnings("deprecation")
-    public static void setHandle(ItemStack item, Object handle) throws IllegalArgumentException {
-        if (MC_ITEM.isInstance(handle)) {
-            if (CRAFT_ITEM.isInstance(item)) {
-                try {
-                    setHandleField.invoke(item, handle);
-                } catch (Throwable t) {
-                    throw new RuntimeException("Cannot set handle into CraftItemStack", t);
-                }
-            } else {
-                ItemStack copy = asBukkitCopy(handle);
-                if (copy != null) {
-                    item.setType(copy.getType());
-                    item.setAmount(copy.getAmount());
-                    if (ServerInstance.isLegacy) {
-                        item.setDurability(copy.getDurability());
-                    }
-                    item.setItemMeta(copy.getItemMeta());
-                }
+    public static void setHandle(ItemStack item, Object handle) {
+        if (CRAFT_ITEM.isInstance(item)) {
+            try {
+                setHandleField.invoke(item, handle);
+            } catch (Throwable t) {
+                throw new RuntimeException("Cannot set handle into CraftItemStack", t);
             }
         } else {
-            throw new IllegalArgumentException("The provided object isn't a Minecraft itemStack");
+            ItemStack copy = asBukkitCopy(handle);
+            if (copy != null) {
+                item.setType(copy.getType());
+                item.setAmount(copy.getAmount());
+                if (ServerInstance.isLegacy) {
+                    item.setDurability(copy.getDurability());
+                }
+                item.setItemMeta(copy.getItemMeta());
+            }
         }
     }
 
@@ -256,17 +251,12 @@ public class ItemObject {
      *
      * @param item Minecraft ItemStack.
      * @return     Bukkit ItemStack.
-     * @throws IllegalArgumentException if item is not a Minecraft ItemStack.
      */
-    public static ItemStack asBukkitCopy(Object item) throws IllegalArgumentException {
-        if (MC_ITEM.isInstance(item)) {
-            try {
-                return (ItemStack) asBukkitCopy.invoke(item);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot convert Minecraft ItemStack into Bukkit ItemStack", t);
-            }
-        } else {
-            throw new IllegalArgumentException("The provided object isn't a Minecraft itemStack");
+    public static ItemStack asBukkitCopy(Object item) {
+        try {
+            return (ItemStack) asBukkitCopy.invoke(item);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot convert Minecraft ItemStack into Bukkit ItemStack", t);
         }
     }
 
