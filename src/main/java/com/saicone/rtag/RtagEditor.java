@@ -17,10 +17,10 @@ import java.util.Map;
  */
 public abstract class RtagEditor<T> {
 
-    private final Rtag rtag;
-    private final T typeObject;
-    private final Object literalObject;
-    private Object tag;
+    protected final Rtag rtag;
+    protected final T typeObject;
+    protected final Object literalObject;
+    protected Object tag;
 
     /**
      * Constructs an NBTEditor.

@@ -102,13 +102,17 @@ public class RtagItem extends RtagEditor<ItemStack> {
 
     @Override
     public Object getTag(Object item) {
-        return ItemObject.getTag(item);
+        final Object tag = ItemObject.getTag(item);
+        return tag != null ? tag : TagCompound.newTag();
     }
 
     /**
      * Load changes into item instance.
      */
     public ItemStack load() {
+        if (getTag() != null) {
+            ItemObject.setTag(getLiteralObject(), getTag());
+        }
         ItemObject.setHandle(getTypeObject(), getLiteralObject());
         return getTypeObject();
     }
@@ -119,7 +123,14 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * @return Copy of the original item with changes loaded.
      */
     public ItemStack loadCopy() {
-        return ItemObject.asBukkitCopy(getLiteralObject());
+        final Object literal;
+        if (getTag() != null && ItemObject.getTag(getLiteralObject()) == null) {
+            literal = ItemObject.newItem(ItemObject.save(getLiteralObject()));
+            ItemObject.setTag(literal, getTag());
+        } else {
+            literal = getLiteralObject();
+        }
+        return ItemObject.asBukkitCopy(literal);
     }
 
     /**
@@ -130,16 +141,17 @@ public class RtagItem extends RtagEditor<ItemStack> {
      * @return      True if tag has replaced.
      */
     public boolean set(Object value) {
-        if (super.set(value)) {
-            try {
-                ItemObject.setTag(getLiteralObject(), getTag());
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-            return true;
-        } else {
+        if (value == null) {
+            this.tag = null;
+        } else if (!super.set(value)) {
             return false;
         }
+        try {
+            ItemObject.setTag(getLiteralObject(), getTag());
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        return true;
     }
 
     /**
