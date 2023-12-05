@@ -66,9 +66,9 @@ public class SkullTexture {
 
             get$profile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
             // Unreflect reason:
-            // Private field
-            set$profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
-        } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
+            // Private method
+            set$profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
+        } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
         }
         getProfile = get$profile;
@@ -114,7 +114,7 @@ public class SkullTexture {
      */
     public static ItemStack setTexture(ItemStack head, String texture) throws IllegalArgumentException {
         // Since 1.20.2: The Mojang AuthLib version used by spigot require non-null name for game profile
-        GameProfile profile = new GameProfile(UUID.randomUUID(), "Rubenicos");
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "null");
         profile.getProperties().put("textures", new Property("textures", getTextureValue(texture)));
 
         ItemMeta meta = head.getItemMeta();
