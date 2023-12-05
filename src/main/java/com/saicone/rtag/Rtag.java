@@ -350,7 +350,7 @@ public class Rtag extends RtagMirror {
                     return null;
                 }
             } else if (key instanceof Integer && TAG_LIST.isInstance(finalTag)) {
-                if (TagList.size(finalTag) >= (int) key) {
+                if ((int) key >= 0 ? TagList.size(finalTag) > (int) key : TagList.size(finalTag) >= Math.abs((int) key))  {
                     finalTag = TagList.get(finalTag, (int) key);
                 } else {
                     // Out of bounds

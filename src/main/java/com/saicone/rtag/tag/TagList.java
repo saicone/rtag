@@ -361,7 +361,8 @@ public class TagList {
      * @return      A NBTBase instance.
      */
     public static Object get(Object tag, int index) {
-        return getValue(tag).get(index);
+        final List<Object> value = getValue(tag);
+        return value.get(index >= 0 ? index : value.size() + index);
     }
 
     /**
