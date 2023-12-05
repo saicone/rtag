@@ -94,6 +94,7 @@ public class ServerInstance {
         DATA_VERSION.put(3337, new Integer[] {19, 3, 11903});
         DATA_VERSION.put(3463, new Integer[] {20, 1, 12001});
         DATA_VERSION.put(3578, new Integer[] {20, 2, 12002});
+        DATA_VERSION.put(3698, new Integer[] {20, 3, 12003});
 
         final String serverPackage = Bukkit.getServer().getClass().getPackage().getName();
         if (serverPackage.startsWith("org.bukkit.craftbukkit.v1_")) {

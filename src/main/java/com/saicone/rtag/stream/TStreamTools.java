@@ -64,8 +64,8 @@ public class TStreamTools {
                 method$read = EasyLookup.staticMethod("NBTCompressedStreamTools", read, "NBTBase", DataInput.class, int.class, "NBTReadLimiter");
             }
             // (1.8 - 1.17) private method
-            // (1.20.2) Note: There is a new method to write NBT without adding an empty String after write NBT id,
-            //                only used to send serialized packets
+            // (1.20.2) Note: New method to write NBT without adding an empty String after write NBT id, only used to send serialized packets
+            // (1.20.3) Note: New method to write NBT using a DelegateDataOutput that writes empty String if any error occurs
             method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", write, void.class, "NBTBase", DataOutput.class);
 
             if (ServerInstance.fullVersion >= 12002) {

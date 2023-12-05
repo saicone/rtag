@@ -50,6 +50,7 @@ public class EntityObject {
             method$getEntity = EasyLookup.staticMethod("CraftEntity", "getEntity", "CraftEntity", "CraftServer", "Entity");
             method$getHandle = EasyLookup.method("CraftEntity", "getHandle", "Entity");
             // (1.8) void method
+            // (1.20.3) Note: New method to save entity as compound excluding world position data
             method$save = EasyLookup.method("Entity", save, "NBTTagCompound", "NBTTagCompound");
             method$load = EasyLookup.method("Entity", load, void.class, "NBTTagCompound");
         } catch (NoSuchMethodException | IllegalAccessException e) {
