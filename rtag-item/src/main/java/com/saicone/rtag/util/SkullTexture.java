@@ -66,9 +66,13 @@ public class SkullTexture {
 
             get$profile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
             // Unreflect reason:
-            // Private method
-            set$profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
-        } catch (IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
+            // Private method/field
+            if (ServerInstance.verNumber >= 15) {
+                set$profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
+            } else {
+                set$profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
+            }
+        } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
         }
         getProfile = get$profile;
