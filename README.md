@@ -3,8 +3,8 @@
 <h4 align="center">The "readable tag" library, an easy way to handle NBTTagCompounds.</h4>
 
 <p align="center">
-    <a href="https://img.shields.io/discord/974288218839191612.svg?style=flat-square&label=discord&logo=discord&logoColor=white&color=7289da">
-        <img src="https://saic.one/discord"/>
+    <a href="https://saic.one/discord">
+        <img src="https://img.shields.io/discord/974288218839191612.svg?style=flat-square&label=discord&logo=discord&logoColor=white&color=7289da"/>
     </a>
     <a href="https://www.codefactor.io/repository/github/saicone/rtag">
         <img src="https://www.codefactor.io/repository/github/saicone/rtag/badge?style=flat-square"/>
