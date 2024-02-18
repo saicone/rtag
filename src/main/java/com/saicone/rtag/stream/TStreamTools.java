@@ -187,10 +187,12 @@ public class TStreamTools {
 
         int ID1 = in.read();
         if (ID1 <= -1 || ID1 > 255) {
+            in.reset();
             return false;
         }
         int ID2 = in.read();
         if (ID2 <= -1 || ID2 > 255) {
+            in.reset();
             return false;
         }
         in.reset();
