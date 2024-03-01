@@ -14,7 +14,7 @@ public interface RtagDeserializer<T> {
 
     /**
      * The unique ID to detect any NBTTagCompound who can be converted
-     * to object type on {@link Rtag#fromTag(Object)} operations.<br>
+     * to object type on {@link Rtag#getTagValue(Object)} (Object)} operations.<br>
      * "Out" means the value inside will be obtained from tag.<br>
      *
      * This ID must be the same has "In" ID on {@link RtagSerializer}

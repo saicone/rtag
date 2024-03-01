@@ -4,6 +4,7 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.EasyLookup;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ public class RtagMirror {
      *
      * @param ignored Ignored Rtag instance.
      */
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
     public RtagMirror(Rtag ignored) {
     }
@@ -62,6 +64,7 @@ public class RtagMirror {
      *
      * @return the current Rtag instance or null.
      */
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
     public Rtag getRtag() {
         if (this instanceof Rtag) {
@@ -78,6 +81,7 @@ public class RtagMirror {
      *
      * @param rtag Ignored Rtag instance.
      */
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
     public void setRtag(Rtag rtag) {
         // empty method
