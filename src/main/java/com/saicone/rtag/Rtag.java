@@ -3,7 +3,9 @@ package com.saicone.rtag;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.OptionalType;
+import com.saicone.rtag.util.ServerInstance;
 import com.saicone.rtag.util.ThrowableFunction;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -44,9 +46,27 @@ public class Rtag extends RtagMirror {
      * {@link Rtag} public instance only compatible with regular Java objects.
      */
     public static final Rtag INSTANCE = new Rtag();
+    /**
+     * Single object that represents a Java unit defined by Mojang.<br>
+     * On versions before 1.14 this object just act like a dummy object.
+     */
+    @ApiStatus.Experimental
+    public static final Object UNIT;
 
     private final Map<String, RtagDeserializer<Object>> deserializers = new HashMap<>();
     private final Map<Class<?>, RtagSerializer<Object>> serializers = new HashMap<>();
+
+    static {
+        Object unit = new Object();
+        if (ServerInstance.verNumber >= 14) {
+            try {
+                unit = ((Object[]) EasyLookup.addNMSClass("util.Unit").getDeclaredMethod("values").invoke(null))[0];
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+        UNIT = unit;
+    }
 
     /**
      * Create new {@link Rtag} instance.

@@ -12,7 +12,7 @@ import java.util.function.Function;
  *
  * @author Rubenicos
  */
-public class RtagBlock extends RtagEditor<Block> {
+public class RtagBlock extends RtagEditor<Block, RtagBlock> {
 
     /**
      * Create an RtagBlock using Block.
@@ -90,6 +90,11 @@ public class RtagBlock extends RtagEditor<Block> {
     }
 
     @Override
+    protected RtagBlock getEditor() {
+        return this;
+    }
+
+    @Override
     public Object getLiteralObject(Block block) {
         return BlockObject.getTileEntity(block);
     }
@@ -134,17 +139,6 @@ public class RtagBlock extends RtagEditor<Block> {
             return null;
         }
         return ChatComponent.isChatComponent(name) ? name : ChatComponent.toString(name);
-    }
-
-    /**
-     * Edit the current RtagBlock instance and return itself.
-     *
-     * @param consumer Function to apply.
-     * @return         The current RtagBlock instance.
-     */
-    public RtagBlock edit(Consumer<RtagBlock> consumer) {
-        consumer.accept(this);
-        return this;
     }
 
     /**

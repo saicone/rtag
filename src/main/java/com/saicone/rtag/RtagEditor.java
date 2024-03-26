@@ -2,8 +2,10 @@ package com.saicone.rtag;
 
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.OptionalType;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * RtagEditor abstract class who edit any object
@@ -14,8 +16,9 @@ import java.util.Map;
  * @author Rubenicos
  *
  * @param <T> Parent object type.
+ * @param <EditorT> Editor object type.
  */
-public abstract class RtagEditor<T> {
+public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
 
     protected final Rtag rtag;
     protected final T typeObject;
@@ -65,6 +68,16 @@ public abstract class RtagEditor<T> {
     }
 
     /**
+     * Get current {@link RtagEditor} object.
+     *
+     * @return A RtagEditor instance.
+     */
+    @SuppressWarnings("unchecked")
+    protected EditorT getEditor() {
+        return (EditorT) this;
+    }
+
+    /**
      * Get current {@link Rtag} parent.
      *
      * @return A Rtag instance.
@@ -81,6 +94,7 @@ public abstract class RtagEditor<T> {
      *
      * @return An object with NBTTagCompound inside.
      */
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
     public Object getObject() {
         return literalObject;
@@ -607,6 +621,18 @@ public abstract class RtagEditor<T> {
      */
     public int getBitField(Object... path) {
         return getOptional(path).asInt(0);
+    }
+
+    /**
+     * Edit the current RtagEditor instance and return itself.
+     *
+     * @param consumer Function to apply.
+     * @return         The current RtagEditor instance.
+     */
+    public EditorT edit(Consumer<EditorT> consumer) {
+        final EditorT editor = getEditor();
+        consumer.accept(editor);
+        return editor;
     }
 
     private <E extends Enum<E>> int[] enumOrdinals(E[] elements) {

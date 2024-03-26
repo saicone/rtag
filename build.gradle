@@ -10,6 +10,8 @@ allprojects {
     }
 
     dependencies {
+        compileOnly 'it.unimi.dsi:fastutil:8.5.12'
+
         compileOnly 'org.jetbrains:annotations:24.1.0'
     }
 

@@ -27,6 +27,7 @@ public class ItemTagStream extends TStream<ItemStack> {
 
     static {
         List<ItemMirror> mirror = new ArrayList<>();
+        mirror.add(new IComponentMirror());
         mirror.add(new IPotionMirror());
         mirror.add(new ISkullOwnerMirror());
         mirror.add(new IMaterialMirror());
@@ -250,6 +251,7 @@ public class ItemTagStream extends TStream<ItemStack> {
         String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
         if (id == null) return;
 
+        // TODO: Add components compatibility
         Object tag = TagCompound.get(compound, "tag");
         if (from > to) {
             if (tag == null) {

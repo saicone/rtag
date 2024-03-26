@@ -68,6 +68,10 @@ public class ServerInstance {
      * Return true if server instance is mojang mapped.
      */
     public static final boolean isMojangMapped;
+    /**
+     * Return true if server instance use data components to save data.
+     */
+    public static final boolean useDataComponents;
 
     private static final TreeMap<Integer, Integer[]> DATA_VERSION = new TreeMap<>();
 
@@ -166,6 +170,7 @@ public class ServerInstance {
         isPaper = paper;
         isFolia = folia;
         isMojangMapped = mojmap;
+        useDataComponents = fullVersion >= 12004;
     }
 
     ServerInstance() {

@@ -15,7 +15,7 @@ import java.util.function.Function;
  *
  * @author Rubenicos
  */
-public class RtagEntity extends RtagEditor<Entity> {
+public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
 
     /**
      * Create an RtagEntity using Entity.
@@ -90,6 +90,11 @@ public class RtagEntity extends RtagEditor<Entity> {
      */
     public Entity getEntity() {
         return getTypeObject();
+    }
+
+    @Override
+    protected RtagEntity getEditor() {
+        return this;
     }
 
     @Override
@@ -208,17 +213,6 @@ public class RtagEntity extends RtagEditor<Entity> {
      */
     public float getHealth() {
         return getOptional("Health").asFloat(0F);
-    }
-
-    /**
-     * Edit the current RtagEntity instance and return itself.
-     *
-     * @param consumer Function to apply.
-     * @return         The current RtagEntity instance.
-     */
-    public RtagEntity edit(Consumer<RtagEntity> consumer) {
-        consumer.accept(this);
-        return this;
     }
 
     /**
