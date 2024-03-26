@@ -7,6 +7,7 @@ import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.OptionalType;
 import com.saicone.rtag.util.ServerInstance;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Type;
@@ -23,14 +24,12 @@ public class TagCompound {
     /**
      * Tag stream instance to save and get compounds.
      *
-     * @see TStream
+     * @deprecated Use {@link TStream#COMPOUND} instead.
+     * @see TStream#COMPOUND
      */
-    public static final TStream<Object> DATA = new TStream<>() {
-        @Override
-        public Object clone(Object object) {
-            return TagCompound.safeClone(object);
-        }
-    };
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @Deprecated
+    public static final TStream<Object> DATA = TStream.COMPOUND;
 
     private static final Class<?> NBT_COMPOUND = EasyLookup.classById("NBTTagCompound");
 

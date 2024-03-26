@@ -35,6 +35,16 @@ import java.util.Map;
 public class TStream<T> {
 
     /**
+     * Tag stream instance to save and get compounds.
+     */
+    public static final TStream<Object> COMPOUND = new TStream<>() {
+        @Override
+        public Object clone(Object object) {
+            return TagCompound.safeClone(object);
+        }
+    };
+
+    /**
      * Clone provided object by extract NBTTagCompound
      * and use it to build new object.
      *

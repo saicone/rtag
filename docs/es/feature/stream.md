@@ -44,10 +44,10 @@ import TabItem from '@theme/TabItem';
 Object compound = ...;
 
 // Convertirlo en un archivo
-File file TagCompound.DATA.toFile(compound, new File("archivo.nbt"));
+File file TStream.COMPOUND.toFile(compound, new File("archivo.nbt"));
 
 // Obtener el compound desde un archivo
-Object tagCompound = TagCompound.DATA.fromFile(file);
+Object tagCompound = TStream.COMPOUND.fromFile(file);
 ```
 
 </TabItem>
@@ -58,10 +58,10 @@ Object tagCompound = TagCompound.DATA.fromFile(file);
 Object compound = ...;
 
 // Convertirlo en Base64
-String base64 = TagCompound.DATA.toBase64(compound);
+String base64 = TStream.COMPOUND.toBase64(compound);
 
 // Obtener el compound desde Base64
-Object tagCompound = TagCompound.DATA.fromBase64(base64)[0]; // Devuelve un array
+Object tagCompound = TStream.COMPOUND.fromBase64(base64)[0]; // Devuelve un array
 ```
 
 </TabItem>
@@ -72,10 +72,10 @@ Object tagCompound = TagCompound.DATA.fromBase64(base64)[0]; // Devuelve un arra
 Object compound = ...;
 
 // Convertirlo en un array de bytes
-byte[] bytes = TagCompound.DATA.toBytes(compound);
+byte[] bytes = TStream.COMPOUND.toBytes(compound);
 
 // Obtener el compound desde el array de bytes
-Object tagCompound = TagCompound.DATA.fromBytes(bytes);
+Object tagCompound = TStream.COMPOUND.fromBytes(bytes);
 ```
 
 </TabItem>
@@ -86,10 +86,10 @@ Object tagCompound = TagCompound.DATA.fromBytes(bytes);
 Object compound = ...;
 
 // Convertirlo en un Map
-Map<String, Object> map = TagCompound.DATA.toMap(compound);
+Map<String, Object> map = TStream.COMPOUND.toMap(compound);
 
 // Obtener el compound desde el Map
-Object tagCompound = TagCompound.DATA.fromMap(map);
+Object tagCompound = TStream.COMPOUND.fromMap(map);
 ```
 
 </TabItem>
@@ -100,10 +100,10 @@ Object tagCompound = TagCompound.DATA.fromMap(map);
 Object compound = ...;
 
 // Convertirlo en un SNBT
-String snbt = TagCompound.DATA.toString(compound);
+String snbt = TStream.COMPOUND.toString(compound);
 
 // Obtener el compound desde el SNBT
-Object tagCompound = TagCompound.DATA.fromString(snbt);
+Object tagCompound = TStream.COMPOUND.fromString(snbt);
 ```
 
 </TabItem>

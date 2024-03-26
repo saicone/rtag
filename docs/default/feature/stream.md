@@ -44,10 +44,10 @@ import TabItem from '@theme/TabItem';
 Object compound = ...;
 
 // Convert into File
-File file TagCompound.DATA.toFile(compound, new File("file.nbt"));
+File file TStream.COMPOUND.toFile(compound, new File("file.nbt"));
 
 // Get from file
-Object tagCompound = TagCompound.DATA.fromFile(file);
+Object tagCompound = TStream.COMPOUND.fromFile(file);
 ```
 
 </TabItem>
@@ -58,10 +58,10 @@ Object tagCompound = TagCompound.DATA.fromFile(file);
 Object compound = ...;
 
 // Convert into Base64
-String base64 = TagCompound.DATA.toBase64(compound);
+String base64 = TStream.COMPOUND.toBase64(compound);
 
 // Get from Base64
-Object tagCompound = TagCompound.DATA.fromBase64(base64)[0]; // Return array
+Object tagCompound = TStream.COMPOUND.fromBase64(base64)[0]; // Return array
 ```
 
 </TabItem>
@@ -72,10 +72,10 @@ Object tagCompound = TagCompound.DATA.fromBase64(base64)[0]; // Return array
 Object compound = ...;
 
 // Convert into bytes
-byte[] bytes = TagCompound.DATA.toBytes(compound);
+byte[] bytes = TStream.COMPOUND.toBytes(compound);
 
 // Get from bytes
-Object tagCompound = TagCompound.DATA.fromBytes(bytes);
+Object tagCompound = TStream.COMPOUND.fromBytes(bytes);
 ```
 
 </TabItem>
@@ -86,10 +86,10 @@ Object tagCompound = TagCompound.DATA.fromBytes(bytes);
 Object compound = ...;
 
 // Convert into map
-Map<String, Object> map = TagCompound.DATA.toMap(compound);
+Map<String, Object> map = TStream.COMPOUND.toMap(compound);
 
 // Get from map
-Object tagCompound = TagCompound.DATA.fromMap(map);
+Object tagCompound = TStream.COMPOUND.fromMap(map);
 ```
 
 </TabItem>
@@ -100,10 +100,10 @@ Object tagCompound = TagCompound.DATA.fromMap(map);
 Object compound = ...;
 
 // Convert into snbt
-String snbt = TagCompound.DATA.toString(compound);
+String snbt = TStream.COMPOUND.toString(compound);
 
 // Get from snbt
-Object tagCompound = TagCompound.DATA.fromString(snbt);
+Object tagCompound = TStream.COMPOUND.fromString(snbt);
 ```
 
 </TabItem>
