@@ -96,7 +96,7 @@ public class TagBase {
                 getTypeId = "getId";
                 asLongArray = "data";
             } else if (ServerInstance.Release.UNIVERSAL) {
-                if (ServerInstance.FULL_VERSION >= 11902) { // v1_19_R2
+                if (ServerInstance.VERSION >= 19.02) { // v1_19_R2
                     getTypeId = "b";
                 } else if (ServerInstance.MAJOR_VERSION >= 18) {
                     getTypeId = "a";

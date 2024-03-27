@@ -62,7 +62,7 @@ public class BlockObject {
                 getRegistry = "registryAccess";
             } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 getTileEntity = "c_";
-                if (ServerInstance.FULL_VERSION >= 11903) {
+                if (ServerInstance.VERSION >= 19.03) {
                     save = "o";
                 } else {
                     save = "m";
@@ -78,7 +78,7 @@ public class BlockObject {
             method$getTileEntity = EasyLookup.method("World", getTileEntity, "TileEntity", "BlockPosition");
             method$getHandle = EasyLookup.method("CraftWorld", "getHandle", "WorldServer");
 
-            if (ServerInstance.FULL_VERSION >= 12004) {
+            if (ServerInstance.Release.COMPONENT) {
                 method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound", "HolderLookup.Provider");
                 method$getWorld = EasyLookup.method("TileEntity", getWorld, "World");
                 method$getRegistry = EasyLookup.method("IWorldReader", getRegistry, "IRegistryCustom");
@@ -153,7 +153,7 @@ public class BlockObject {
      */
     public static Object save(Object tile) {
         try {
-            if (ServerInstance.FULL_VERSION >= 12004) {
+            if (ServerInstance.Release.COMPONENT) {
                 final Object registry = getRegistry.invoke(getWorld.invoke(tile));
                 return save.invoke(tile, registry);
             } else if (ServerInstance.MAJOR_VERSION >= 18) {

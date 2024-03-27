@@ -30,7 +30,7 @@ public class IEffectMirror implements ItemMirror {
     private final String toDuration;
 
     public IEffectMirror() {
-        if (ServerInstance.FULL_VERSION >= 12002) {
+        if (ServerInstance.VERSION >= 20.02) {
             this.fromId = "EffectId";
             this.toId = "id";
             this.fromDuration = "EffectDuration";

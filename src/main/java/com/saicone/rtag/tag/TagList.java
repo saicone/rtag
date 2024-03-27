@@ -49,7 +49,7 @@ public class TagList {
             } else if (ServerInstance.Release.UNIVERSAL) {
                 list = "c";
                 type = "w";
-                if (ServerInstance.FULL_VERSION >= 11903) {
+                if (ServerInstance.VERSION >= 19.03) {
                     clone = "e";
                 } else if (ServerInstance.MAJOR_VERSION >= 18) {
                     clone = "d";

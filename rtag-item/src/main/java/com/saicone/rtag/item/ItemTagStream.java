@@ -71,7 +71,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param mirror Mirror list.
      */
     public ItemTagStream(List<ItemMirror> mirror) {
-        this(mirror, Float.parseFloat(ServerInstance.MAJOR_VERSION + "." + (ServerInstance.RELEASE_VERSION < 10 ? "0" : "") + ServerInstance.RELEASE_VERSION), "rtagDataVersion");
+        this(mirror, ServerInstance.VERSION, "rtagDataVersion");
     }
 
     /**

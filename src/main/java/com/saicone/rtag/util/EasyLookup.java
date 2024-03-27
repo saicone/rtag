@@ -56,7 +56,7 @@ public class EasyLookup {
             }
             addNMSClass("nbt.NBTTagShort", "ShortTag");
             addNMSClass("nbt.NBTTagString", "StringTag");
-            if (ServerInstance.FULL_VERSION >= 12004) {
+            if (ServerInstance.Release.COMPONENT) {
                 addNMSClass("core.component.DataComponentHolder");
                 addNMSClass("core.component.DataComponentMap");
                 addNMSClassId("DataComponentMap.Builder", "core.component.DataComponentMap.Builder");
@@ -77,7 +77,7 @@ public class EasyLookup {
             if (ServerInstance.MAJOR_VERSION >= 16) {
                 addNMSClass("core.IRegistryCustom", "RegistryAccess");
                 addNMSClass("world.level.IWorldReader", "LevelReader");
-                if (ServerInstance.FULL_VERSION >= 11902) {
+                if (ServerInstance.VERSION >= 19.02) {
                     addNMSClassId("HolderLookup.Provider", "core.HolderLookup.b", "core.HolderLookup.Provider");
                 }
             }

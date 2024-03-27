@@ -1369,7 +1369,6 @@ public enum ItemMaterialTag {
      * only server version compatible materials.
      */
     public static final Map<String, ItemMaterialTag> SERVER_VALUES;
-    private static final float FLOAT_VERSION = Float.parseFloat(ServerInstance.MAJOR_VERSION + "." + (ServerInstance.RELEASE_VERSION < 10 ? "0" : "") + ServerInstance.RELEASE_VERSION);
 
     private final TreeMap<Float, String> names;
     private final String[] aliases;
@@ -1458,7 +1457,7 @@ public enum ItemMaterialTag {
     public String getValidMaterial() {
         for (Float version : names.descendingKeySet()) {
             // Found valid version
-            if (version <= FLOAT_VERSION) {
+            if (version <= ServerInstance.VERSION) {
                 final String s = names.get(version);
                 // Find valid material using minecraft names as aliases
                 for (String name : names.values()) {
