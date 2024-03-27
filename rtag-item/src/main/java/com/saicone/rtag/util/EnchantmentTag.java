@@ -77,7 +77,7 @@ public enum EnchantmentTag {
     /**
      * Current key where enchantments are inside items tag.
      */
-    public static final String TAG_KEY = ServerInstance.isLegacy ? "ench" : "Enchantments";
+    public static final String TAG_KEY = ServerInstance.Release.LEGACY ? "ench" : "Enchantments";
     /**
      * Current key where stored enchantments are inside items tag.
      */
@@ -90,7 +90,7 @@ public enum EnchantmentTag {
             if (tag.getVersion() <= 12) {
                 legacy.add(tag);
             }
-            if (tag.getVersion() <= ServerInstance.verNumber) {
+            if (tag.getVersion() <= ServerInstance.MAJOR_VERSION) {
                 server.add(tag);
             }
         }
@@ -113,7 +113,7 @@ public enum EnchantmentTag {
         this.version = version;
         this.id = id;
         this.aliases = aliases;
-        if (ServerInstance.isLegacy) {
+        if (ServerInstance.Release.LEGACY) {
             this.enchantment = Enchantment.getByName(this.name());
         } else {
             this.enchantment = Enchantment.getByKey(NamespacedKey.minecraft(this.name().toLowerCase()));
@@ -162,7 +162,7 @@ public enum EnchantmentTag {
      * @return Short id for legacy versions, namespaced key otherwise.
      */
     public Object getKey() {
-        if (ServerInstance.isLegacy) {
+        if (ServerInstance.Release.LEGACY) {
             return id;
         } else {
             return "minecraft:" + name().toLowerCase();

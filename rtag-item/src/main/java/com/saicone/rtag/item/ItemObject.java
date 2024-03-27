@@ -69,8 +69,8 @@ public class ItemObject {
             String setCount = "";
 
             // New method names
-            if (ServerInstance.isMojangMapped) {
-                if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
+                if (ServerInstance.Release.COMPONENT) {
                     createStack = "parseOptional";
                     save = "saveOptional";
                     apply = "applyComponents";
@@ -81,29 +81,29 @@ public class ItemObject {
                     createStack = "of";
                     apply = "load";
                 }
-            } else if (ServerInstance.verNumber >= 11) {
+            } else if (ServerInstance.MAJOR_VERSION >= 11) {
                 apply = "load";
-                if (ServerInstance.verNumber >= 13) {
+                if (ServerInstance.MAJOR_VERSION >= 13) {
                     createStack = "a";
-                    if (ServerInstance.verNumber >= 18) {
+                    if (ServerInstance.MAJOR_VERSION >= 18) {
                         save = "b";
                         setTag = "c";
-                        if (ServerInstance.verNumber >= 20) {
+                        if (ServerInstance.MAJOR_VERSION >= 20) {
                             getTag = "v";
-                        } else if (ServerInstance.verNumber >= 19) {
+                        } else if (ServerInstance.MAJOR_VERSION >= 19) {
                             getTag = "u";
                         } else {
-                            getTag = ServerInstance.release >= 2 ? "t" : "s";
+                            getTag = ServerInstance.RELEASE_VERSION >= 2 ? "t" : "s";
                         }
                     }
                 }
             }
 
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 EasyLookup.addNMSClass("world.item.component.CustomData");
                 new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "HolderLookup.Provider", "NBTTagCompound");
                 new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
-            } else if (ServerInstance.verNumber >= 13 || ServerInstance.verNumber <= 10) {
+            } else if (ServerInstance.MAJOR_VERSION >= 13 || ServerInstance.MAJOR_VERSION <= 10) {
                 new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
             } else {
                 // (1.11 - 1.12) Only by public constructor
@@ -114,7 +114,7 @@ public class ItemObject {
             get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
             set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
@@ -220,7 +220,7 @@ public class ItemObject {
                 "explosions", "Explosions",
                 "flight_duration", "Flight"
         ));
-        if (ServerInstance.isLegacy) {
+        if (ServerInstance.Release.LEGACY) {
             initPath("minecraft:damage", "Damage");
             initPath("minecraft:enchantments", "tag", "ench");
         } else {
@@ -300,7 +300,7 @@ public class ItemObject {
      */
     public static Object newItem(Object compound) {
         try {
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 // TODO: Add RegistryAccess to args
                 return newItem.invoke(null, compound);
             } else {
@@ -339,7 +339,7 @@ public class ItemObject {
      * @return     true if the item has custom data.
      */
     public static boolean hasCustomData(Object item) {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             return DataComponent.Holder.has(item, CUSTOM_DATA);
         } else {
             return getTag(item) != null;
@@ -357,7 +357,7 @@ public class ItemObject {
             return TagCompound.newTag();
         }
         try {
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 // TODO: Add save by providing a lookup
                 return save.invoke(item, null);
             } else {
@@ -380,7 +380,7 @@ public class ItemObject {
     @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
     public static void load(Object item, Object compound) {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             final Object id = TagCompound.get(compound, "id");
             if (id != null) {
                 // TODO: Replace item field inside ItemStack
@@ -431,7 +431,7 @@ public class ItemObject {
      * @return     A copy from Minecraft ItemStack.
      */
     public static Object copy(Object item) {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             try {
                 return copy.invoke(item);
             } catch (Throwable t) {
@@ -602,7 +602,7 @@ public class ItemObject {
      * @return     The custom data component inside provided item.
      */
     public static Object getCustomDataTag(Object item) {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             final Object customData = DataComponent.Holder.get(item, CUSTOM_DATA);
             if (customData == null) {
                 return null;
@@ -656,7 +656,7 @@ public class ItemObject {
             if (copy != null) {
                 item.setType(copy.getType());
                 item.setAmount(copy.getAmount());
-                if (ServerInstance.isLegacy) {
+                if (ServerInstance.Release.LEGACY) {
                     item.setDurability(copy.getDurability());
                 }
                 item.setItemMeta(copy.getItemMeta());
@@ -672,7 +672,7 @@ public class ItemObject {
      * @param tag  NBTTagCompound to put into custom data component.
      */
     public static void setCustomDataTag(Object item, Object tag) {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             try {
                 DataComponent.MapPatch.set(DataComponent.Holder.getComponents(item), CUSTOM_DATA, newCustomData.invoke(tag));
             } catch (Throwable t) {

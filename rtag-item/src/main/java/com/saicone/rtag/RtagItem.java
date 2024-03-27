@@ -66,7 +66,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public RtagItem(Rtag rtag, ItemStack item) {
         super(rtag, item);
-        this.components = ServerInstance.useDataComponents ? DataComponent.Holder.getComponents(getLiteralObject()) : null;
+        this.components = ServerInstance.Release.COMPONENT ? DataComponent.Holder.getComponents(getLiteralObject()) : null;
     }
 
     /**
@@ -79,7 +79,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public RtagItem(Rtag rtag, ItemStack item, Object mcItem) {
         super(rtag, item, mcItem);
-        this.components = ServerInstance.useDataComponents ? DataComponent.Holder.getComponents(mcItem) : null;
+        this.components = ServerInstance.Release.COMPONENT ? DataComponent.Holder.getComponents(mcItem) : null;
     }
 
     /**
@@ -93,7 +93,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public RtagItem(Rtag rtag, ItemStack item, Object mcItem, Object tag) {
         super(rtag, item, mcItem, tag);
-        this.components = ServerInstance.useDataComponents ? DataComponent.Holder.getComponents(mcItem) : null;
+        this.components = ServerInstance.Release.COMPONENT ? DataComponent.Holder.getComponents(mcItem) : null;
     }
 
     /**
@@ -191,7 +191,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     public boolean hasHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             // TODO: Replace with converted component value check
             if (!getItem().hasItemMeta()) {
                 return false;
@@ -215,7 +215,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public boolean hasEnchantment(Object enchant) {
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             final EnchantmentTag tag = EnchantmentTag.of(enchant);
             if (tag == null) {
                 return false;
@@ -230,11 +230,11 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * item lore component that doesn't allow to compare with similar items.
      */
     public void fixSerialization() {
-        if (ServerInstance.verNumber < 14) {
+        if (ServerInstance.MAJOR_VERSION < 14) {
             return;
         }
         // Since 1.20.5, the server use a different serialization
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             return;
         }
         // Fix lore
@@ -277,7 +277,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     public boolean addHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
             // TODO: Replace with component conversion
             if (getItem().hasItemMeta()) {
@@ -310,7 +310,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
             return false;
         }
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             getItem().addEnchantment(tag.getEnchantment(), level);
             return true;
         }
@@ -330,7 +330,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public boolean setUnbreakable(boolean unbreakable) {
         // TODO: Replace with component value setter
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             if (getItem().hasItemMeta()) {
                 final ItemMeta meta = getItem().getItemMeta();
                 meta.setUnbreakable(unbreakable);
@@ -350,7 +350,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public boolean setCustomModelData(Integer model) {
         // TODO: Replace with component value setter
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             if (getItem().hasItemMeta()) {
                 final ItemMeta meta = getItem().getItemMeta();
                 meta.setCustomModelData(model);
@@ -375,7 +375,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     public boolean setHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
             // TODO: Replace with component conversion
             if (getItem().hasItemMeta()) {
@@ -400,7 +400,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return     true if the repair cost was changes.
      */
     public boolean setRepairCost(int cost) {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             DataComponent.MapPatch.set(components, DataComponent.type("minecraft:repair_cost"), cost);
             return true;
         }
@@ -419,7 +419,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     public boolean removeHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
             // TODO: Replace with component conversion
             if (getItem().hasItemMeta()) {
@@ -452,7 +452,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         }
 
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             return getItem().removeEnchantment(tag.getEnchantment());
         }
 
@@ -503,7 +503,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public Integer getCustomModelData() {
         // TODO: Replace with component value getter
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             return getItem().hasItemMeta() && getItem().getItemMeta().hasCustomModelData() ? getItem().getItemMeta().getCustomModelData() : null;
         }
         return get("CustomModelData");
@@ -520,7 +520,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     public Set<Integer> getHideFlags() {
         // Since 1.20.5, items cannot hold hide flags
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             final Set<Integer> hideFlags = new HashSet<>();
             if (getItem().hasItemMeta()) {
                 for (ItemFlag flag : getItem().getItemMeta().getItemFlags()) {
@@ -538,7 +538,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return Level repair cost.
      */
     public int getRepairCost() {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             return (int) DataComponent.Map.get(components, DataComponent.type("minecraft:repair_cost"));
         }
         return getOptional("RepairCost").or(0);
@@ -556,7 +556,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
             return null;
         }
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             int level = getItem().getEnchantmentLevel(tag.getEnchantment());
             if (level > 0) {
                 return TagCompound.newTag(RtagMirror.INSTANCE, Map.of("id", tag.getKey(), "lvl", level));
@@ -582,7 +582,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public int getEnchantmentLevel(Object enchant) {
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             final EnchantmentTag tag = EnchantmentTag.of(enchant);
             if (tag == null) {
                 return 0;
@@ -605,7 +605,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public Map<EnchantmentTag, Integer> getEnchantments() {
         final Map<EnchantmentTag, Integer> enchants = new HashMap<>();
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             for (Map.Entry<Enchantment, Integer> entry : getItem().getEnchantments().entrySet()) {
                 enchants.put(EnchantmentTag.of(entry.getKey()), entry.getValue());
             }
@@ -632,7 +632,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return true if the item is unbreakable.
      */
     public boolean isUnbreakable() {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             return DataComponent.Map.has(components, DataComponent.type("minecraft:unbreakable"));
         }
         return getOptional("Unbreakable").asBoolean(false);

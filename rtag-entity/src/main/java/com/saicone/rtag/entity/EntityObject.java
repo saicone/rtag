@@ -34,15 +34,15 @@ public class EntityObject {
             String save = "e";
             String load = "f";
             // New method names
-            if (ServerInstance.isMojangMapped) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
                 save = "saveWithoutId";
                 load = "load";
-            } else if (ServerInstance.verNumber >= 18) {
+            } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 save = "f";
                 load = "g";
-            } else if (ServerInstance.verNumber >= 12) {
+            } else if (ServerInstance.MAJOR_VERSION >= 12) {
                 save = "save";
-                if (ServerInstance.verNumber >= 16) {
+                if (ServerInstance.MAJOR_VERSION >= 16) {
                     load = "load";
                 }
             }
@@ -126,7 +126,7 @@ public class EntityObject {
      */
     public static Object save(Object entity) {
         try {
-            if (ServerInstance.verNumber >= 9) {
+            if (ServerInstance.MAJOR_VERSION >= 9) {
                 return save.invoke(entity, TagCompound.newTag());
             } else {
                 Object tag = TagCompound.newTag();

@@ -44,22 +44,22 @@ public class TagList {
             String type = "type";
             String list = "list";
             // New names
-            if (ServerInstance.isMojangMapped) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
                 clone = "copy";
-            } else if (ServerInstance.isUniversal) {
+            } else if (ServerInstance.Release.UNIVERSAL) {
                 list = "c";
                 type = "w";
-                if (ServerInstance.fullVersion >= 11903) {
+                if (ServerInstance.FULL_VERSION >= 11903) {
                     clone = "e";
-                } else if (ServerInstance.verNumber >= 18) {
+                } else if (ServerInstance.MAJOR_VERSION >= 18) {
                     clone = "d";
                 }
-            } else if (ServerInstance.verNumber >= 10 && ServerInstance.verNumber <= 13) {
+            } else if (ServerInstance.MAJOR_VERSION >= 10 && ServerInstance.MAJOR_VERSION <= 13) {
                 clone = "d";
             }
 
             new$EmptyList = EasyLookup.constructor(NBT_LIST);
-            if (ServerInstance.verNumber >= 15) {
+            if (ServerInstance.MAJOR_VERSION >= 15) {
                 // Private constructor
                 new$List = EasyLookup.constructor(NBT_LIST, List.class, byte.class);
             }
@@ -110,7 +110,7 @@ public class TagList {
         }
         final byte type = TagBase.getTypeId(list.get(0));
         try {
-            if (ServerInstance.verNumber >= 15) {
+            if (ServerInstance.MAJOR_VERSION >= 15) {
                 return newList.invoke(list, type);
             } else {
                 Object tag = newTag();

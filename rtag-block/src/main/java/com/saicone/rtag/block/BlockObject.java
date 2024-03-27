@@ -54,22 +54,22 @@ public class BlockObject {
             String getWorld = "i";
             String getRegistry = "I_";
             // New method names
-            if (ServerInstance.isMojangMapped) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
                 getTileEntity = "getBlockEntity";
                 save = "saveWithoutMetadata";
                 load = "load";
                 getWorld = "getLevel";
                 getRegistry = "registryAccess";
-            } else if (ServerInstance.verNumber >= 18) {
+            } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 getTileEntity = "c_";
-                if (ServerInstance.fullVersion >= 11903) {
+                if (ServerInstance.FULL_VERSION >= 11903) {
                     save = "o";
                 } else {
                     save = "m";
                 }
-            } else if (ServerInstance.verNumber >= 9) {
+            } else if (ServerInstance.MAJOR_VERSION >= 9) {
                 save = "save";
-                if (ServerInstance.verNumber >= 12) {
+                if (ServerInstance.MAJOR_VERSION >= 12) {
                     load = "load";
                 }
             }
@@ -78,18 +78,18 @@ public class BlockObject {
             method$getTileEntity = EasyLookup.method("World", getTileEntity, "TileEntity", "BlockPosition");
             method$getHandle = EasyLookup.method("CraftWorld", "getHandle", "WorldServer");
 
-            if (ServerInstance.fullVersion >= 12004) {
+            if (ServerInstance.FULL_VERSION >= 12004) {
                 method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound", "HolderLookup.Provider");
                 method$getWorld = EasyLookup.method("TileEntity", getWorld, "World");
                 method$getRegistry = EasyLookup.method("IWorldReader", getRegistry, "IRegistryCustom");
-            } else if (ServerInstance.verNumber >= 18) {
+            } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound");
             } else {
                 // (1.8) void method
                 method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound", "NBTTagCompound");
             }
 
-            if (ServerInstance.verNumber == 16) {
+            if (ServerInstance.MAJOR_VERSION == 16) {
                 method$getPosition = EasyLookup.method("TileEntity", "getPosition", "BlockPosition");
                 method$getWorld = EasyLookup.method("TileEntity", "getWorld", "World");
                 method$getType = EasyLookup.method("World", "getType", "IBlockData", "BlockPosition");
@@ -153,12 +153,12 @@ public class BlockObject {
      */
     public static Object save(Object tile) {
         try {
-            if (ServerInstance.fullVersion >= 12004) {
+            if (ServerInstance.FULL_VERSION >= 12004) {
                 final Object registry = getRegistry.invoke(getWorld.invoke(tile));
                 return save.invoke(tile, registry);
-            } else if (ServerInstance.verNumber >= 18) {
+            } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 return save.invoke(tile);
-            } else if (ServerInstance.verNumber >= 9) {
+            } else if (ServerInstance.MAJOR_VERSION >= 9) {
                 return save.invoke(tile, TagCompound.newTag());
             } else {
                 Object tag = TagCompound.newTag();
@@ -178,7 +178,7 @@ public class BlockObject {
      */
     public static void load(Object tile, Object tag) {
         try {
-            if (ServerInstance.verNumber == 16) {
+            if (ServerInstance.MAJOR_VERSION == 16) {
                 Object blockData = getType.invoke(getWorld.invoke(tile), getPosition.invoke(tile));
                 load.invoke(tile, tag, blockData);
             } else {

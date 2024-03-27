@@ -33,7 +33,7 @@ public class ItemTagStream extends TStream<ItemStack> {
         mirror.add(new IMaterialMirror());
         mirror.add(new IDisplayMirror());
 
-        if (ServerInstance.isLegacy) {
+        if (ServerInstance.Release.LEGACY) {
             // "Enchantments" -> "ench"
             // Enchant Name Enchant ID
             mirror.add(new IEnchantMirror(IEnchantMirror.fromString, "StoredEnchantments", "Enchantments", "ench"));
@@ -42,11 +42,11 @@ public class ItemTagStream extends TStream<ItemStack> {
             // Enchant ID -> Enchant Name
             mirror.add(new IEnchantMirror(IEnchantMirror.fromShort, "StoredEnchantments", "ench", "Enchantments"));
         }
-        if (ServerInstance.verNumber >= 9) {
+        if (ServerInstance.MAJOR_VERSION >= 9) {
             mirror.add(new IShulkerMirror(INSTANCE));
-            if (ServerInstance.verNumber >= 14) {
+            if (ServerInstance.MAJOR_VERSION >= 14) {
                 mirror.add(new IEffectMirror());
-                if (ServerInstance.verNumber >= 17) {
+                if (ServerInstance.MAJOR_VERSION >= 17) {
                     mirror.add(new IBundleMirror(INSTANCE));
                 }
             }
@@ -71,7 +71,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param mirror Mirror list.
      */
     public ItemTagStream(List<ItemMirror> mirror) {
-        this(mirror, Float.parseFloat(ServerInstance.verNumber + "." + (ServerInstance.release < 10 ? "0" : "") + ServerInstance.release), "rtagDataVersion");
+        this(mirror, Float.parseFloat(ServerInstance.MAJOR_VERSION + "." + (ServerInstance.RELEASE_VERSION < 10 ? "0" : "") + ServerInstance.RELEASE_VERSION), "rtagDataVersion");
     }
 
     /**
@@ -189,13 +189,13 @@ public class ItemTagStream extends TStream<ItemStack> {
     private Map<String, Object> readable(Map<String, Object> map, boolean forward) {
         final Map<String, Object> tag;
         final Map<String, Object> display;
-        if (ServerInstance.verNumber >= 13 && (tag = (Map<String, Object>) map.get("tag")) != null && (display = (Map<String, Object>) tag.get("display")) != null) {
+        if (ServerInstance.MAJOR_VERSION >= 13 && (tag = (Map<String, Object>) map.get("tag")) != null && (display = (Map<String, Object>) tag.get("display")) != null) {
             // Process name
             final String name = (String) display.get("Name");
             if (name != null) {
                 display.put("Name", readable(name, forward));
             }
-            if (ServerInstance.verNumber >= 14) {
+            if (ServerInstance.MAJOR_VERSION >= 14) {
                 // Process lore
                 final List<String> lore = (List<String>) display.get("Lore");
                 if (lore != null) {

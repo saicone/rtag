@@ -92,13 +92,13 @@ public class TagBase {
             String asString = data;
 
             // New names
-            if (ServerInstance.isMojangMapped) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
                 getTypeId = "getId";
                 asLongArray = "data";
-            } else if (ServerInstance.isUniversal) {
-                if (ServerInstance.fullVersion >= 11902) { // v1_19_R2
+            } else if (ServerInstance.Release.UNIVERSAL) {
+                if (ServerInstance.FULL_VERSION >= 11902) { // v1_19_R2
                     getTypeId = "b";
-                } else if (ServerInstance.verNumber >= 18) {
+                } else if (ServerInstance.MAJOR_VERSION >= 18) {
                     getTypeId = "a";
                 }
                 data = "c";
@@ -107,7 +107,7 @@ public class TagBase {
                 asFloat = "w";
                 asLongArray = "c";
                 asString = "A";
-            } else if (ServerInstance.verNumber == 13 || ServerInstance.verNumber == 14) {
+            } else if (ServerInstance.MAJOR_VERSION == 13 || ServerInstance.MAJOR_VERSION == 14) {
                 asLongArray = "f";
             }
 
@@ -137,7 +137,7 @@ public class TagBase {
             new$Long = EasyLookup.unreflectConstructor("NBTTagLong", long.class);
             get$Long = EasyLookup.getter("NBTTagLong", data, long.class);
 
-            if (ServerInstance.verNumber >= 12) {
+            if (ServerInstance.MAJOR_VERSION >= 12) {
                 new$LongArray = EasyLookup.unreflectConstructor("NBTTagLongArray", "long[]");
                 get$LongArray = EasyLookup.getter("NBTTagLongArray", asLongArray, "long[]");
             }
@@ -197,7 +197,7 @@ public class TagBase {
         newFunction(tagLong::invoke, long.class, Long.class);
         getValueFunction.put(EasyLookup.classById("NBTTagLong"), asLong::invoke);
 
-        if (ServerInstance.verNumber >= 12) {
+        if (ServerInstance.MAJOR_VERSION >= 12) {
             newTagFunction.put(EasyLookup.classById("long[]"), tagLongArray::invoke);
             getValueFunction.put(EasyLookup.classById("NBTTagLongArray"), asLongArray::invoke);
         }

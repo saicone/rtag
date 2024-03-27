@@ -16,7 +16,7 @@ public interface ItemMirror {
      * @return A version number.
      */
     default float getDeprecationVersion() {
-        return ServerInstance.verNumber + 1;
+        return ServerInstance.MAJOR_VERSION + 1;
     }
 
     /**

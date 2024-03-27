@@ -53,7 +53,7 @@ public class SkullTexture {
     private static final Cache<String, String> TEXTURE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.HOURS).build();
 
     static {
-        if (ServerInstance.verNumber >= 13) {
+        if (ServerInstance.MAJOR_VERSION >= 13) {
             PLAYER_HEAD = new ItemStack(Material.PLAYER_HEAD);
         } else {
             PLAYER_HEAD = new ItemStack(Material.getMaterial("SKULL_ITEM"), 1, (short) 3);
@@ -67,7 +67,7 @@ public class SkullTexture {
             get$profile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
             // Unreflect reason:
             // Private method/field
-            if (ServerInstance.verNumber >= 15) {
+            if (ServerInstance.MAJOR_VERSION >= 15) {
                 set$profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
             } else {
                 set$profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");

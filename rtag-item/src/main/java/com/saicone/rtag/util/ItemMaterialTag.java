@@ -1369,7 +1369,7 @@ public enum ItemMaterialTag {
      * only server version compatible materials.
      */
     public static final Map<String, ItemMaterialTag> SERVER_VALUES;
-    private static final float FLOAT_VERSION = Float.parseFloat(ServerInstance.verNumber + "." + (ServerInstance.release < 10 ? "0" : "") + ServerInstance.release);
+    private static final float FLOAT_VERSION = Float.parseFloat(ServerInstance.MAJOR_VERSION + "." + (ServerInstance.RELEASE_VERSION < 10 ? "0" : "") + ServerInstance.RELEASE_VERSION);
 
     private final TreeMap<Float, String> names;
     private final String[] aliases;

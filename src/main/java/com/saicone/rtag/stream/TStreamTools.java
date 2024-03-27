@@ -17,7 +17,7 @@ public class TStreamTools {
 
     private static final Object READ_LIMITER;
 
-    private static final boolean USE_FAST_STREAM = ServerInstance.verNumber >= 18;
+    private static final boolean USE_FAST_STREAM = ServerInstance.MAJOR_VERSION >= 18;
     private static final MethodHandle newFastInputStream;
 
     private static final MethodHandle readNBT;
@@ -40,11 +40,11 @@ public class TStreamTools {
             String write = "a";
             String unlimited = "a";
             // New names
-            if (ServerInstance.isMojangMapped) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
                 read = "readUnnamedTag";
                 write = "writeUnnamedTag";
-                unlimited = ServerInstance.fullVersion >= 12002 ? "unlimitedHeap" : "UNLIMITED";
-            } else if (ServerInstance.fullVersion >= 12002) {
+                unlimited = ServerInstance.FULL_VERSION >= 12002 ? "unlimitedHeap" : "UNLIMITED";
+            } else if (ServerInstance.FULL_VERSION >= 12002) {
                 read = "c";
                 write = "b";
             }
@@ -54,7 +54,7 @@ public class TStreamTools {
                 new$FastInputStream = EasyLookup.constructor("FastBufferedInputStream", InputStream.class);
             }
 
-            if (ServerInstance.fullVersion >= 12002) {
+            if (ServerInstance.FULL_VERSION >= 12002) {
                 // Private method
                 // Note: The "unused" integer was removed, and also was added a new method (DataInput, NBTReadLimiter, byte)
                 //       to specify the id of NBT you're reading (probably add it here)
@@ -68,7 +68,7 @@ public class TStreamTools {
             // (1.20.3) Note: New method to write NBT using a DelegateDataOutput that writes empty String if any error occurs
             method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", write, void.class, "NBTBase", DataOutput.class);
 
-            if (ServerInstance.fullVersion >= 12002) {
+            if (ServerInstance.FULL_VERSION >= 12002) {
                 get$unlimited = EasyLookup.staticMethod("NBTReadLimiter", unlimited, "NBTReadLimiter");
             } else {
                 get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", unlimited, "NBTReadLimiter");
@@ -87,7 +87,7 @@ public class TStreamTools {
                 readLimiter = get$unlimited.invoke();
             } else {
                 // Fallback instance constructor
-                if (ServerInstance.fullVersion >= 12002) {
+                if (ServerInstance.FULL_VERSION >= 12002) {
                     readLimiter = EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class, int.class).newInstance(Long.MAX_VALUE, 512);
                 } else {
                     readLimiter = EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class).newInstance(Long.MAX_VALUE);
@@ -290,7 +290,7 @@ public class TStreamTools {
      */
     public static Object read(DataInput input) throws IOException {
         try {
-            if (ServerInstance.fullVersion >= 12002) {
+            if (ServerInstance.FULL_VERSION >= 12002) {
                 return readNBT.invoke(input, getReadLimiter());
             } else {
                 return readNBT.invoke(input, 0, getReadLimiter());

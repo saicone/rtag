@@ -58,26 +58,26 @@ public class TagCompound {
             String parse = "parse";
             String clone = "clone";
             // New names
-            if (ServerInstance.isMojangMapped) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
                 map = "tags";
                 parse = "parseTag";
                 clone = "copy";
-            } else if (ServerInstance.isUniversal) {
+            } else if (ServerInstance.Release.UNIVERSAL) {
                 map = "x";
-                if (ServerInstance.verNumber >= 18) {
+                if (ServerInstance.MAJOR_VERSION >= 18) {
                     parse = "a";
-                    if (ServerInstance.fullVersion >= 11903) {
+                    if (ServerInstance.FULL_VERSION >= 11903) {
                         clone = "h";
                     } else {
                         clone = "g";
                     }
                 }
-            } else if (ServerInstance.verNumber >= 10) {
+            } else if (ServerInstance.MAJOR_VERSION >= 10) {
                 clone = "g";
             }
 
             new$EmptyCompound = EasyLookup.constructor(NBT_COMPOUND);
-            if (ServerInstance.verNumber >= 15) {
+            if (ServerInstance.MAJOR_VERSION >= 15) {
                 // Protected method
                 new$Compound = EasyLookup.constructor(NBT_COMPOUND, Map.class);
             }
@@ -140,7 +140,7 @@ public class TagCompound {
         if (map.isEmpty()) {
             return newTag();
         }
-        if (ServerInstance.verNumber >= 15) {
+        if (ServerInstance.MAJOR_VERSION >= 15) {
             try {
                 return newCompound.invoke(map);
             } catch (Throwable t) {

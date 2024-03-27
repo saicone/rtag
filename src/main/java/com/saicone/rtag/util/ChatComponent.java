@@ -57,12 +57,12 @@ public class ChatComponent {
             String fromJson = "a";
             String toJson = "a";
             // New names
-            if (ServerInstance.isMojangMapped) {
+            if (ServerInstance.Type.MOJANG_MAPPED) {
                 fromJson = "fromJson";
                 toJson = "toJson";
             }
 
-            if (ServerInstance.verNumber >= 13) {
+            if (ServerInstance.MAJOR_VERSION >= 13) {
                 method$fromString = EasyLookup.staticMethod("CraftChatMessage", "fromStringOrNull", "IChatBaseComponent", String.class);
             } else {
                 // Unreflect reason:
@@ -137,7 +137,7 @@ public class ChatComponent {
      */
     public static Object fromString(String string) {
         try {
-            if (ServerInstance.verNumber >= 13) {
+            if (ServerInstance.MAJOR_VERSION >= 13) {
                 return fromString.invoke(string);
             } else {
                 return string == null || string.isEmpty() ? null : ((Object[]) fromString.invoke(string))[0];

@@ -58,7 +58,7 @@ public class Rtag extends RtagMirror {
 
     static {
         Object unit = new Object();
-        if (ServerInstance.verNumber >= 14) {
+        if (ServerInstance.MAJOR_VERSION >= 14) {
             try {
                 unit = ((Object[]) EasyLookup.addNMSClass("util.Unit").getDeclaredMethod("values").invoke(null))[0];
             } catch (Throwable t) {

@@ -31,7 +31,7 @@ public class EasyLookup {
             (m, type, params) -> Arrays.equals(m.getParameterTypes(), params),
             (m, type, params) -> isAssignableFrom(m.getParameterTypes(), params)
     };
-    private static final String nmsPackage = ServerInstance.isUniversal ? "net.minecraft." : ("net.minecraft.server." + ServerInstance.version + ".");
+    private static final String nmsPackage = ServerInstance.Release.UNIVERSAL ? "net.minecraft." : ("net.minecraft.server." + ServerInstance.PACKAGE_VERSION + ".");
     private static final String obcPackage = Bukkit.getServer().getClass().getPackage().getName() + ".";
 
     static {
@@ -51,12 +51,12 @@ public class EasyLookup {
             addNMSClass("nbt.NBTTagIntArray", "IntArrayTag");
             addNMSClass("nbt.NBTTagList", "ListTag");
             addNMSClass("nbt.NBTTagLong", "LongTag");
-            if (ServerInstance.verNumber >= 12) {
+            if (ServerInstance.MAJOR_VERSION >= 12) {
                 addNMSClass("nbt.NBTTagLongArray", "LongArrayTag");
             }
             addNMSClass("nbt.NBTTagShort", "ShortTag");
             addNMSClass("nbt.NBTTagString", "StringTag");
-            if (ServerInstance.fullVersion >= 12004) {
+            if (ServerInstance.FULL_VERSION >= 12004) {
                 addNMSClass("core.component.DataComponentHolder");
                 addNMSClass("core.component.DataComponentMap");
                 addNMSClassId("DataComponentMap.Builder", "core.component.DataComponentMap.Builder");
@@ -74,10 +74,10 @@ public class EasyLookup {
             addNMSClass("core.BlockPosition", "BlockPos");
             addNMSClass("world.level.World", "Level");
             addNMSClass("server.level.WorldServer", "ServerLevel");
-            if (ServerInstance.verNumber >= 16) {
+            if (ServerInstance.MAJOR_VERSION >= 16) {
                 addNMSClass("core.IRegistryCustom", "RegistryAccess");
                 addNMSClass("world.level.IWorldReader", "LevelReader");
-                if (ServerInstance.fullVersion >= 11902) {
+                if (ServerInstance.FULL_VERSION >= 11902) {
                     addNMSClassId("HolderLookup.Provider", "core.HolderLookup.b", "core.HolderLookup.Provider");
                 }
             }
@@ -267,7 +267,7 @@ public class EasyLookup {
                 aliases[i] = nmsPackage + alias;
             }
         }
-        if (ServerInstance.isUniversal) {
+        if (ServerInstance.Release.UNIVERSAL) {
             return nmsPackage + name;
         } else {
             return nmsPackage + (name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name);

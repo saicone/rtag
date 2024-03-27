@@ -24,7 +24,7 @@ public class DataComponent {
     private static final java.util.Map<String, Object> types = new HashMap<>();
 
     static {
-        if (ServerInstance.useDataComponents) {
+        if (ServerInstance.Release.COMPONENT) {
             try {
                 // TODO: Move registry handling into separated utility class (Maybe when mojang add the option to create custom data components)
                 EasyLookup.addNMSClass("net.minecraft.core.registries.BuiltInRegistries");
@@ -39,7 +39,7 @@ public class DataComponent {
                 String holder$value = "a";
 
                 // New names
-                if (ServerInstance.isMojangMapped) {
+                if (ServerInstance.Type.MOJANG_MAPPED) {
                     registry$components = "DATA_COMPONENT_TYPE";
                     registry$map = "byLocation";
                     resource$key = "getNamespace";
@@ -126,7 +126,7 @@ public class DataComponent {
             MethodHandle method$getComponents = null;
             MethodHandle method$get = null;
             MethodHandle method$has = null;
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 // TODO: Add non-mapped names for 1.20.5
 
                 // Old names
@@ -134,7 +134,7 @@ public class DataComponent {
                 String get = "";
                 String has = "";
                 // New names
-                if (ServerInstance.isMojangMapped) {
+                if (ServerInstance.Type.MOJANG_MAPPED) {
                     getComponents = "getComponents";
                     get = "get";
                     has = "has";
@@ -207,7 +207,7 @@ public class DataComponent {
             MethodHandle method$keySet = null;
             MethodHandle method$builder = null;
             MethodHandle method$builder$build = null;
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 // TODO: Add non-mapped names for 1.20.5
 
                 // Old names
@@ -221,7 +221,7 @@ public class DataComponent {
                 String builder$build = "";
 
                 // New names
-                if (ServerInstance.isMojangMapped) {
+                if (ServerInstance.Type.MOJANG_MAPPED) {
                     empty = "EMPTY";
                     map = "map";
                     get = "get";
@@ -343,7 +343,7 @@ public class DataComponent {
             // Methods
             MethodHandle method$set = null;
             MethodHandle method$remove = null;
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 // TODO: Add non-mapped names for 1.20.5
 
                 // Old names
@@ -352,7 +352,7 @@ public class DataComponent {
                 String remove = "";
 
                 // New names
-                if (ServerInstance.isMojangMapped) {
+                if (ServerInstance.Type.MOJANG_MAPPED) {
                     map = "map";
                     set = "set";
                     remove = "remove";
@@ -434,7 +434,7 @@ public class DataComponent {
             // Methods
             MethodHandle method$builder = null;
             MethodHandle method$builder$build = null;
-            if (ServerInstance.useDataComponents) {
+            if (ServerInstance.Release.COMPONENT) {
                 // TODO: Add non-mapped names for 1.20.5
 
                 // Old names
@@ -446,7 +446,7 @@ public class DataComponent {
                 String builder$build = "";
 
                 // New names
-                if (ServerInstance.isMojangMapped) {
+                if (ServerInstance.Type.MOJANG_MAPPED) {
                     empty = "EMPTY";
                     map = "map";
 
