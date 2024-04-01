@@ -20,26 +20,26 @@ public class IDisplayMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
         // display.Name to json text component
-        if (to >= 13f && from < 13f && !processName(TagCompound.get(tag, "display"), true)) {
+        if (to >= 13f && from < 13f && !processName(TagCompound.get(components, "display"), true)) {
             return;
         }
         if (to >= 14f && from < 14f) {
             // display.Lore to json text component
-            processLore(TagCompound.get(tag, "display"), true);
+            processLore(TagCompound.get(components, "display"), true);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         // display.Name to legacy text
-        if (from >= 13f && to < 13f && !processName(TagCompound.get(tag, "display"), false)) {
+        if (from >= 13f && to < 13f && !processName(TagCompound.get(components, "display"), false)) {
             return;
         }
         if (from >= 14f && to < 14f) {
             // display.Lore to legacy text
-            processLore(TagCompound.get(tag, "display"), false);
+            processLore(TagCompound.get(components, "display"), false);
         }
     }
 

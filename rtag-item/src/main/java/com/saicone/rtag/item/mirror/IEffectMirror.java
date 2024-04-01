@@ -30,7 +30,11 @@ public class IEffectMirror implements ItemMirror {
     private final String toDuration;
 
     public IEffectMirror() {
-        if (ServerInstance.VERSION >= 20.02) {
+        this(ServerInstance.VERSION);
+    }
+
+    public IEffectMirror(float version) {
+        if (version >= 20.02) {
             this.fromId = "EffectId";
             this.toId = "id";
             this.fromDuration = "EffectDuration";
@@ -56,16 +60,16 @@ public class IEffectMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
         if (from <= 20.01f && id.equals("minecraft:suspicious_stew")) {
-            processEffects(tag, "Effects", "effects", true);
+            processEffects(components, "Effects", "effects", true);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         if (to <= 20.01f && id.equals("minecraft:suspicious_stew")) {
-            processEffects(tag, "effects", "Effects", false);
+            processEffects(components, "effects", "Effects", false);
         }
     }
 

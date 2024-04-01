@@ -31,16 +31,16 @@ public class IShulkerMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
         if (id.contains("shulker_box")) {
-            processTag(tag, from, to);
+            processTag(components, from, to);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         if (id.contains("shulker_box")) {
-            processTag(tag, from, to);
+            processTag(components, from, to);
         }
     }
 

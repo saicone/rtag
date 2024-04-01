@@ -34,7 +34,7 @@ public class IMaterialMirror implements ItemMirror {
     }
 
     /**
-     * Constructs an IMaterialMirror with specified paramaters.
+     * Constructs an IMaterialMirror with specified parameters.
      *
      * @param duration        Cache duration.
      * @param unit            Time unit for cache.
@@ -57,8 +57,8 @@ public class IMaterialMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
-        resolveSaved(compound, id, getDamage(compound, tag, from), tag, from, to);
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
+        resolveSaved(compound, id, getDamage(compound, components, from), components, from, to);
     }
 
     @Override
@@ -71,12 +71,12 @@ public class IMaterialMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         // Compatibility with IPotionMirror
         if (from >= 9f && to < 9f && id.equals("minecraft:potion")) {
             return;
         }
-        resolveSaved(compound, id, getDamage(compound, tag, from), tag, from, to);
+        resolveSaved(compound, id, getDamage(compound, components, from), components, from, to);
     }
 
     /**

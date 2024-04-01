@@ -43,6 +43,24 @@ public class IEnchantMirror implements ItemMirror {
     private final String fromKey;
     private final String toKey;
 
+    public IEnchantMirror(float version) {
+        if (version < 13f) {
+            // "Enchantments" -> "ench"
+            // Enchant Name Enchant ID
+            this.map = fromString;
+            this.bookKey = "StoredEnchantments";
+            this.fromKey = "Enchantments";
+            this.toKey = "ench";
+        } else {
+            // "ench" -> "Enchantments"
+            // Enchant ID -> Enchant Name
+            this.map = fromShort;
+            this.bookKey = "StoredEnchantments";
+            this.fromKey = "ench";
+            this.toKey = "Enchantments";
+        }
+    }
+
     /**
      * Constructs an IEnchantMirror with specified parameters.
      *
@@ -73,16 +91,16 @@ public class IEnchantMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
         if (to >= 13f && from < 13f) {
-            processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
+            processEnchants(components, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         if (from >= 13f && to < 13f) {
-            processEnchants(tag, id.equalsIgnoreCase("minecraft:enchanted_book"));
+            processEnchants(components, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
 

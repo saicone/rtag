@@ -15,10 +15,15 @@ import java.math.BigInteger;
 public class ISkullOwnerMirror implements ItemMirror {
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+    public float getDeprecationVersion() {
+        return 16;
+    }
+
+    @Override
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
         // Since 1.19: Items with old saved player id (< 1.16) cannot be converted automatically
         if (to >= 19f && from < 16f && (id.equals("minecraft:player_head") || id.equals("minecraft:skull"))) {
-            Object skullOwner = TagCompound.get(tag, "SkullOwner");
+            Object skullOwner = TagCompound.get(components, "SkullOwner");
             if (skullOwner == null) return;
 
             Object ownerID = TagBase.getValue(TagCompound.get(skullOwner, "Id"));
@@ -32,9 +37,9 @@ public class ISkullOwnerMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         if (from >= 16f && to < 16f && id.equals("minecraft:player_head")) {
-            Object skullOwner = TagCompound.get(tag, "SkullOwner");
+            Object skullOwner = TagCompound.get(components, "SkullOwner");
             if (skullOwner == null) return;
 
             Object ownerID = TagBase.getValue(TagCompound.get(skullOwner, "Id"));

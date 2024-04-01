@@ -40,6 +40,8 @@ public class ItemObject {
     private static final MethodHandle asNMSCopy;
 
     static {
+        initPaths();
+
         // Constructors
         MethodHandle new$ItemStack = null;
         MethodHandle new$CustomData = null;
@@ -243,7 +245,6 @@ public class ItemObject {
         initPath("minecraft:hide_tooltip", "tag", "components", "minecraft:hide_tooltip");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
-        // --- Add last
     }
 
     private static void initPath(String name, Object... path) {

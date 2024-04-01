@@ -23,40 +23,62 @@ public class ItemTagStream extends TStream<ItemStack> {
     /**
      * ItemTagStream public instance adapted for current server version.
      */
-    public static final ItemTagStream INSTANCE = new ItemTagStream();
-
-    static {
-        List<ItemMirror> mirror = new ArrayList<>();
-        mirror.add(new IComponentMirror());
-        mirror.add(new IPotionMirror());
-        mirror.add(new ISkullOwnerMirror());
-        mirror.add(new IMaterialMirror());
-        mirror.add(new IDisplayMirror());
-
-        if (ServerInstance.Release.LEGACY) {
-            // "Enchantments" -> "ench"
-            // Enchant Name Enchant ID
-            mirror.add(new IEnchantMirror(IEnchantMirror.fromString, "StoredEnchantments", "Enchantments", "ench"));
-        } else {
-            // "ench" -> "Enchantments"
-            // Enchant ID -> Enchant Name
-            mirror.add(new IEnchantMirror(IEnchantMirror.fromShort, "StoredEnchantments", "ench", "Enchantments"));
-        }
-        if (ServerInstance.MAJOR_VERSION >= 9) {
-            mirror.add(new IShulkerMirror(INSTANCE));
-            if (ServerInstance.MAJOR_VERSION >= 14) {
-                mirror.add(new IEffectMirror());
-                if (ServerInstance.MAJOR_VERSION >= 17) {
-                    mirror.add(new IBundleMirror(INSTANCE));
-                }
-            }
-        }
-        INSTANCE.getMirror().addAll(mirror);
-    }
+    public static final ItemTagStream INSTANCE = ofVersion(8f, ServerInstance.VERSION);
 
     private final List<ItemMirror> mirror;
     private final float version;
     private final String versionKey;
+
+    /**
+     * Create an item tag stream for provided version range.
+     *
+     * @param minVersion     The minimum version to support.
+     * @param currentVersion The current server version.
+     * @return               A newly generated item tag stream.
+     */
+    public static ItemTagStream ofVersion(float minVersion, float currentVersion) {
+        return ofVersion(minVersion, currentVersion, "rtagDataVersion");
+    }
+
+    /**
+     * Create an item tag stream for provided version range.
+     *
+     * @param minVersion     The minimum version to support.
+     * @param currentVersion The current server version.
+     * @param versionKey     Version key identifier from compound.
+     * @return               A newly generated item tag stream.
+     */
+    public static ItemTagStream ofVersion(float minVersion, float currentVersion, String versionKey) {
+        if (minVersion > currentVersion) {
+            throw new IllegalArgumentException("The minimum supported version cannot be less than current server version");
+        }
+        final ItemTagStream instance = new ItemTagStream(new ArrayList<>(), currentVersion, versionKey);
+        if (minVersion <= 20.03f) {
+            instance.mirror.add(new IComponentMirror());
+        }
+        if (minVersion <= 20.01f) {
+            instance.mirror.add(new IPotionMirror(minVersion < 9f));
+            instance.mirror.add(new IEffectMirror(currentVersion));
+        }
+        if (minVersion < 16f) {
+            instance.mirror.add(new ISkullOwnerMirror());
+        }
+        // This mirror always be added since convert upper version items
+        instance.mirror.add(new IMaterialMirror());
+        if (minVersion < 14f) {
+            instance.mirror.add(new IDisplayMirror());
+        }
+        if (minVersion < 13f || currentVersion < 13f) {
+            instance.mirror.add(new IEnchantMirror(currentVersion));
+        }
+        if (currentVersion >= 9f) {
+            instance.mirror.add(new IShulkerMirror(instance));
+            if (currentVersion >= 17f) {
+                instance.mirror.add(new IBundleMirror(instance));
+            }
+        }
+        return instance;
+    }
 
     /**
      * Constructs a simple ItemTagStream without any {@link ItemMirror}.

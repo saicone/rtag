@@ -38,10 +38,25 @@ public class IPotionMirror implements ItemMirror {
         SPLASH_POTION = splash;
     }
 
+    private final boolean convertDamage;
+
+    public IPotionMirror() {
+        this(true);
+    }
+
+    public IPotionMirror(boolean convertDamage) {
+        this.convertDamage = convertDamage;
+    }
+
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+    public float getDeprecationVersion() {
+        return 20;
+    }
+
+    @Override
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
         if (from <= 20.01f && POTION_ITEMS.contains(id)) {
-            final Map<String, Object> map = TagCompound.getValue(tag);
+            final Map<String, Object> map = TagCompound.getValue(components);
             if (map.containsKey("CustomPotionEffects")) {
                 final Object customPotionEffects = map.remove("CustomPotionEffects");
                 map.put("custom_potion_effects", customPotionEffects);
@@ -52,7 +67,7 @@ public class IPotionMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, float from, float to) {
-        if (to >= 9f && from < 9f && id.equals("minecraft:potion")) {
+        if (convertDamage && to >= 9f && from < 9f && id.equals("minecraft:potion")) {
             upgrade(compound);
         }
     }
@@ -70,9 +85,9 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         if (to <= 20.01f && POTION_ITEMS.contains(id)) {
-            final Map<String, Object> map = TagCompound.getValue(tag);
+            final Map<String, Object> map = TagCompound.getValue(components);
             if (map.containsKey("custom_potion_effects")) {
                 final Object customPotionEffects = map.remove("custom_potion_effects");
                 map.put("CustomPotionEffects", customPotionEffects);

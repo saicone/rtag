@@ -10,12 +10,12 @@ public class IComponentMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object tag, float from, float to) {
+    public void upgrade(Object compound, String id, Object components, float from, float to) {
         // TODO: implement version upgrade
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object tag, float from, float to) {
+    public void downgrade(Object compound, String id, Object components, float from, float to) {
         // TODO: implement version downgrade
     }
 }
