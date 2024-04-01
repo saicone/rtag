@@ -243,6 +243,8 @@ public class ItemObject {
         initPath("minecraft:rarity", "tag", "components", "minecraft:rarity");
         initPath("minecraft:tool", "tag", "components", "minecraft:tool");
         initPath("minecraft:hide_tooltip", "tag", "components", "minecraft:hide_tooltip");
+        // - 24w13a
+        initPath("minecraft:ominous_bottle_amplifier", "tag", "components", "minecraft:ominous_bottle_amplifier");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }

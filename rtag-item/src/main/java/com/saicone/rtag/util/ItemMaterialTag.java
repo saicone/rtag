@@ -1,6 +1,7 @@
 package com.saicone.rtag.util;
 
 import org.bukkit.Material;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,8 @@ public enum ItemMaterialTag {
     ANVIL(8),
     APPLE(8),
     ARCHER_POTTERY_SHERD(20, "POTTERY_SHARD_ARCHER", 19.03f),
+    ARMADILLO_SCUTE(20.04f),
+    ARMADILLO_SPAWN_EGG(20.04f),
     ARMOR_STAND(8),
     ARMS_UP_POTTERY_SHERD(20, "POTTERY_SHARD_ARMS_UP", 19.03f),
     ARROW(8),
@@ -143,9 +146,11 @@ public enum ItemMaterialTag {
     BLUE_STAINED_GLASS_PANE(13, "STAINED_GLASS_PANE:11", 8),
     BLUE_TERRACOTTA(13, "STAINED_HARDENED_CLAY:11", 8, "STAINED_CLAY"),
     BLUE_WOOL(13, "WOOL:11", 8),
+    BOGGED_SPAWN_EGG(20.04f),
     BONE(8),
     BONE_BLOCK(10),
     BONE_MEAL(13),
+    BOLT_ARMOR_TRIM_SMITHING_TEMPLATE(20.04f),
     BOOK(8),
     BOOKSHELF(8),
     BOW(8),
@@ -154,6 +159,7 @@ public enum ItemMaterialTag {
     BRAIN_CORAL_BLOCK(13),
     BRAIN_CORAL_FAN(13),
     BREAD(8),
+    BREEZE_ROD(20.04f),
     BREEZE_SPAWN_EGG(20.03f),
     BREWER_POTTERY_SHERD(20),
     BREWING_STAND(8, "BREWING_STAND_ITEM"),
@@ -481,6 +487,9 @@ public enum ItemMaterialTag {
     FLETCHING_TABLE(14),
     FLINT(8),
     FLINT_AND_STEEL(8),
+    FLOW_ARMOR_TRIM_SMITHING_TEMPLATE(20.04f),
+    FLOW_BANNER_PATTERN(20.04f),
+    FLOW_POTTERY_SHERD(20.04f),
     FLOWERING_AZALEA(17),
     FLOWERING_AZALEA_LEAVES(17),
     FLOWER_BANNER_PATTERN(14),
@@ -561,11 +570,14 @@ public enum ItemMaterialTag {
     GRINDSTONE(14),
     GUARDIAN_SPAWN_EGG(13, "SPAWN_EGG=Guardian", 9, "SPAWN_EGG:68", 8, "MONSTER_EGG"),
     GUNPOWDER(8, "SULPHUR"),
+    GUSTER_BANNER_PATTERN(20.04f),
+    GUSTER_POTTERY_SHERD(20.04f),
     HANGING_ROOTS(17),
     HAY_BLOCK(8),
     HEART_OF_THE_SEA(13),
     HEART_POTTERY_SHERD(20),
     HEARTBREAK_POTTERY_SHERD(20),
+    HEAVY_CORE(20.04f),
     HEAVY_WEIGHTED_PRESSURE_PLATE(8, "IRON_PLATE"),
     HOGLIN_SPAWN_EGG(16),
     HONEYCOMB(15),
@@ -701,6 +713,7 @@ public enum ItemMaterialTag {
     LLAMA_SPAWN_EGG(13, "SPAWN_EGG=llama", 11, "MONSTER_EGG"),
     LODESTONE(16),
     LOOM(14),
+    MACE(20.04f),
     MAGENTA_BANNER(13, "BANNER:13", 8),
     MAGENTA_BED(13, "BED:2", 12),
     MAGENTA_CANDLE(17),
@@ -844,6 +857,8 @@ public enum ItemMaterialTag {
     OBSIDIAN(8),
     OCELOT_SPAWN_EGG(13, Map.of("SPAWN_EGG=ocelot", 11f, "SPAWN_EGG=Ozelot", 9f, "SPAWN_EGG:98", 8f), "MONSTER_EGG"),
     OCHRE_FROGLIGHT(19),
+    OMINOUS_BOTTLE(20.04f),
+    OMINOUS_TRIAL_KEY(20.04f),
     ORANGE_BANNER(13, "BANNER:14", 8),
     ORANGE_BED(13, "BED:1", 12),
     ORANGE_CANDLE(17),
@@ -1048,6 +1063,7 @@ public enum ItemMaterialTag {
     SANDSTONE_STAIRS(8),
     SANDSTONE_WALL(14),
     SCAFFOLDING(14),
+    SCRAPE_POTTERY_SHERD(20.04f),
     SCULK(19),
     SCULK_CATALYST(19),
     SCULK_SENSOR(17),
@@ -1234,6 +1250,7 @@ public enum ItemMaterialTag {
     TURTLE_HELMET(13),
     TURTLE_SPAWN_EGG(13),
     TWISTING_VINES(16),
+    VAULT(20.04f),
     VERDANT_FROGLIGHT(19),
     VEX_ARMOR_TRIM_SMITHING_TEMPLATE(19.03f),
     VEX_SPAWN_EGG(13, "SPAWN_EGG=vex", 11, "MONSTER_EGG"),
@@ -1326,12 +1343,14 @@ public enum ItemMaterialTag {
     WHITE_TERRACOTTA(13, "STAINED_HARDENED_CLAY", 8, "STAINED_CLAY"),
     WHITE_TULIP(13, "RED_FLOWER:6", 8, "RED_ROSE"),
     WHITE_WOOL(13, "WOOL", 8),
+    WIND_CHARGE(20.04f),
     WILD_ARMOR_TRIM_SMITHING_TEMPLATE(19.03f),
     WITCH_SPAWN_EGG(13, "SPAWN_EGG=Witch", 9, "SPAWN_EGG:66", 8, "MONSTER_EGG"),
     WITHER_ROSE(14),
     WITHER_SKELETON_SKULL(13, "SKULL:1", 8, "SKULL_ITEM"),
     WITHER_SKELETON_SPAWN_EGG(13, "SPAWN_EGG=wither_skeleton", 11, "MONSTER_EGG"),
     WITHER_SPAWN_EGG(19.02f),
+    WOLF_ARMOR(20.04f),
     WOLF_SPAWN_EGG(13, "SPAWN_EGG=Wolf", 9, "SPAWN_EGG:95", 8, "MONSTER_EGG"),
     WOODEN_AXE(8, "WOOD_AXE"),
     WOODEN_HOE(8, "WOOD_HOE"),
@@ -1450,14 +1469,26 @@ public enum ItemMaterialTag {
 
     /**
      * Get valid material name for current server version or null
-     * if we cannot find the required material.
+     * if the required material cannot be found.
      *
      * @return A material name or null.
      */
     public String getValidMaterial() {
+        return getValidMaterial(ServerInstance.VERSION);
+    }
+
+    /**
+     * Get value material name for provided server version or null
+     * if the required material cannot be found.
+     *
+     * @param serverVersion The server version to check.
+     * @return              A material name or null.
+     */
+    @ApiStatus.Experimental
+    public String getValidMaterial(float serverVersion) {
         for (Float version : names.descendingKeySet()) {
             // Found valid version
-            if (version <= ServerInstance.VERSION) {
+            if (version <= serverVersion) {
                 final String s = names.get(version);
                 // Find valid material using minecraft names as aliases
                 for (String name : names.values()) {
@@ -1485,6 +1516,18 @@ public enum ItemMaterialTag {
      * @return True if is valid.
      */
     public boolean isValid() {
-        return getValidMaterial() != null;
+        return getValidMaterial(ServerInstance.VERSION) != null;
+    }
+
+    /**
+     * Checks if this ItemMaterialTag is valid for provided server version
+     * by trying to find an existing Bukkit {@link Material}.
+     *
+     * @param serverVersion The server version to check.
+     * @return              True if is valid.
+     */
+    @ApiStatus.Experimental
+    public boolean isValid(float serverVersion) {
+        return getValidMaterial(serverVersion) != null;
     }
 }
