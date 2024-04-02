@@ -453,7 +453,7 @@ public class ItemObject {
      * @throws IndexOutOfBoundsException if starting position of source or destination path is out of range.
      */
     public static Object[] getComponentPath(Object... path) throws IndexOutOfBoundsException {
-        return getComponentPath(1, 0, path);
+        return getComponentPath(0, 0, path);
     }
 
     /**
