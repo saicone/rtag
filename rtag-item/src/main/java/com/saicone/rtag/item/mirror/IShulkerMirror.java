@@ -19,6 +19,6 @@ public class IShulkerMirror extends IContainerMirror {
     }
 
     public void processTag(Object tag, float from, float to) {
-        procesComponents(tag, from, to);
+        processComponents(tag, from, to);
     }
 }

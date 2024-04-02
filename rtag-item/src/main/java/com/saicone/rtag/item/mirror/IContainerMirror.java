@@ -82,14 +82,14 @@ public class IContainerMirror implements ItemMirror {
     @Override
     public void upgrade(Object compound, String id, Object components, float from, float to) {
         if (isContainer(from, id)) {
-            procesComponents(components, from, to);
+            processComponents(components, from, to);
         }
     }
 
     @Override
     public void downgrade(Object compound, String id, Object components, float from, float to) {
         if (isContainer(to, id)) {
-            procesComponents(components, from, to);
+            processComponents(components, from, to);
         }
     }
 
@@ -107,7 +107,7 @@ public class IContainerMirror implements ItemMirror {
      * @param from       Version specified in compound.
      * @param to         Version to convert.
      */
-    public void procesComponents(Object components, float from, float to) {
+    public void processComponents(Object components, float from, float to) {
         Object container = Rtag.INSTANCE.getExact(components, path);
         if (container != null) {
             final List<Object> items = TagList.getValue(container);

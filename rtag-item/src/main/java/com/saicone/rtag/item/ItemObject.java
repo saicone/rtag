@@ -193,17 +193,31 @@ public class ItemObject {
                 "custom_color", "CustomPotionColor",
                 "custom_effects", "custom_potion_effects"
         ));
-        initPath("minecraft:writable_book_content", Map.of(
+        initPath("minecraft:writable_book_contents", Map.of(
+                "filtered_pages", "filtered_pages",
                 "pages", "pages"
         ));
-        initPath("minecraft:written_book_content", Map.of(
+        initPath("minecraft:written_book_contents", Map.of(
+                "filtered_pages", "filtered_pages",
+                "filtered_title", "filtered_title",
                 "pages", "pages",
                 "title", "title",
                 "author", "author",
                 "generation", "generation",
                 "resolved", "resolved"
         ));
-        initPath("minecraft:bucket_entity_data", "tag");
+        initPath("minecraft:bucket_entity_data", Map.of(
+                "NoAI", "NoAI",
+                "Silent", "Silent",
+                "NoGravity", "NoGravity",
+                "Glowing", "Glowing",
+                "Invulnerable", "Invulnerable",
+                "Health", "Health",
+                "Age", "Age",
+                "Variant", "Variant",
+                "HuntingCooldown", "HuntingCooldown",
+                "BucketVariantTag", "BucketVariantTag"
+        ));
         initPath("minecraft:lodestone_tracker", Map.of(
                 "tracked", "LodestoneTracked",
                 "target", Map.of(
