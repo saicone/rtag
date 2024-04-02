@@ -14,6 +14,16 @@ import com.saicone.rtag.util.ChatComponent;
  */
 public class IDisplayMirror implements ItemMirror {
 
+    private final boolean convertName;
+
+    public IDisplayMirror() {
+        this(true);
+    }
+
+    public IDisplayMirror(boolean convertName) {
+        this.convertName = convertName;
+    }
+
     @Override
     public float getDeprecationVersion() {
         return 14;
@@ -22,7 +32,7 @@ public class IDisplayMirror implements ItemMirror {
     @Override
     public void upgrade(Object compound, String id, Object components, float from, float to) {
         // display.Name to json text component
-        if (to >= 13f && from < 13f && !processName(TagCompound.get(components, "display"), true)) {
+        if (convertName && to >= 13f && from < 13f && !processName(TagCompound.get(components, "display"), true)) {
             return;
         }
         if (to >= 14f && from < 14f) {

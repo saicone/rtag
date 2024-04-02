@@ -1,63 +1,24 @@
 package com.saicone.rtag.item.mirror;
 
-import com.saicone.rtag.Rtag;
-import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.item.ItemTagStream;
-import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.ServerInstance;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
- * IShulkerMirror class to convert items inside
- * shulkers across versions.
- *
- * @author Rubenicos
+ * @deprecated Use {@link IContainerMirror} instead
  */
-public class IShulkerMirror implements ItemMirror {
-
-    private final ItemTagStream stream;
+@ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
+@Deprecated
+public class IShulkerMirror extends IContainerMirror {
 
     /**
-     * Constructs an IShulkerMirror with specified {@link ItemTagStream}
-     * to convert loaded items.
-     *
-     * @param stream ItemTagStream instance.
+     * @deprecated Use {@link IContainerMirror#IContainerMirror(ItemTagStream, float)} instead
      */
     public IShulkerMirror(ItemTagStream stream) {
-        this.stream = stream;
+        super(stream, ServerInstance.VERSION);
     }
 
-    @Override
-    public float getMinVersion() {
-        return 9;
-    }
-
-    @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
-        if (id.contains("shulker_box")) {
-            processTag(components, from, to);
-        }
-    }
-
-    @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (id.contains("shulker_box")) {
-            processTag(components, from, to);
-        }
-    }
-
-    /**
-     * Process current shulker tag to convert items inside.
-     * @param tag  ItemStack tag.
-     * @param from Version specified in compound.
-     * @param to   Version to convert.
-     */
     public void processTag(Object tag, float from, float to) {
-        Object items = Rtag.INSTANCE.getExact(tag, "BlockEntityTag", "Items");
-        if (items != null) {
-            int size = TagList.size(items);
-            for (int i = 0; i < size; i++) {
-                Object item = TagList.get(items, i);
-                stream.onLoad(item, from, to);
-            }
-        }
+        procesComponents(tag, from, to);
     }
 }

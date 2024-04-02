@@ -52,31 +52,51 @@ public class ItemTagStream extends TStream<ItemStack> {
         if (minVersion > currentVersion) {
             throw new IllegalArgumentException("The minimum supported version cannot be less than current server version");
         }
-        final ItemTagStream instance = new ItemTagStream(new ArrayList<>(), currentVersion, versionKey);
+
+        final List<ItemMirror> mirrors = new ArrayList<>();
+        final ItemTagStream instance = new ItemTagStream(mirrors, currentVersion, versionKey);
+
+        // Pre-components mirrors
         if (minVersion <= 20.03f) {
-            instance.mirror.add(new IComponentMirror());
-        }
-        if (minVersion <= 20.01f) {
-            instance.mirror.add(new IPotionMirror(minVersion < 9f));
-            instance.mirror.add(new IEffectMirror(currentVersion));
-        }
-        if (minVersion < 16f) {
-            instance.mirror.add(new ISkullOwnerMirror());
-        }
-        // This mirror always be added since convert upper version items
-        instance.mirror.add(new IMaterialMirror());
-        if (minVersion < 14f) {
-            instance.mirror.add(new IDisplayMirror());
-        }
-        if (minVersion < 13f || currentVersion < 13f) {
-            instance.mirror.add(new IEnchantMirror(currentVersion));
-        }
-        if (currentVersion >= 9f) {
-            instance.mirror.add(new IShulkerMirror(instance));
-            if (currentVersion >= 17f) {
-                instance.mirror.add(new IBundleMirror(instance));
+            if (minVersion <= 20.01f) {
+                mirrors.add(new IPotionMirror(minVersion < 9f));
+                mirrors.add(new IEffectMirror(currentVersion));
+            }
+            if (minVersion < 16f) {
+                mirrors.add(new ISkullOwnerMirror());
+            }
+            mirrors.add(new IMaterialMirror());
+            if (minVersion < 14f) {
+                mirrors.add(new IDisplayMirror(minVersion < 13f));
+            }
+            if (minVersion < 13f || currentVersion < 13f) {
+                mirrors.add(new IEnchantMirror(currentVersion));
+            }
+
+            if (currentVersion >= 9f) {
+                mirrors.add(new IContainerMirror(instance, currentVersion));
+                if (currentVersion >= 17f) {
+                    mirrors.add(new IBundleMirror(instance, currentVersion));
+                }
+            }
+
+            if (currentVersion >= 20.04f) {
+                // Upgrade any old tag, then convert into component
+                mirrors.add(new IComponentMirror());
+            } else {
+                // Convert from component, then downgrade any tag
+                mirrors.add(0, new IComponentMirror());
+            }
+        } else {
+            mirrors.add(new IMaterialMirror());
+            if (currentVersion >= 9f) {
+                mirrors.add(new IContainerMirror(instance, currentVersion));
+                if (currentVersion >= 17f) {
+                    mirrors.add(new IBundleMirror(instance, currentVersion));
+                }
             }
         }
+
         return instance;
     }
 

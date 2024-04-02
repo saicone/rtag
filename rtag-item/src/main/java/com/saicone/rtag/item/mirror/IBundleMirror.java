@@ -4,6 +4,9 @@ import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.item.ItemTagStream;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.ServerInstance;
+
+import java.util.List;
 
 /**
  * IBundleMirror class to convert items inside
@@ -14,6 +17,7 @@ import com.saicone.rtag.tag.TagList;
 public class IBundleMirror implements ItemMirror {
 
     private final ItemTagStream stream;
+    private final String key;
 
     /**
      * Constructs an IBundleMirror with specified {@link ItemTagStream}
@@ -22,7 +26,23 @@ public class IBundleMirror implements ItemMirror {
      * @param stream ItemTagStream instance.
      */
     public IBundleMirror(ItemTagStream stream) {
+        this(stream, ServerInstance.VERSION);
+    }
+
+    /**
+     * Constructs an IBundleMirror with specified {@link ItemTagStream}
+     * to convert loaded items.
+     *
+     * @param stream  ItemTagStream instance.
+     * @param version The current version to apply any conversion.
+     */
+    public IBundleMirror(ItemTagStream stream, float version) {
         this.stream = stream;
+        if (version <= 20.03f) {
+            key = "Items";
+        } else {
+            key = "minecraft:bundle_contents";
+        }
     }
 
     @Override
@@ -51,11 +71,10 @@ public class IBundleMirror implements ItemMirror {
      * @param to   Version to convert.
      */
     public void processTag(Object tag, float from, float to) {
-        Object items = TagCompound.get(tag, "Items");
-        if (items != null) {
-            int size = TagList.size(items);
-            for (int i = 0; i < size; i++) {
-                Object item = TagList.get(items, i);
+        Object contents = TagCompound.get(tag, key);
+        if (contents != null) {
+            final List<Object> items = TagList.getValue(contents);
+            for (Object item : items) {
                 stream.onLoad(item, from, to);
             }
         }

@@ -13,7 +13,7 @@ import java.util.Set;
  * IPotionMirror to convert item potions
  * across 1.8 and other versions.<br>
  * Mojang removes potion types inside item
- * damage since 1.9, this class provides an
+ * damage since 1.9, this class provides a
  * clear conversion.
  *
  * @author Rubenicos
