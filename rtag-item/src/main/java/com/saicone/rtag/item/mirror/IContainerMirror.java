@@ -60,17 +60,17 @@ public class IContainerMirror implements ItemMirror {
      * Constructs an IContainerMirror with specified {@link ItemTagStream}
      * to convert loaded items.
      *
-     * @param stream  ItemTagStream instance.
-     * @param version The current version to apply any conversion.
+     * @param stream    ItemTagStream instance.
+     * @param component True if container component should be used.
      */
-    public IContainerMirror(ItemTagStream stream, float version) {
+    public IContainerMirror(ItemTagStream stream, boolean component) {
         this.stream = stream;
-        if (version <= 20.03f) {
-            path = new Object[] { "BlockEntityTag", "Items" };
-            slotList = false;
-        } else {
+        if (component) {
             path = new Object[] { "minecraft:container" };
             slotList = true;
+        } else {
+            path = new Object[] { "BlockEntityTag", "Items" };
+            slotList = false;
         }
     }
 
@@ -88,13 +88,13 @@ public class IContainerMirror implements ItemMirror {
 
     @Override
     public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (id.contains("shulker_box")) {
+        if (isContainer(to, id)) {
             procesComponents(components, from, to);
         }
     }
 
-    private boolean isContainer(float from, String id) {
-        if (from <= 20.03f) {
+    private boolean isContainer(float version, String id) {
+        if (version <= 20.03f) {
             return id.contains("shulker_box");
         } else {
             return CONTAINERS.contains(id);

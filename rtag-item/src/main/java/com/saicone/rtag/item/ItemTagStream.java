@@ -73,11 +73,11 @@ public class ItemTagStream extends TStream<ItemStack> {
             }
 
             if (currentVersion >= 9f) {
-                mirrors.add(new IContainerMirror(instance, currentVersion));
+                mirrors.add(new IContainerMirror(instance, false));
                 if (currentVersion >= 14) {
                     mirrors.add(new IEffectMirror(currentVersion));
                     if (currentVersion >= 17f) {
-                        mirrors.add(new IBundleMirror(instance, currentVersion));
+                        mirrors.add(new IBundleMirror(instance, false));
                     }
                 }
             }
@@ -91,8 +91,8 @@ public class ItemTagStream extends TStream<ItemStack> {
             }
         } else {
             mirrors.add(new IMaterialMirror());
-            mirrors.add(new IContainerMirror(instance, currentVersion));
-            mirrors.add(new IBundleMirror(instance, currentVersion));
+            mirrors.add(new IContainerMirror(instance, true));
+            mirrors.add(new IBundleMirror(instance, true));
         }
 
         return instance;

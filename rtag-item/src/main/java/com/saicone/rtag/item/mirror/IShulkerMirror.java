@@ -12,10 +12,10 @@ import org.jetbrains.annotations.ApiStatus;
 public class IShulkerMirror extends IContainerMirror {
 
     /**
-     * @deprecated Use {@link IContainerMirror#IContainerMirror(ItemTagStream, float)} instead
+     * @deprecated Use {@link IContainerMirror#IContainerMirror(ItemTagStream, boolean)} instead
      */
     public IShulkerMirror(ItemTagStream stream) {
-        super(stream, ServerInstance.VERSION);
+        super(stream, ServerInstance.VERSION >= 20.04f);
     }
 
     public void processTag(Object tag, float from, float to) {

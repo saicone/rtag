@@ -26,22 +26,22 @@ public class IBundleMirror implements ItemMirror {
      * @param stream ItemTagStream instance.
      */
     public IBundleMirror(ItemTagStream stream) {
-        this(stream, ServerInstance.VERSION);
+        this(stream, ServerInstance.VERSION >= 20.04f);
     }
 
     /**
      * Constructs an IBundleMirror with specified {@link ItemTagStream}
      * to convert loaded items.
      *
-     * @param stream  ItemTagStream instance.
-     * @param version The current version to apply any conversion.
+     * @param stream    ItemTagStream instance.
+     * @param component True if bundle contents component should be used.
      */
-    public IBundleMirror(ItemTagStream stream, float version) {
+    public IBundleMirror(ItemTagStream stream, boolean component) {
         this.stream = stream;
-        if (version <= 20.03f) {
-            key = "Items";
-        } else {
+        if (component) {
             key = "minecraft:bundle_contents";
+        } else {
+            key = "Items";
         }
     }
 
