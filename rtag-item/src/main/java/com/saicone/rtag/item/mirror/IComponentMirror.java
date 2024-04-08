@@ -286,15 +286,44 @@ public class IComponentMirror implements ItemMirror {
 
         @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
-            // TODO: Convert block predicate
-            return false;
+            final List<Object> predicates;
+            // Load saved predicates
+            final Object saved = Rtag.INSTANCE.getExact(components, "minecraft:custom_data", "savedPredicates");
+            if (saved != null) {
+                Rtag.INSTANCE.set(components, null, "minecraft:custom_data", "savedPredicates");
+                predicates = TagList.getValue(saved);
+            } else {
+                predicates = new ArrayList<>();
+            }
+            for (Object block : value) {
+                final Map<String, Object> predicate = new HashMap<>();
+                predicate.put("blocks", block);
+                predicates.add(TagCompound.newTag(predicate));
+            }
+            final Map<String, Object> component = new HashMap<>();
+            component.put("predicates", TagList.newTag(predicates));
+            return Rtag.INSTANCE.set(components, TagCompound.newTag(component), id);
         }
 
         @Override
         public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
             downgradeTooltip(components, value);
-            // TODO: Convert block predicate
-            return false;
+            final List<Object> blocks = new ArrayList<>();
+            if (value.containsKey("predicates")) {
+                final List<Object> predicates = TagList.getValue(value.get("predicates"));
+                final Iterator<Object> iterator = predicates.iterator();
+                while (iterator.hasNext()) {
+                    final Map<String, Object> predicate = TagCompound.getValue(iterator.next());
+                    if (predicate.containsKey("blocks") && predicate.size() == 1) {
+                        blocks.add(predicate.get("blocks"));
+                        iterator.remove();
+                    }
+                }
+                if (!predicates.isEmpty()) {
+                    Rtag.INSTANCE.set(components, value.get("predicates"), "minecraft:custom_data", "savedPredicates");
+                }
+            }
+            return Rtag.INSTANCE.set(components, blocks, id);
         }
     }
 

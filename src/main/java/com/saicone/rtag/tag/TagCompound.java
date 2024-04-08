@@ -137,7 +137,7 @@ public class TagCompound {
      * @return    New NBTTagCompound instance.
      */
     public static Object newTag(Map<String, Object> map) {
-        if (map.isEmpty()) {
+        if (map == null || map.isEmpty()) {
             return newTag();
         }
 
