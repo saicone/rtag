@@ -6,10 +6,12 @@ import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.*;
 import java.util.function.Function;
 
+@ApiStatus.Experimental
 public class IComponentMirror implements ItemMirror {
 
     private static final Map<String, Transformation> TRANSFORMATIONS = new HashMap<>();
@@ -52,12 +54,12 @@ public class IComponentMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, float from, float to) {
-        if (to >= 20.04f) {
+        if (to >= 20.04f && from <= 20.03f) {
             for (Object[] path : extractPaths(compound)) {
                 Rtag.INSTANCE.move(compound, path, ItemObject.getComponentPath(path), true);
             }
             if (TagCompound.hasKey(compound, "tag")) {
-                Rtag.INSTANCE.move(compound, new Object[] { "tag" }, new Object[] { "minecraft:custom_data" }, true);
+                Rtag.INSTANCE.move(compound, new Object[] { "tag" }, new Object[] { "components", "minecraft:custom_data" }, true);
             }
             final Object components = TagCompound.get(compound, "components");
             if (components != null) {
@@ -92,7 +94,7 @@ public class IComponentMirror implements ItemMirror {
     @Override
     public void downgrade(Object compound, String id, float from, float to) {
         final Object components;
-        if (from >= 20.04f && (components = TagCompound.get(compound, "components")) != null) {
+        if (from >= 20.04f && to <= 20.03f && (components = TagCompound.get(compound, "components")) != null) {
             final Map<String, Object> value = TagCompound.getValue(compound);
             for (String key : new ArrayList<>(value.keySet())) {
                 final Transformation transformation = TRANSFORMATIONS.get(key);

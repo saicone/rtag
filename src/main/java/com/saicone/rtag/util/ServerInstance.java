@@ -75,6 +75,7 @@ public class ServerInstance {
         VERSION_MAP.put(3463, new Integer[] {20, 1, 12001});
         VERSION_MAP.put(3578, new Integer[] {20, 2, 12002});
         VERSION_MAP.put(3698, new Integer[] {20, 3, 12003});
+        // TODO: Add protocol version for 1.20.5
 
         final String serverPackage = Bukkit.getServer().getClass().getPackage().getName();
         if (serverPackage.startsWith("org.bukkit.craftbukkit.v1_")) {
