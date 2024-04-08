@@ -176,7 +176,7 @@ public class IComponentMirror implements ItemMirror {
             move(map, fromKey, toKey, null);
         }
 
-        default void move(Map<String, Object> map, String fromKey, String toKey, Function<Object, Object> transformation) {
+        default boolean move(Map<String, Object> map, String fromKey, String toKey, Function<Object, Object> transformation) {
             Object value = map.get(fromKey);
             map.remove(fromKey);
             if (value != null && transformation != null) {
@@ -184,12 +184,14 @@ public class IComponentMirror implements ItemMirror {
                 if (value != null) {
                     value = TagBase.newTag(value);
                 } else {
-                    return;
+                    return false;
                 }
             }
             if (value != null) {
                 map.put(toKey, value);
+                return true;
             }
+            return false;
         }
 
         default void setFlag(Object components, int ordinal) {
@@ -687,21 +689,34 @@ public class IComponentMirror implements ItemMirror {
 
     public static class BannerPatterns implements Transformation {
         @Override
-        public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
-            for (Object compound : TagList.getValue(value.get("Patterns"))) {
+        public boolean upgradeList(Object components, String id, List<Object> value) {
+            for (Object compound : value) {
                 final Map<String, Object> map = TagCompound.getValue(compound);
                 move(map, "Pattern", "pattern", pattern -> Pattern.NAMES.get((String) pattern));
                 move(map, "Color", "color", color -> Color.VALUES[(int) color].name().toLowerCase());
+            }
+            final Object saved = Rtag.INSTANCE.getExact(components, "minecraft:custom_data", "savedPatterns");
+            if (saved != null) {
+                value.addAll(TagList.getValue(saved));
             }
             return true;
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
-            for (Object compound : TagList.getValue(value.get("Patterns"))) {
+        public boolean downgradeList(Object components, String id, List<Object> value) {
+            final List<Object> saved = new ArrayList<>();
+            for (Object compound : value) {
                 final Map<String, Object> map = TagCompound.getValue(compound);
-                move(map, "pattern", "Pattern", pattern -> Pattern.SHORT_NAMES.get((String) pattern));
-                move(map, "color", "Color", color -> Color.ORDINALS.get((String) color));
+                final String name = (String) TagBase.getValue(map.get("pattern"));
+                if (Pattern.SHORT_NAMES.containsKey(name)) {
+                    move(map, "pattern", "Pattern", pattern -> Pattern.SHORT_NAMES.get((String) pattern));
+                    move(map, "color", "Color", color -> Color.ORDINALS.get((String) color));
+                } else {
+                    saved.add(compound);
+                }
+            }
+            if (!saved.isEmpty()) {
+                Rtag.INSTANCE.set(components, saved, "minecraft:custom_data", "savedPatterns");
             }
             return true;
         }
