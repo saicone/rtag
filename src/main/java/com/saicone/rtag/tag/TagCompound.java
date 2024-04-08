@@ -140,6 +140,26 @@ public class TagCompound {
         if (map.isEmpty()) {
             return newTag();
         }
+
+        // Check if map is mutable
+        try {
+            map.putAll(Map.of());
+        } catch (UnsupportedOperationException e) {
+            return newTag(new HashMap<>(map));
+        }
+
+        return newUncheckedTag(map);
+    }
+
+    /**
+     * Constructs an NBTTagCompound with provided Map of NBTBase values.<br>
+     * This method doesn't provide any safe check and assumes that the provided
+     * map is completely usable to create a new NBTTagCompound.
+     *
+     * @param map Map with tags.
+     * @return    New NBTTagCompound instance.
+     */
+    public static Object newUncheckedTag(Map<String, Object> map) {
         if (ServerInstance.MAJOR_VERSION >= 15) {
             try {
                 return newCompound.invoke(map);
@@ -194,7 +214,7 @@ public class TagCompound {
         for (var entry : map.entrySet()) {
             tags.put(entry.getKey(), mirror.newTag(entry.getValue()));
         }
-        return newTag(tags);
+        return newUncheckedTag(tags);
     }
 
     /**

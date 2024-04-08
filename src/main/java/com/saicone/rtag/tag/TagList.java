@@ -100,6 +100,7 @@ public class TagList {
 
     /**
      * Constructs an NBTTagList with provided List of NBTBase.
+     *
      * @param list List with NBTBase values.
      * @return     New NBTTagList instance.
      * @param <T>  List type parameter.
@@ -108,6 +109,27 @@ public class TagList {
         if (list == null || list.isEmpty()) {
             return newTag();
         }
+
+        // Check if list is mutable
+        try {
+            list.addAll(List.of());
+        } catch (UnsupportedOperationException e) {
+            return newTag(new ArrayList<>(list));
+        }
+
+        return newUncheckedTag(list);
+    }
+
+    /**
+     * Constructs an NBTTagList with provided List of NBTBase.<br>
+     * This method doesn't provide any safe check and assumes that the provided
+     * list is completely usable to create a new NBTTagList.
+     *
+     * @param list List with NBTBase values.
+     * @return     New NBTTagList instance.
+     * @param <T>  List type parameter.
+     */
+    public static <T> Object newUncheckedTag(List<T> list) {
         final byte type = TagBase.getTypeId(list.get(0));
         try {
             if (ServerInstance.MAJOR_VERSION >= 15) {
@@ -140,7 +162,7 @@ public class TagList {
         for (Object value : list) {
             tags.add(mirror.newTag(value));
         }
-        return newTag(tags);
+        return newUncheckedTag(tags);
     }
 
     /**
@@ -186,7 +208,7 @@ public class TagList {
                 listCopy.add(o);
             }
         }
-        return newTag(listCopy);
+        return newUncheckedTag(listCopy);
     }
 
     /**
