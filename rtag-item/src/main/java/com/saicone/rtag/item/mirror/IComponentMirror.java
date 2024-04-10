@@ -6,6 +6,7 @@ import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.OptionalType;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.*;
@@ -15,6 +16,16 @@ import java.util.function.Function;
 public class IComponentMirror implements ItemMirror {
 
     private static final Map<String, Transformation> TRANSFORMATIONS = new HashMap<>();
+    private static final List<String> HIDE_FLAGS = List.of(
+            "minecraft:enchantments",
+            "minecraft:attribute_modifiers",
+            "minecraft:unbreakable",
+            "minecraft:can_break",
+            "minecraft:can_place_on",
+            "minecraft:stored_enchantments",
+            "minecraft:dyed_color",
+            "minecraft:trim"
+    );
 
     static {
         TRANSFORMATIONS.put("minecraft:unbreakable", new Unbreakable());
@@ -63,6 +74,7 @@ public class IComponentMirror implements ItemMirror {
             }
             final Object components = TagCompound.get(compound, "components");
             if (components != null) {
+                upgradeHideFlags(components, id);
                 final Map<String, Object> value = TagCompound.getValue(components);
                 for (String key : new ArrayList<>(value.keySet())) {
                     final Transformation transformation = TRANSFORMATIONS.get(key);
@@ -89,6 +101,22 @@ public class IComponentMirror implements ItemMirror {
     @Override
     public void upgrade(Object compound, String id, Object components, float from, float to) {
         upgrade(compound, id, from, to);
+    }
+
+    private void upgradeHideFlags(Object components, String id) {
+        final OptionalType optional = Rtag.INSTANCE.getOptional(components, "minecraft:custom_data", "HideFlags");
+        if (optional.isEmpty()) return;
+        Rtag.INSTANCE.set(components, null, "minecraft:custom_data", "HideFlags");
+        final Set<Integer> flags = optional.asOrdinalSet(8);
+        for (Integer flag : flags) {
+            if (flag == 5) {
+                if (!id.equalsIgnoreCase("minecraft:enchanted_book")) {
+                    TagCompound.set(components, "minecraft:hide_additional_tooltip", TagCompound.newTag());
+                    continue;
+                }
+            }
+            Rtag.INSTANCE.set(components, false, HIDE_FLAGS.get(flag), "show_in_tooltip");
+        }
     }
 
     @Override
