@@ -246,8 +246,8 @@ public class IComponentMirror implements ItemMirror {
         public void downgradeTooltip(Object components, Map<String, Object> value) {
             if (Boolean.FALSE.equals(TagBase.getValue(value.get("show_in_tooltip")))) {
                 setFlag(components, ordinal);
-                value.remove("show_in_tooltip");
             }
+            value.remove("show_in_tooltip");
         }
     }
 

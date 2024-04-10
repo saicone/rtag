@@ -211,7 +211,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @return     A readable map that represent the provided item.
      */
     public Map<String, Object> toReadableMap(ItemStack item) {
-        return readable(toMap(item), true);
+        return parseMap(toMap(item), getVersion(), true);
     }
 
     /**
@@ -222,36 +222,48 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @return    An item representation using readable Map as compound.
      */
     public ItemStack fromReadableMap(Map<String, Object> map) {
-        return fromMap(readable(map, false));
+        return fromMap(parseMap(map, (float) map.getOrDefault(getVersionKey(), getVersion()), false));
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> readable(Map<String, Object> map, boolean forward) {
-        final Map<String, Object> tag;
-        final Map<String, Object> display;
-        if (ServerInstance.MAJOR_VERSION >= 13 && (tag = (Map<String, Object>) map.get("tag")) != null && (display = (Map<String, Object>) tag.get("display")) != null) {
+    private Map<String, Object> parseMap(Map<String, Object> map, float version, boolean readable) {
+        if (version < 13f) {
+            return map;
+        }
+        final boolean useComponent = version >= 20.04f;
+        final Map<String, Object> components;
+        if (useComponent) {
+            components = (Map<String, Object>) map.get("components");
+        } else {
+            final Map<String, Object> tag = (Map<String, Object>) map.get("tag");
+            if (tag == null) return map;
+            components = (Map<String, Object>) tag.get("display");
+        }
+
+        if (components != null) {
             // Process name
-            final String name = (String) display.get("Name");
+            final String nameKey = useComponent ? "minecraft:custom_name" : "Name";
+            final String name = (String) components.get(nameKey);
             if (name != null) {
-                display.put("Name", readable(name, forward));
+                components.put(nameKey, parseText(name, readable));
             }
-            if (ServerInstance.MAJOR_VERSION >= 14) {
+            if (version >= 14f) {
                 // Process lore
-                final List<String> lore = (List<String>) display.get("Lore");
+                final List<String> lore = (List<String>) components.get(useComponent ? "minecraft:lore" : "Lore");
                 if (lore != null) {
-                    lore.replaceAll(line -> readable(line, forward));
+                    lore.replaceAll(line -> parseText(line, readable));
                 }
             }
         }
         return map;
     }
 
-    private String readable(String s, boolean forward) {
+    private String parseText(String s, boolean readable) {
         if (ChatComponent.isChatComponent(s)) {
-            if (forward) {
+            if (readable) {
                 return ChatComponent.toString(s);
             }
-        } else if (!forward) {
+        } else if (!readable) {
             return ChatComponent.toJson(s);
         }
         return s;
@@ -291,26 +303,25 @@ public class ItemTagStream extends TStream<ItemStack> {
         String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
         if (id == null) return;
 
-        // TODO: Add components compatibility
-        Object tag = TagCompound.get(compound, "tag");
+        Object components = TagCompound.get(compound, from >= 20.04f ? "components" : "tag");
         if (from > to) {
-            if (tag == null) {
+            if (components == null) {
                 for (ItemMirror item : mirror) {
                     item.downgrade(compound, id, from, to);
                 }
             } else {
                 for (ItemMirror item : mirror) {
-                    item.downgrade(compound, id, tag, from, to);
+                    item.downgrade(compound, id, components, from, to);
                 }
             }
         } else {
-            if (tag == null) {
+            if (components == null) {
                 for (ItemMirror item : mirror) {
                     item.upgrade(compound, id, from, to);
                 }
             } else {
                 for (ItemMirror item : mirror) {
-                    item.upgrade(compound, id, tag, from, to);
+                    item.upgrade(compound, id, components, from, to);
                 }
             }
         }
