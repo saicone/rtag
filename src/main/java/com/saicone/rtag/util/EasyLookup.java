@@ -56,6 +56,9 @@ public class EasyLookup {
             }
             addNMSClass("nbt.NBTTagShort", "ShortTag");
             addNMSClass("nbt.NBTTagString", "StringTag");
+            if (ServerInstance.MAJOR_VERSION >= 13) {
+                addNMSClass("nbt.DynamicOpsNBT", "NbtOps");
+            }
             if (ServerInstance.VERSION >= 19.02f) {
                 EasyLookup.addNMSClass("net.minecraft.core.registries.BuiltInRegistries");
                 EasyLookup.addNMSClass("net.minecraft.resources.MinecraftKey", "ResourceLocation");

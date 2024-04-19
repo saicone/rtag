@@ -1,5 +1,7 @@
 package com.saicone.rtag.item;
 
+import com.mojang.serialization.Codec;
+import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.data.DataComponent;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
@@ -21,8 +23,9 @@ public class ItemObject {
     private static final String ROOT_PATH = "==root";
     private static final Class<?> MC_ITEM = EasyLookup.classById("ItemStack");
     private static final Class<?> CRAFT_ITEM = EasyLookup.classById("CraftItemStack");
-    private static final Object CUSTOM_DATA = DataComponent.type("minecraft:custom_data");
+    private static final Object CUSTOM_DATA = ComponentType.of("minecraft:custom_data");
     private static final Object ITEM_REGISTRY; // Remove in 2.0.0
+    private static final Object ITEM_CODEC;
 
     private static final Map<String, Object> tagPaths = new LinkedHashMap<>();
     private static final Map<String, Object> componentPaths = new LinkedHashMap<>();
@@ -48,6 +51,7 @@ public class ItemObject {
 
         // Constants
         Object const$item = null;
+        Object const$codec = null;
         // Constructors
         MethodHandle new$ItemStack = null;
         MethodHandle new$CustomData = null;
@@ -72,6 +76,7 @@ public class ItemObject {
 
             // Old method names
             String registry$item = "h";
+            String codec = "";
             String createStack = "createStack";
             String save = "save";
             String apply = "c";
@@ -85,6 +90,7 @@ public class ItemObject {
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 registry$item = "ITEM";
+                codec = "CODEC";
                 getItem = "get";
                 setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
@@ -120,14 +126,17 @@ public class ItemObject {
                 EasyLookup.addNMSClass("net.minecraft.core.RegistryBlocks", "DefaultedRegistry");
 
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
+                const$codec = MC_ITEM.getDeclaredField(codec).get(null);
+
                 new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
+
                 method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
                 method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
             }
 
             if (ServerInstance.Release.COMPONENT) {
                 EasyLookup.addNMSClass("world.item.component.CustomData");
-                new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "HolderLookup.Provider", "NBTTagCompound");
+                //new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "HolderLookup.Provider", "NBTTagCompound");
                 new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
             } else if (ServerInstance.MAJOR_VERSION >= 13 || ServerInstance.MAJOR_VERSION <= 10) {
                 new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
@@ -141,7 +150,7 @@ public class ItemObject {
             set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
             if (ServerInstance.Release.COMPONENT) {
-                method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
+                //method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
                 method$getTag = EasyLookup.unreflectGetter("CustomData", getTag);
@@ -160,6 +169,7 @@ public class ItemObject {
             e.printStackTrace();
         }
         ITEM_REGISTRY = const$item;
+        ITEM_CODEC = const$codec;
         newItem = new$ItemStack;
         newCustomData = new$CustomData;
         newMinecraftKey = new$MinecraftKey;
@@ -346,8 +356,7 @@ public class ItemObject {
     public static Object newItem(Object compound) {
         try {
             if (ServerInstance.Release.COMPONENT) {
-                // TODO: Add RegistryAccess to args
-                return newItem.invoke(null, compound);
+                return ((Codec<Object>) ITEM_CODEC).parse(ComponentType.NBT_OPS, compound).result().orElse(null);
             } else {
                 return newItem.invoke(compound);
             }
@@ -407,8 +416,7 @@ public class ItemObject {
         }
         try {
             if (ServerInstance.Release.COMPONENT) {
-                // TODO: Add save by providing a lookup
-                return save.invoke(item, null);
+                return ((Codec<Object>) ITEM_CODEC).encodeStart(ComponentType.NBT_OPS, item).result().orElseGet(TagCompound::newTag);
             } else {
                 return save.invoke(item, TagCompound.newTag());
             }
@@ -453,9 +461,9 @@ public class ItemObject {
             if (components != null) {
                 final DataComponent.Builder builder = DataComponent.Patch.builder();
                 for (Map.Entry<String, Object> entry : TagCompound.getValue(components).entrySet()) {
-                    final Object type = DataComponent.type(entry.getKey());
+                    final Object type = ComponentType.of(entry.getKey());
                     if (type != null) {
-                        // TODO: Convert NBT tag value into component-required value
+                        ComponentType.parseNbt(entry.getKey(), entry.getValue()).ifPresent(component -> builder.set(type, component));
                     }
                 }
                 apply(item, builder.build());

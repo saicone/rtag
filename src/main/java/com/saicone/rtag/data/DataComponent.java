@@ -7,9 +7,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
 
@@ -21,74 +18,7 @@ public class DataComponent {
     private static final Class<?> COMPONENT_MAP_PATCH = EasyLookup.classById("PatchedDataComponentMap");
     private static final Class<?> COMPONENT_PATCH = EasyLookup.classById("DataComponentPatch");
 
-    private static final java.util.Map<String, Object> types = new HashMap<>();
-
-    static {
-        if (ServerInstance.Release.COMPONENT) {
-            try {
-                // TODO: Move registry handling into separated utility class (Maybe when mojang add the option to create custom data components)
-                EasyLookup.addNMSClass("net.minecraft.core.registries.BuiltInRegistries");
-                EasyLookup.addNMSClass("net.minecraft.core.RegistryMaterials", "MappedRegistry");
-                EasyLookup.addNMSClass("net.minecraft.resources.MinecraftKey", "ResourceLocation");
-                EasyLookup.addNMSClass("net.minecraft.core.Holder");
-
-                // Old names
-                String registry$components = "at";
-                String registry$map = "f";
-                String resource$key = "b";
-                String holder$value = "a";
-
-                // New names
-                if (ServerInstance.Type.MOJANG_MAPPED) {
-                    registry$components = "DATA_COMPONENT_TYPE";
-                    registry$map = "byLocation";
-                    resource$key = "getNamespace";
-                    holder$value = "value";
-                }
-
-                final Object componentsRegistry = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$components).get(null);
-                final java.util.Map<Object, Object> componentsMap = (java.util.Map<Object, Object>) EasyLookup.field("MappedRegistry", registry$map).get(componentsRegistry);
-                final Method keyMethod = EasyLookup.classById("MinecraftKey").getDeclaredMethod(resource$key);
-                final Method valueMethod = EasyLookup.classById("Holder").getDeclaredMethod(holder$value);
-                for (var entry : componentsMap.entrySet()) {
-                    if (entry.getValue() == null) {
-                        continue;
-                    }
-                    final String key = (String) keyMethod.invoke(entry.getKey());
-                    final Object value = valueMethod.invoke(entry.getValue());
-                    if (key.startsWith("minecraft:") || key.contains(":")) {
-                        types.put(key, value);
-                    } else {
-                        types.put("minecraft:" + key, value);
-                    }
-                }
-            } catch (NoSuchFieldException | ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     DataComponent() {
-    }
-
-    public static Object type(Object type) {
-        if (type instanceof String) {
-            return type((String) type);
-        } else {
-            return type;
-        }
-    }
-
-    public static Object type(String name) {
-        if (name.startsWith("minecraft:") || name.contains(":")) {
-            return types.get(name);
-        } else {
-            return types.get("minecraft:" + name);
-        }
-    }
-
-    public static boolean typeExists(String name) {
-        return type(name) != null;
     }
 
     public static Object get(Object component, Object type) {
