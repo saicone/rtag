@@ -22,18 +22,22 @@ public class ItemObject {
     private static final Class<?> MC_ITEM = EasyLookup.classById("ItemStack");
     private static final Class<?> CRAFT_ITEM = EasyLookup.classById("CraftItemStack");
     private static final Object CUSTOM_DATA = DataComponent.type("minecraft:custom_data");
+    private static final Object ITEM_REGISTRY; // Remove in 2.0.0
 
     private static final Map<String, Object> tagPaths = new LinkedHashMap<>();
     private static final Map<String, Object> componentPaths = new LinkedHashMap<>();
 
     private static final MethodHandle newItem;
     private static final MethodHandle newCustomData;
+    private static final MethodHandle newMinecraftKey; // Remove in 2.0.0
     private static final MethodHandle getHandleField;
     private static final MethodHandle setHandleField;
     private static final MethodHandle save;
     private static final MethodHandle apply;
     private static final MethodHandle copy;
+    private static final MethodHandle getItem; // Remove in 2.0.0
     private static final MethodHandle getTag;
+    private static final MethodHandle setItem; // Remove in 2.0.0
     private static final MethodHandle setTag; // < 1.20.5
     private static final MethodHandle setCount; // >= 1.20.5
     private static final MethodHandle asBukkitCopy;
@@ -42,9 +46,12 @@ public class ItemObject {
     static {
         initPaths();
 
+        // Constants
+        Object const$item = null;
         // Constructors
         MethodHandle new$ItemStack = null;
         MethodHandle new$CustomData = null;
+        MethodHandle new$MinecraftKey = null;
         // Getters
         MethodHandle get$handle = null;
         // Setters
@@ -53,7 +60,9 @@ public class ItemObject {
         MethodHandle method$save = null;
         MethodHandle method$apply = null;
         MethodHandle method$copy = null;
+        MethodHandle method$getItem = null;
         MethodHandle method$getTag = null;
+        MethodHandle method$setItem = null;
         MethodHandle method$setTag = null;
         MethodHandle method$setCount = null;
         MethodHandle method$asBukkitCopy = null;
@@ -62,16 +71,22 @@ public class ItemObject {
             // TODO: Add non-mapped names for 1.20.5
 
             // Old method names
+            String registry$item = "h";
             String createStack = "createStack";
             String save = "save";
             String apply = "c";
             String copy = "";
+            String getItem = "a";
             String getTag = "getTag";
+            String setItem = "z";
             String setTag = "setTag";
             String setCount = "";
 
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
+                registry$item = "ITEM";
+                getItem = "get";
+                setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
                     createStack = "parseOptional";
                     save = "saveOptional";
@@ -99,6 +114,15 @@ public class ItemObject {
                         }
                     }
                 }
+            }
+
+            if (ServerInstance.Release.COMPONENT) {
+                EasyLookup.addNMSClass("net.minecraft.core.RegistryBlocks", "DefaultedRegistry");
+
+                const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
+                new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
+                method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
+                method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
             }
 
             if (ServerInstance.Release.COMPONENT) {
@@ -135,14 +159,18 @@ public class ItemObject {
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        ITEM_REGISTRY = const$item;
         newItem = new$ItemStack;
         newCustomData = new$CustomData;
+        newMinecraftKey = new$MinecraftKey;
         getHandleField = get$handle;
         setHandleField = set$handle;
         save = method$save;
         apply = method$apply;
         copy = method$copy;
+        getItem = method$getItem;
         getTag = method$getTag;
+        setItem = method$setItem;
         setTag = method$setTag;
         setCount = method$setCount;
         asBukkitCopy = method$asBukkitCopy;
@@ -359,7 +387,11 @@ public class ItemObject {
         if (ServerInstance.Release.COMPONENT) {
             return DataComponent.Holder.has(item, CUSTOM_DATA);
         } else {
-            return getTag(item) != null;
+            try {
+                return getTag.invoke(item) != null;
+            } catch (Throwable t) {
+                throw new RuntimeException("Cannot get tag from Minecraft ItemStack", t);
+            }
         }
     }
 
@@ -400,7 +432,14 @@ public class ItemObject {
         if (ServerInstance.Release.COMPONENT) {
             final Object id = TagCompound.get(compound, "id");
             if (id != null) {
-                // TODO: Replace item field inside ItemStack
+                try {
+                    final Object loadedItem = getItem.invoke(ITEM_REGISTRY, newMinecraftKey.invoke(TagBase.getValue(id)));
+                    if (loadedItem != null) {
+                        setItem.invoke(item, loadedItem);
+                    }
+                } catch (Throwable t) {
+                    throw new RuntimeException("Cannot set item id", t);
+                }
             }
             final Object count = TagCompound.get(compound, "count");
             if (count != null) {
