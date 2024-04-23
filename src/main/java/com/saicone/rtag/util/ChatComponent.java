@@ -1,5 +1,6 @@
 package com.saicone.rtag.util;
 
+import com.saicone.rtag.Rtag;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
@@ -71,11 +72,17 @@ public class ChatComponent {
             }
             method$fromComponent = EasyLookup.staticMethod("CraftChatMessage", "fromComponent", String.class, "IChatBaseComponent");
 
-            // Unreflect reason:
-            // (1.8 - 1.15) return IChatBaseComponent
-            // Other versions return IChatMutableComponent
-            method$fromJson = EasyLookup.unreflectMethod("ChatSerializer", fromJson, String.class);
-            method$toJson = EasyLookup.staticMethod("ChatSerializer", toJson, String.class, "IChatBaseComponent");
+            if (ServerInstance.Release.COMPONENT) {
+                EasyLookup.addNMSClass("network.chat.IChatMutableComponent", "MutableComponent");
+                method$fromJson = EasyLookup.staticMethod("ChatSerializer", fromJson, "IChatMutableComponent", String.class, "HolderLookup.Provider");
+                method$toJson = EasyLookup.staticMethod("ChatSerializer", toJson, String.class, "IChatBaseComponent", "HolderLookup.Provider");
+            } else {
+                // Unreflect reason:
+                // (1.8 - 1.15) return IChatBaseComponent
+                // Other versions return IChatMutableComponent
+                method$fromJson = EasyLookup.unreflectMethod("ChatSerializer", fromJson, String.class);
+                method$toJson = EasyLookup.staticMethod("ChatSerializer", toJson, String.class, "IChatBaseComponent");
+            }
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -123,7 +130,14 @@ public class ChatComponent {
      */
     public static Object fromJson(String json) {
         try {
-            return json == null || json.isEmpty() ? null : fromJson.invoke(json);
+            if (json == null || json.isEmpty()) {
+                return null;
+            }
+            if (ServerInstance.Release.COMPONENT) {
+                return fromJson.invoke(json, Rtag.getMinecraftRegistry());
+            } else {
+                return fromJson.invoke(json);
+            }
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -167,7 +181,11 @@ public class ChatComponent {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
         try {
-            return (String) toJson.invoke(component);
+            if (ServerInstance.Release.COMPONENT) {
+                return (String) toJson.invoke(component, Rtag.getMinecraftRegistry());
+            } else {
+                return (String) toJson.invoke(component);
+            }
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

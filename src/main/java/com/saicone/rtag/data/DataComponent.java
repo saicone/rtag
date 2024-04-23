@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @ApiStatus.Experimental
+@SuppressWarnings("javadoc")
 public class DataComponent {
 
     private static final Class<?> COMPONENT_HOLDER = EasyLookup.classById("DataComponentHolder");
@@ -57,12 +58,10 @@ public class DataComponent {
             MethodHandle method$get = null;
             MethodHandle method$has = null;
             if (ServerInstance.Release.COMPONENT) {
-                // TODO: Add non-mapped names for 1.20.5
-
                 // Old names
-                String getComponents = "";
-                String get = "";
-                String has = "";
+                String getComponents = "a";
+                String get = "a";
+                String has = "b";
                 // New names
                 if (ServerInstance.Type.MOJANG_MAPPED) {
                     getComponents = "getComponents";
@@ -138,17 +137,15 @@ public class DataComponent {
             MethodHandle method$builder = null;
             MethodHandle method$builder$build = null;
             if (ServerInstance.Release.COMPONENT) {
-                // TODO: Add non-mapped names for 1.20.5
-
                 // Old names
-                String empty = "";
-                String map = "";
-                String get = "";
-                String keySet = "";
+                String empty = "a";
+                String map = "c";
+                String get = "a";
+                String keySet = "b";
 
-                String builder = "";
-                String builder$map = "";
-                String builder$build = "";
+                String builder = "a";
+                String builder$map = "a";
+                String builder$build = "a";
 
                 // New names
                 if (ServerInstance.Type.MOJANG_MAPPED) {
@@ -274,24 +271,22 @@ public class DataComponent {
             MethodHandle method$set = null;
             MethodHandle method$remove = null;
             if (ServerInstance.Release.COMPONENT) {
-                // TODO: Add non-mapped names for 1.20.5
-
                 // Old names
-                String map = "";
-                String set = "";
-                String remove = "";
+                String map = "d";
+                String set = "b";
+                String remove = "d";
 
                 // New names
                 if (ServerInstance.Type.MOJANG_MAPPED) {
-                    map = "map";
+                    map = "patch";
                     set = "set";
                     remove = "remove";
                 }
 
                 try {
                     // Private field
-                    get$map = EasyLookup.unreflectGetter("DataComponentMap.SimpleMap", map);
-                    set$map = EasyLookup.unreflectSetter("DataComponentMap.SimpleMap", map);
+                    get$map = EasyLookup.unreflectGetter(COMPONENT_MAP_PATCH, map);
+                    set$map = EasyLookup.unreflectSetter(COMPONENT_MAP_PATCH, map);
 
                     method$set = EasyLookup.method(COMPONENT_MAP_PATCH, set, Object.class, "DataComponentType", Object.class);
                     method$remove = EasyLookup.method(COMPONENT_MAP_PATCH, remove, Object.class, "DataComponentType");
@@ -365,15 +360,13 @@ public class DataComponent {
             MethodHandle method$builder = null;
             MethodHandle method$builder$build = null;
             if (ServerInstance.Release.COMPONENT) {
-                // TODO: Add non-mapped names for 1.20.5
-
                 // Old names
-                String empty = "";
-                String map = "";
+                String empty = "a";
+                String map = "d";
 
-                String builder = "";
-                String builder$map = "";
-                String builder$build = "";
+                String builder = "a";
+                String builder$map = "a";
+                String builder$build = "a";
 
                 // New names
                 if (ServerInstance.Type.MOJANG_MAPPED) {

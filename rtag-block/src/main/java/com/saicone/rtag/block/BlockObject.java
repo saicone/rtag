@@ -44,25 +44,29 @@ public class BlockObject {
         MethodHandle method$save = null;
         MethodHandle method$load = null;
         try {
-            // TODO: Add non-mapped names for 1.20.5
-
             // Old method names
             String getTileEntity = "getTileEntity";
             String save = "b";
             String load = "a";
-
             String getWorld = "i";
-            String getRegistry = "I_";
+            String getRegistry = "H_";
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 getTileEntity = "getBlockEntity";
                 save = "saveWithoutMetadata";
-                load = "load";
+                if (ServerInstance.Release.COMPONENT) {
+                    load = "loadWithComponents";
+                } else {
+                    load = "load";
+                }
                 getWorld = "getLevel";
                 getRegistry = "registryAccess";
             } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 getTileEntity = "c_";
-                if (ServerInstance.VERSION >= 19.03) {
+                if (ServerInstance.Release.COMPONENT) {
+                    save = "d";
+                    load = "c";
+                } else if (ServerInstance.VERSION >= 19.03) {
                     save = "o";
                 } else {
                     save = "m";
@@ -89,7 +93,9 @@ public class BlockObject {
                 method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound", "NBTTagCompound");
             }
 
-            if (ServerInstance.MAJOR_VERSION == 16) {
+            if (ServerInstance.Release.COMPONENT) {
+                method$load = EasyLookup.method("TileEntity", load, void.class, "NBTTagCompound", "HolderLookup.Provider");
+            } else if (ServerInstance.MAJOR_VERSION == 16) {
                 method$getPosition = EasyLookup.method("TileEntity", "getPosition", "BlockPosition");
                 method$getWorld = EasyLookup.method("TileEntity", "getWorld", "World");
                 method$getType = EasyLookup.method("World", "getType", "IBlockData", "BlockPosition");
@@ -178,7 +184,10 @@ public class BlockObject {
      */
     public static void load(Object tile, Object tag) {
         try {
-            if (ServerInstance.MAJOR_VERSION == 16) {
+            if (ServerInstance.Release.COMPONENT) {
+                final Object registry = getRegistry.invoke(getWorld.invoke(tile));
+                load.invoke(tile, tag, registry);
+            } else if (ServerInstance.MAJOR_VERSION == 16) {
                 Object blockData = getType.invoke(getWorld.invoke(tile), getPosition.invoke(tile));
                 load.invoke(tile, tag, blockData);
             } else {

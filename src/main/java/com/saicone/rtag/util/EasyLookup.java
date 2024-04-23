@@ -60,16 +60,16 @@ public class EasyLookup {
                 addNMSClass("nbt.DynamicOpsNBT", "NbtOps");
             }
             if (ServerInstance.VERSION >= 19.02f) {
-                EasyLookup.addNMSClass("net.minecraft.core.registries.BuiltInRegistries");
-                EasyLookup.addNMSClass("net.minecraft.resources.MinecraftKey", "ResourceLocation");
+                EasyLookup.addNMSClass("core.registries.BuiltInRegistries");
+                EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation");
             }
             if (ServerInstance.Release.COMPONENT) {
                 addNMSClass("core.component.DataComponentHolder");
                 addNMSClass("core.component.DataComponentMap");
-                addNMSClassId("DataComponentMap.Builder", "core.component.DataComponentMap.Builder");
-                addNMSClassId("DataComponentMap.SimpleMap", "core.component.DataComponentMap.Builder.SimpleMap");
+                addNMSClassId("DataComponentMap.Builder", "core.component.DataComponentMap$a", "core.component.DataComponentMap$Builder");
+                addNMSClassId("DataComponentMap.SimpleMap", "core.component.DataComponentMap$a$a", "core.component.DataComponentMap$Builder$SimpleMap");
                 addNMSClass("core.component.DataComponentPatch");
-                addNMSClassId("DataComponentPatch.Builder", "core.component.DataComponentPatch.Builder");
+                addNMSClassId("DataComponentPatch.Builder", "core.component.DataComponentPatch$a", "core.component.DataComponentPatch$Builder");
                 addNMSClass("core.component.PatchedDataComponentMap");
                 addNMSClass("core.component.TypedDataComponent");
                 addNMSClass("core.component.DataComponentType");
@@ -84,8 +84,10 @@ public class EasyLookup {
             if (ServerInstance.MAJOR_VERSION >= 16) {
                 addNMSClass("core.IRegistryCustom", "RegistryAccess");
                 addNMSClass("world.level.IWorldReader", "LevelReader");
-                if (ServerInstance.VERSION >= 19.02) {
-                    addNMSClassId("HolderLookup.Provider", "core.HolderLookup.b", "core.HolderLookup.Provider");
+                if (ServerInstance.Release.COMPONENT) {
+                    addNMSClassId("HolderLookup.Provider", "core.HolderLookup$a", "core.HolderLookup$Provider");
+                } else if (ServerInstance.VERSION >= 19.02) {
+                    addNMSClassId("HolderLookup.Provider", "core.HolderLookup$b", "core.HolderLookup$Provider");
                 }
             }
             // Bukkit Server

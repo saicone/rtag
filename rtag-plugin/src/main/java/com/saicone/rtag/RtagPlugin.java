@@ -23,6 +23,8 @@ public class RtagPlugin extends JavaPlugin {
         loadRtagClass("Rtag", "RtagMirror");
         // Tag
         loadRtagClass("tag.TagBase", "tag.TagList", "tag.TagCompound");
+        // Data
+        loadRtagClass("data.ComponentType", "data.DataComponent");
         // Stream
         loadRtagClass("stream.TStream", "stream.TStreamTools");
         // Block

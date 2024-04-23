@@ -1,6 +1,7 @@
 package com.saicone.rtag.item;
 
 import com.mojang.serialization.Codec;
+import com.saicone.rtag.Rtag;
 import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.data.DataComponent;
 import com.saicone.rtag.tag.TagBase;
@@ -72,20 +73,18 @@ public class ItemObject {
         MethodHandle method$asBukkitCopy = null;
         MethodHandle method$asNMSCopy = null;
         try {
-            // TODO: Add non-mapped names for 1.20.5
-
             // Old method names
             String registry$item = "h";
-            String codec = "";
+            String codec = "b";
             String createStack = "createStack";
             String save = "save";
             String apply = "c";
-            String copy = "";
+            String copy = "s";
             String getItem = "a";
             String getTag = "getTag";
-            String setItem = "z";
+            String setItem = "q";
             String setTag = "setTag";
-            String setCount = "";
+            String setCount = "e";
 
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
@@ -105,13 +104,19 @@ public class ItemObject {
                     apply = "load";
                 }
             } else if (ServerInstance.MAJOR_VERSION >= 11) {
-                apply = "load";
+                if (ServerInstance.Release.COMPONENT) {
+                    apply = "a";
+                } else {
+                    apply = "load";
+                }
                 if (ServerInstance.MAJOR_VERSION >= 13) {
                     createStack = "a";
                     if (ServerInstance.MAJOR_VERSION >= 18) {
                         save = "b";
                         setTag = "c";
-                        if (ServerInstance.MAJOR_VERSION >= 20) {
+                        if (ServerInstance.Release.COMPONENT) {
+                            getTag = "e";
+                        } else if (ServerInstance.MAJOR_VERSION >= 20) {
                             getTag = "v";
                         } else if (ServerInstance.MAJOR_VERSION >= 19) {
                             getTag = "u";
@@ -123,7 +128,7 @@ public class ItemObject {
             }
 
             if (ServerInstance.Release.COMPONENT) {
-                EasyLookup.addNMSClass("net.minecraft.core.RegistryBlocks", "DefaultedRegistry");
+                EasyLookup.addNMSClass("core.RegistryBlocks", "DefaultedRegistry");
 
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
                 const$codec = MC_ITEM.getDeclaredField(codec).get(null);
@@ -136,7 +141,7 @@ public class ItemObject {
 
             if (ServerInstance.Release.COMPONENT) {
                 EasyLookup.addNMSClass("world.item.component.CustomData");
-                //new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "HolderLookup.Provider", "NBTTagCompound");
+                new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, Optional.class, "HolderLookup.Provider", "NBTBase");
                 new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
             } else if (ServerInstance.MAJOR_VERSION >= 13 || ServerInstance.MAJOR_VERSION <= 10) {
                 new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
@@ -150,7 +155,7 @@ public class ItemObject {
             set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
             if (ServerInstance.Release.COMPONENT) {
-                //method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
+                method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider", "NBTBase");
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
                 method$getTag = EasyLookup.unreflectGetter("CustomData", getTag);
@@ -353,10 +358,11 @@ public class ItemObject {
      * @param compound NBTTagCompound that represent the item.
      * @return         A new ItemStack.
      */
+    @SuppressWarnings("unchecked")
     public static Object newItem(Object compound) {
         try {
             if (ServerInstance.Release.COMPONENT) {
-                return ((Codec<Object>) ITEM_CODEC).parse(ComponentType.NBT_OPS, compound).result().orElse(null);
+                return ((Optional<Object>) newItem.invoke(Rtag.getMinecraftRegistry(), compound)).orElse(null);
             } else {
                 return newItem.invoke(compound);
             }
@@ -416,7 +422,7 @@ public class ItemObject {
         }
         try {
             if (ServerInstance.Release.COMPONENT) {
-                return ((Codec<Object>) ITEM_CODEC).encodeStart(ComponentType.NBT_OPS, item).result().orElseGet(TagCompound::newTag);
+                return save.invoke(item, Rtag.getMinecraftRegistry(), TagCompound.newTag());
             } else {
                 return save.invoke(item, TagCompound.newTag());
             }

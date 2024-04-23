@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @ApiStatus.Experimental
+@SuppressWarnings("javadoc")
 public class ComponentType {
 
     private static final Class<?> COMPONENT_TYPE = EasyLookup.classById("DataComponentType");
@@ -35,15 +36,15 @@ public class ComponentType {
         if (ServerInstance.Release.COMPONENT) {
             try {
                 // Maybe move registry handling into separated utility class
-                EasyLookup.addNMSClass("net.minecraft.core.RegistryMaterials", "MappedRegistry");
-                EasyLookup.addNMSClass("net.minecraft.core.Holder");
+                EasyLookup.addNMSClass("core.RegistryMaterials", "MappedRegistry");
+                EasyLookup.addNMSClass("core.Holder");
 
                 // Old names
-                String registry$components = "at";
+                String registry$components = "as";
                 String registry$map = "f";
                 String resource$key = "b";
                 String holder$value = "a";
-                String codec = "d";
+                String codec = "b";
                 String nbtOps$instance = "a";
 
                 // New names
@@ -57,7 +58,7 @@ public class ComponentType {
                 }
 
                 final Object componentsRegistry = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$components).get(null);
-                final Map<Object, Object> componentsMap = (Map<Object, Object>) EasyLookup.field("MappedRegistry", registry$map).get(componentsRegistry);
+                final Map<Object, Object> componentsMap = (Map<Object, Object>) EasyLookup.field("RegistryMaterials", registry$map).get(componentsRegistry);
                 final Method keyMethod = EasyLookup.classById("MinecraftKey").getDeclaredMethod(resource$key);
                 final Method valueMethod = EasyLookup.classById("Holder").getDeclaredMethod(holder$value);
                 final Method codecMethod = EasyLookup.classById("DataComponentType").getDeclaredMethod(codec);

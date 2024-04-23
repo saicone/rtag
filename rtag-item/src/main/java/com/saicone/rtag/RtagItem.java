@@ -1,5 +1,6 @@
 package com.saicone.rtag;
 
+import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.data.DataComponent;
 import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
@@ -192,7 +193,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public boolean hasHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
-            // TODO: Replace with converted component value check
+            // Replace with converted component value check
             if (!getItem().hasItemMeta()) {
                 return false;
             }
@@ -270,7 +271,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     // 2 = minecraft:unbreakable={show_in_tooltip:false}
     // 3 = minecraft:can_break={show_in_tooltip:false}
     // 4 = minecraft:can_place_on={show_in_tooltip:false}
-    // 5 = minecraft:hide_additional_tooltip={}
+    // 5 = minecraft:hide_additional_tooltip={} || minecraft:stored_enchantments={show_in_tooltip:false}
     // 6 = minecraft:dyed_color={show_in_tooltip:false}
     // 7 = minecraft:trim={show_in_tooltip:false}
     @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
@@ -279,7 +280,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
-            // TODO: Replace with component conversion
+            // Replace with component conversion
             if (getItem().hasItemMeta()) {
                 final ItemFlag[] values = ItemFlag.values();
                 final ItemMeta meta = getItem().getItemMeta();
@@ -329,7 +330,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return            true if the status was changed.
      */
     public boolean setUnbreakable(boolean unbreakable) {
-        // TODO: Replace with component value setter
+        // Replace with component value setter
         if (ServerInstance.Release.COMPONENT) {
             if (getItem().hasItemMeta()) {
                 final ItemMeta meta = getItem().getItemMeta();
@@ -349,7 +350,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return      true if the model was set or removed.
      */
     public boolean setCustomModelData(Integer model) {
-        // TODO: Replace with component value setter
+        // Replace with component value setter
         if (ServerInstance.Release.COMPONENT) {
             if (getItem().hasItemMeta()) {
                 final ItemMeta meta = getItem().getItemMeta();
@@ -377,7 +378,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
-            // TODO: Replace with component conversion
+            // Replace with component conversion
             if (getItem().hasItemMeta()) {
                 final ItemFlag[] values = ItemFlag.values();
                 final ItemMeta meta = getItem().getItemMeta();
@@ -401,7 +402,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public boolean setRepairCost(int cost) {
         if (ServerInstance.Release.COMPONENT) {
-            DataComponent.MapPatch.set(components, DataComponent.type("minecraft:repair_cost"), cost);
+            DataComponent.MapPatch.set(components, ComponentType.of("minecraft:repair_cost"), cost);
             return true;
         }
         return set(cost, "RepairCost");
@@ -421,7 +422,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
-            // TODO: Replace with component conversion
+            // Replace with component conversion
             if (getItem().hasItemMeta()) {
                 final ItemFlag[] values = ItemFlag.values();
                 final ItemMeta meta = getItem().getItemMeta();
@@ -502,7 +503,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return Model id, null if the item doesn't have model.
      */
     public Integer getCustomModelData() {
-        // TODO: Replace with component value getter
+        // Replace with component value getter
         if (ServerInstance.Release.COMPONENT) {
             return getItem().hasItemMeta() && getItem().getItemMeta().hasCustomModelData() ? getItem().getItemMeta().getCustomModelData() : null;
         }
@@ -539,7 +540,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public int getRepairCost() {
         if (ServerInstance.Release.COMPONENT) {
-            return (int) DataComponent.Map.get(components, DataComponent.type("minecraft:repair_cost"));
+            return (int) DataComponent.Map.get(components, ComponentType.of("minecraft:repair_cost"));
         }
         return getOptional("RepairCost").or(0);
     }
@@ -633,7 +634,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public boolean isUnbreakable() {
         if (ServerInstance.Release.COMPONENT) {
-            return DataComponent.Map.has(components, DataComponent.type("minecraft:unbreakable"));
+            return DataComponent.Map.has(components, ComponentType.of("minecraft:unbreakable"));
         }
         return getOptional("Unbreakable").asBoolean(false);
     }

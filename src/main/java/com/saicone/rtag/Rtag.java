@@ -52,20 +52,40 @@ public class Rtag extends RtagMirror {
      */
     @ApiStatus.Experimental
     public static final Object UNIT;
+    private static final Object REGISTRY;
 
     private final Map<String, RtagDeserializer<Object>> deserializers = new HashMap<>();
     private final Map<Class<?>, RtagSerializer<Object>> serializers = new HashMap<>();
 
     static {
         Object unit = new Object();
+        Object registry = null;
         if (ServerInstance.MAJOR_VERSION >= 14) {
             try {
                 unit = ((Object[]) EasyLookup.addNMSClass("util.Unit").getDeclaredMethod("values").invoke(null))[0];
             } catch (Throwable t) {
                 t.printStackTrace();
             }
+            if (ServerInstance.MAJOR_VERSION >= 20) {
+                try {
+                    registry = EasyLookup.addOBCClass("CraftRegistry").getDeclaredMethod("getMinecraftRegistry").invoke(null);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
         }
         UNIT = unit;
+        REGISTRY = registry;
+    }
+
+    /**
+     * Get a globalized registry from Bukkit registry.
+     *
+     * @return A custom registry.
+     */
+    @ApiStatus.Experimental
+    public static Object getMinecraftRegistry() {
+        return REGISTRY;
     }
 
     /**
