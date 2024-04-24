@@ -8,7 +8,7 @@ description: Editar el NBT de los items
 
 Para entender esta página primero debes ver [la guía de RtagEditor](../../usage/editor/).
 
-Para entender sobre los tags comunes en los items se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.wiki/w/Player.dat_format#Item_structure).
+Para entender sobre los tags comunes en los items se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.wiki/w/Item_format).
 
 :::
 
@@ -132,29 +132,6 @@ tag.edit(tag -> {
 
 Existen algunos métodos **fáciles de utilizar** para editar **tags conocidos del item** de una manera simple, teniendo soporte para una amplia variedad de versiones de Minecraft.
 
-**Flags**: Mejor conocidas como HideFlags, en el RtagItem las flags son manejadas por sus valores ordinales.
-
-0. Enchantments - Encantamientos
-1. AttributeModifiers - Modificadores (como el daño)
-2. Unbreakable - Estado de irrompibilidad
-3. CanDestroy - Información sobre posibilidad de romper algo
-4. CanPlaceOn - Información sobre posibilidad de colocarse en algún lugar
-5. Other information - Encantamientos en libros, efectos de poción, generación, autor del libro, tipo de explosión y efectos de fuego artificial.
-6. Dyed - Tintado del item
-7. Palette information - El trim de las armaduras
-
-```java
-RtagItem tag = ...;
-
-tag.addHideFlags(2, 4, 6);
-
-boolean bool = tag.hasHideFlags(2, 6); // devuelve true
-
-tag.removeHideFlags(6);
-
-tag.setHideFlags(4);
-```
-
 **Encantamientos**: El RtagItem tiene soporte para cualquier encantamiento, ya sea manejado por el enum de `Enchantment`, el nombre en `String` o el id como un `Number` en cualquier versión de Minecraft compatible con Rtag.
 
 ```java
@@ -219,6 +196,60 @@ En Minecraft 1.14, los strings del lore del item fueron movidos a utilizar el fo
 RtagItem tag = ...;
 
 tag.fixSerialization();
+```
+
+**Flags**: Mejor conocidas como HideFlags, en el RtagItem las flags son manejadas por sus valores ordinales.
+
+:::warning Esta es una característica obsoleta y se eliminará en una versión futura.
+
+Desde la versión 1.20.5, todos los métodos de flags se convierten en componentes de datos.
+
+:::
+
+0. Enchantments - Encantamientos
+1. AttributeModifiers - Modificadores (como el daño)
+2. Unbreakable - Estado de irrompibilidad
+3. CanDestroy - Información sobre posibilidad de romper algo
+4. CanPlaceOn - Información sobre posibilidad de colocarse en algún lugar
+5. Other information - Encantamientos en libros, efectos de poción, generación, autor del libro, tipo de explosión y efectos de fuego artificial.
+6. Dyed - Tintado del item
+7. Palette information - El trim de las armaduras
+
+```java
+RtagItem tag = ...;
+
+tag.addHideFlags(2, 4, 6);
+
+boolean bool = tag.hasHideFlags(2, 6); // devuelve true
+
+tag.removeHideFlags(6);
+
+tag.setHideFlags(4);
+```
+
+### Components
+
+:::warning Esto es una característica experimental.
+
+Cualquier uso se puede cambiar/eliminar en una versión futura; no se recomienda usarlo a menos de que implementes Rtag en tu proyecto.
+
+:::
+
+Desde Minecraft 1.20.5, el formato de los items cambió para implementar un mejor rendimiento con los tags vanilla, asímismo utilizando componentes de datos.
+
+Con RtagItem puedes editar componentes de forma sencilla como si fueran objetos normales de Java.
+
+```java
+RtagItem tag = ...;
+
+if (tag.hasComponent("minecraft:custom_model_data")) {
+    tag.removeComponent("minecraft:custom_model_data");
+} else {
+    tag.setComponent("minecraft:custom_model_data", 40);
+}
+
+final Object component = tag.getComponent("minecraft:custom_model_data");
+final Integer number = ComponentType.encodeJava("minecraft:custom_model_data", component).orElse(null);
 ```
 
 ## Cargar

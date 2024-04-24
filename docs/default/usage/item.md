@@ -8,7 +8,7 @@ description: Edit item NBT
 
 To understand this page you should see [RtagEditor guide](../../usage/editor/).
 
-For better understand about some item tags it's suggested to visit the [Minecraft wiki page](https://minecraft.wiki/w/Player.dat_format#Item_structure).
+For better understand about some item tags it's suggested to visit the [Minecraft wiki page](https://minecraft.wiki/w/Item_format).
 
 :::
 
@@ -132,29 +132,6 @@ tag.edit(tag -> {
 
 There are **easy to use** methods to edit **item known tags** in a simple way, having a wide Minecraft version support.
 
-**Flags**: Better known as HideFlags, in RtagItem the flags are handled by ordinal values.
-
-0. Enchantments
-1. AttributeModifiers
-2. Unbreakable
-3. CanDestroy
-4. CanPlaceOn
-5. Other information (stored enchants, potion effects, generation, author, explosion and fireworks)
-6. Dyed
-7. Palette information (armor trim)
-
-```java
-RtagItem tag = ...;
-
-tag.addHideFlags(2, 4, 6);
-
-boolean bool = tag.hasHideFlags(2, 6); // return true
-
-tag.removeHideFlags(6);
-
-tag.setHideFlags(4);
-```
-
 **Enchantments**: RtagItem support any enchantment handling by `Enchantment` enum, name `String` or id `Number` on any supported version.
 
 ```java
@@ -219,6 +196,60 @@ On Minecraft 1.14, the item lore strings was moved to [chat component](../../fea
 RtagItem tag = ...;
 
 tag.fixSerialization();
+```
+
+**Flags**: Better known as HideFlags, in RtagItem the flags are handled by ordinal values.
+
+:::warning This is a deprecated feature, will be deleted on a future release.
+
+On MC versions since 1.20.5 all the flag methods are converted into data components.
+
+:::
+
+0. Enchantments
+1. AttributeModifiers
+2. Unbreakable
+3. CanDestroy
+4. CanPlaceOn
+5. Other information (stored enchants, potion effects, generation, author, explosion and fireworks)
+6. Dyed
+7. Palette information (armor trim)
+
+```java
+RtagItem tag = ...;
+
+tag.addHideFlags(2, 4, 6);
+
+boolean bool = tag.hasHideFlags(2, 6); // return true
+
+tag.removeHideFlags(6);
+
+tag.setHideFlags(4);
+```
+
+### Components
+
+:::warning This is a experimental feature
+
+Any usage can be changed/removed on a future release, it's not suggested to use this unless you are shading the library in your project.
+
+:::
+
+As of Minecraft 1.20.5, item format has changed to implement a better performance with vanilla tags using data components.
+
+With RtagItem you can edit components in a simple way as normal Java objects.
+
+```java
+RtagItem tag = ...;
+
+if (tag.hasComponent("minecraft:custom_model_data")) {
+    tag.removeComponent("minecraft:custom_model_data");
+} else {
+    tag.setComponent("minecraft:custom_model_data", 40);
+}
+
+final Object component = tag.getComponent("minecraft:custom_model_data");
+final Integer number = ComponentType.encodeJava("minecraft:custom_model_data", component).orElse(null);
 ```
 
 ## Load

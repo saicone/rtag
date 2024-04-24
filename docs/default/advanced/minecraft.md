@@ -47,13 +47,11 @@ Object item = ItemObject.newItem(TagCompound.newTag("{id:\"minecraft:diamond_swo
 
 // Save into NBTTagCompound
 Object compound = ItemObject.save(item);
-// Load NBTTagCompound into item
-ItemObject.load(item, compound);
 
 // Get item tag as NBTTagCompound
-Object tag = ItemObject.getTag(item);
+Object tag = ItemObject.getCustomDataTag(item);
 // Set item tag
-ItemObject.setTag(item, tag);
+ItemObject.setCustomDataTag(item, tag);
 
 
 // Normal ItemStack or CraftItemStack

@@ -4,6 +4,10 @@ title: Explicación
 description: Explicación profunda sobre Rtag
 ---
 
+```mdx-code-block
+import DocCard from '@theme/DocCard';
+```
+
 Rtag está hecho de múltiples classes para funcionar entre sí y manejar NBT.
 
 ## Estructura
@@ -14,7 +18,17 @@ Rtag está hecho de múltiples classes para funcionar entre sí y manejar NBT.
 
 Rtag contiene varias classes para ejecutar métodos de los objetos NBT manteniendo la compatibilidad entre versiones, incluyendo la conversión del respectivo NBT a un objeto normal de Java y viceversa.
 
-Ve hacia la [sección de objetos de tag](../../advanced/tags/) para más información.
+Para más información sobre objetos de tag:
+
+```mdx-code-block
+<DocCard item={{
+  type: "link",
+  href: "/es/rtag/advanced/tags/",
+  label: "Objetos de Tag",
+  description: "Información sobre Rtag manejando NBT"
+  }}
+/>
+```
 
 ## Espejo de tags
 
@@ -42,7 +56,7 @@ String sameObject = (String) mirror.getTagValue(nbtTag);
 
 Es el propio Rtag, con esta instancia puedes editar cualquier `NBTTagCompound` y `NBTTagList` de una manera simple, puedes agregar y remover objetos utilizando una estructura de datos de árbol para las rutas.
 
-Incluyendo compatibilidad con objetos custom al registrar un (de)serializador, para más información visita la página que explica los [objetos custom](../../feature/custom-objects/).
+Incluyendo compatibilidad con objetos custom al registrar un (de)serializador.
 
 ```java
 // Crear un Rtag
@@ -64,9 +78,56 @@ String sameStr = rtag.get(compound, "my", "saved", "object");
 rtag.remove(compound, "my", "saved", "object");
 ```
 
+Para más información sobre objetos custom:
+
+```mdx-code-block
+<DocCard item={{
+  type: "link",
+  href: "/es/rtag/feature/custom-objects/",
+  label: "Objectos custom",
+  description: "Como guardar y obtener objetos custom con Rtag"
+  }}
+/>
+```
+
 ## Objetos de Minecraft
 
 Varios tipos de classes útiles para interactuar sobre objetos de CraftBukkit y objetos de Minecraft utilizando métodos con reflection.
 
+```mdx-code-block
+<DocCard item={{
+  type: "link",
+  href: "/es/rtag/advanced/minecraft/",
+  label: "Objetos de Minecraft",
+  description: "Information sobre objetos de minecraft en Rtag"
+  }}
+/>
+```
 
-Ve hacia la [sección de objetos de Minecraft](../../advanced/minecraft/) para más información.
+## Codecs de Mojang
+
+Para implementar una conversión de la data vieja, Mojang creó la librería DataFixerUpper como una forma flexible para decodificar y codificar data.
+
+```mdx-code-block
+<DocCard item={{
+  type: "link",
+  href: "/es/rtag/advanced/codec/",
+  label: "Codecs de Mojang",
+  description: "Información sobre como utilizar codecs y respectiva serialización"
+  }}
+/>
+```
+
+## Data Components
+
+Desde la versión 1.20.5 de Minecraft, el formato de los items cambió y Mojang introdujo los componentes de datos para manejar los tags vanilla de una forma más optimizada.
+
+```mdx-code-block
+<DocCard item={{
+  type: "link",
+  href: "/es/rtag/advanced/data-component/",
+  label: "Componente de Datos",
+  description: "Información sobre los objetos de componente de datos"
+  }}
+/>
+```
