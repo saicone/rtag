@@ -1,5 +1,6 @@
 package com.saicone.rtag;
 
+import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class RtagPlugin extends JavaPlugin {
@@ -23,8 +24,10 @@ public class RtagPlugin extends JavaPlugin {
         loadRtagClass("Rtag", "RtagMirror");
         // Tag
         loadRtagClass("tag.TagBase", "tag.TagList", "tag.TagCompound");
-        // Data
-        loadRtagClass("data.ComponentType", "data.DataComponent");
+        if (ServerInstance.Release.COMPONENT) {
+            // Data
+            loadRtagClass("data.ComponentType", "data.DataComponent");
+        }
         // Stream
         loadRtagClass("stream.TStream", "stream.TStreamTools");
         // Block
