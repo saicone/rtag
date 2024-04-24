@@ -115,7 +115,6 @@ public class DataComponent {
 
         public static final Object EMPTY;
 
-        private static final MethodHandle SET_MAP;
         private static final MethodHandle GET_MAP;
         private static final MethodHandle GET;
         private static final MethodHandle KEY_SET;
@@ -129,8 +128,6 @@ public class DataComponent {
             // Getters
             MethodHandle get$map = null;
             MethodHandle get$builder$map = null;
-            // Setters
-            MethodHandle set$map = null;
             // Methods
             MethodHandle method$get = null;
             MethodHandle method$keySet = null;
@@ -164,7 +161,6 @@ public class DataComponent {
 
                     // Private field
                     get$map = EasyLookup.unreflectGetter("DataComponentMap.SimpleMap", map);
-                    set$map = EasyLookup.unreflectSetter("DataComponentMap.SimpleMap", map);
                     // Private field
                     get$builder$map = EasyLookup.unreflectSetter("DataComponentMap.Builder", builder$map);
 
@@ -177,7 +173,6 @@ public class DataComponent {
                 }
             }
             EMPTY = const$empty;
-            SET_MAP = set$map;
             GET_MAP = get$map;
             BUILDER_MAP = get$builder$map;
             GET = method$get;
@@ -199,12 +194,12 @@ public class DataComponent {
                         try {
                             return BUILDER_BUILD.invoke(build);
                         } catch (Throwable t) {
-                            throw new RuntimeException("Cannot build component map from builder");
+                            throw new RuntimeException("Cannot build component map from builder", t);
                         }
                     }
                 };
             } catch (Throwable t) {
-                throw new RuntimeException("Cannot create component map builder");
+                throw new RuntimeException("Cannot create component map builder", t);
             }
         }
 
@@ -243,14 +238,6 @@ public class DataComponent {
                 return (Set<Object>) KEY_SET.invoke(map);
             } catch (Throwable t) {
                 throw new RuntimeException("Cannot get keySet from component map", t);
-            }
-        }
-
-        public static void setValue(Object map, Reference2ObjectMap<Object, Object> value) {
-            try {
-                SET_MAP.invoke(map, value);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set map field to component map", t);
             }
         }
     }
@@ -385,7 +372,7 @@ public class DataComponent {
                     get$map = EasyLookup.unreflectGetter(COMPONENT_PATCH, map);
                     set$map = EasyLookup.unreflectSetter(COMPONENT_PATCH, map);
                     // Private field
-                    get$builder$map = EasyLookup.unreflectSetter("DataComponentPatch.Builder", builder$map);
+                    get$builder$map = EasyLookup.unreflectGetter("DataComponentPatch.Builder", builder$map);
 
                     method$builder = EasyLookup.staticMethod(COMPONENT_PATCH, builder, "DataComponentPatch.Builder");
                     method$builder$build = EasyLookup.method("DataComponentPatch.Builder", builder$build, COMPONENT_PATCH);
@@ -425,12 +412,12 @@ public class DataComponent {
                         try {
                             return BUILDER_BUILD.invoke(build);
                         } catch (Throwable t) {
-                            throw new RuntimeException("Cannot build component patch from builder");
+                            throw new RuntimeException("Cannot build component patch from builder", t);
                         }
                     }
                 };
             } catch (Throwable t) {
-                throw new RuntimeException("Cannot create component patch builder");
+                throw new RuntimeException("Cannot create component patch builder", t);
             }
         }
 
@@ -486,6 +473,14 @@ public class DataComponent {
 
         public Reference2ObjectMap<Object, Object> getMap() {
             return map;
+        }
+
+        public boolean has(Object type) {
+            return map.containsKey(type);
+        }
+
+        public Object get(Object type) {
+            return map.get(type);
         }
 
         @Contract("_, _ -> this")

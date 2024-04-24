@@ -9,10 +9,10 @@ import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.EnchantmentTag;
 import com.saicone.rtag.util.ServerInstance;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.*;
@@ -26,7 +26,19 @@ import java.util.function.Function;
  */
 public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
+    private static final List<String> HIDE_FLAGS = List.of(
+            "minecraft:enchantments",
+            "minecraft:attribute_modifiers",
+            "minecraft:unbreakable",
+            "minecraft:can_break",
+            "minecraft:can_place_on",
+            "minecraft:stored_enchantments",
+            "minecraft:dyed_color",
+            "minecraft:trim"
+    );
+
     private final Object components;
+    private DataComponent.Builder patch;
 
     /**
      * Create an RtagItem using ItemStack.
@@ -132,12 +144,22 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         return components;
     }
 
+    private DataComponent.Builder getPatch() {
+        if (patch == null) {
+            patch = DataComponent.Patch.builder();
+        }
+        return patch;
+    }
+
     /**
      * Load changes into item instance.
      */
     public ItemStack load() {
         if (getTag() != null) {
             ItemObject.setCustomDataTag(getLiteralObject(), getTag());
+        }
+        if (patch != null) {
+            ItemObject.apply(getLiteralObject(), patch.build());
         }
         ItemObject.setHandle(getTypeObject(), getLiteralObject());
         return getTypeObject();
@@ -153,6 +175,12 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         if (getTag() != null && !ItemObject.hasCustomData(getLiteralObject())) {
             literal = ItemObject.copy(getLiteralObject());
             ItemObject.setCustomDataTag(literal, getTag());
+            if (patch != null) {
+                ItemObject.apply(getLiteralObject(), patch.build());
+            }
+        } else if (patch != null) {
+            literal = ItemObject.copy(getLiteralObject());
+            ItemObject.apply(getLiteralObject(), patch.build());
         } else {
             literal = getLiteralObject();
         }
@@ -166,6 +194,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @param value Object to replace current tag.
      * @return      True if tag has replaced.
      */
+    @Override
     public boolean set(Object value) {
         if (value == null) {
             this.tag = null;
@@ -181,6 +210,69 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     }
 
     /**
+     * Check if the current item or patch has he provided data component type.
+     *
+     * @param type Data component type object or ID.
+     * @return     true if the item has the component type.
+     */
+    @ApiStatus.Experimental
+    public boolean hasComponent(Object type) {
+        final Object componentType = ComponentType.of(type);
+        if (patch != null && patch.has(componentType)) {
+            return patch.get(componentType) != null;
+        }
+        return DataComponent.Map.has(components, componentType);
+    }
+
+    /**
+     * Set the provided component into patch.
+     *
+     * @param type Data component type object or ID.
+     */
+    @ApiStatus.Experimental
+    public void setComponent(Object type) {
+        getPatch().set(ComponentType.of(type), Rtag.UNIT);
+    }
+
+    /**
+     * Set the provided component value into patch.
+     *
+     * @param type  Data component type object or ID.
+     * @param value The value to parse, can be NBT, JsonElement or Java object.
+     */
+    @ApiStatus.Experimental
+    public void setComponent(Object type, Object value) {
+        getPatch().set(ComponentType.of(type), ComponentType.parse(type, value).orElseThrow(() ->
+                new RuntimeException("Cannot parse provided value into defined component type")
+        ));
+    }
+
+    /**
+     * Mark the provided component type to be removed using current patch.
+     *
+     * @param type Data component type object or ID.
+     */
+    @ApiStatus.Experimental
+    public void removeComponent(Object type) {
+        getPatch().set(ComponentType.of(type), null);
+    }
+
+    /**
+     * Get the provided component from patch or item.
+     *
+     * @param type Data component type object or ID.
+     * @return     An object represented by component type or null if not exist.
+     */
+    @ApiStatus.Experimental
+    public Object getComponent(Object type) {
+        final Object componentType = ComponentType.of(type);
+        if (patch != null && patch.has(componentType)) {
+            return patch.get(componentType);
+        }
+        return DataComponent.Map.get(components, componentType);
+    }
+
+    /**
      * Check if the current item has the provided hide flags ordinals.
      *
      * @see #addHideFlags(int...) Flag ordinals.
@@ -190,18 +282,21 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
+    @SuppressWarnings("unchecked")
     public boolean hasHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
-            // Replace with converted component value check
-            if (!getItem().hasItemMeta()) {
-                return false;
-            }
-            final ItemFlag[] values = ItemFlag.values();
             for (int ordinal : hideFlags) {
-                if (!getItem().getItemMeta().hasItemFlag(values[ordinal])) {
-                    return false;
+                if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) return false;
+                if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
+                    if (!hasComponent("minecraft:hide_additional_tooltip")) return false;
+                    continue;
                 }
+                final String name = HIDE_FLAGS.get(ordinal);
+                final Object component = DataComponent.Map.get(components, ComponentType.of(name));
+                if (component == null) return false;
+                final Map<String, Object> map = (Map<String, Object>) ComponentType.encodeJava(name, component).orElse(null);
+                if (map == null || !Boolean.FALSE.equals(map.get("show_in_tooltip"))) return false;
             }
             return true;
         }
@@ -266,32 +361,35 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @param hideFlags Flags to add.
      * @return          true if the flags was added.
      */
-    // 0 = minecraft:enchantments={show_in_tooltip:false}
-    // 1 = minecraft:attribute_modifiers={show_in_tooltip:false}
-    // 2 = minecraft:unbreakable={show_in_tooltip:false}
-    // 3 = minecraft:can_break={show_in_tooltip:false}
-    // 4 = minecraft:can_place_on={show_in_tooltip:false}
-    // 5 = minecraft:hide_additional_tooltip={} || minecraft:stored_enchantments={show_in_tooltip:false}
-    // 6 = minecraft:dyed_color={show_in_tooltip:false}
-    // 7 = minecraft:trim={show_in_tooltip:false}
     @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
+    @SuppressWarnings("unchecked")
     public boolean addHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
-            // Replace with component conversion
-            if (getItem().hasItemMeta()) {
-                final ItemFlag[] values = ItemFlag.values();
-                final ItemMeta meta = getItem().getItemMeta();
-                for (int ordinal : hideFlags) {
-                    final ItemFlag flag = values[ordinal];
-                    if (!meta.hasItemFlag(flag)) {
-                        meta.addItemFlags(flag);
+            for (int ordinal : hideFlags) {
+                if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) continue;
+                if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
+                    result = true;
+                    setComponent("minecraft:hide_additional_tooltip");
+                    continue;
+                }
+                final String name = HIDE_FLAGS.get(ordinal);
+                final Object component = DataComponent.Map.get(components, ComponentType.of(name));
+                if (component == null) {
+                    result = true;
+                    setComponent(name, Map.of("show_in_tooltip", false));
+                } else {
+                    Map<String, Object> map = (Map<String, Object>) ComponentType.encodeJava(name, component).orElse(null);
+                    if (map != null) {
+                        if (Boolean.FALSE.equals(map.get("show_in_tooltip"))) continue;
                         result = true;
+                        map = new HashMap<>(map);
+                        map.put("show_in_tooltip", false);
+                        setComponent(name, map);
                     }
                 }
-                getItem().setItemMeta(meta);
             }
             return result;
         }
@@ -330,15 +428,9 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return            true if the status was changed.
      */
     public boolean setUnbreakable(boolean unbreakable) {
-        // Replace with component value setter
         if (ServerInstance.Release.COMPONENT) {
-            if (getItem().hasItemMeta()) {
-                final ItemMeta meta = getItem().getItemMeta();
-                meta.setUnbreakable(unbreakable);
-                getItem().setItemMeta(meta);
-                return true;
-            }
-            return false;
+            setComponent("minecraft:unbreakable", Map.of());
+            return true;
         }
         return set(unbreakable, "Unbreakable");
     }
@@ -350,16 +442,13 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return      true if the model was set or removed.
      */
     public boolean setCustomModelData(Integer model) {
-        // Replace with component value setter
         if (ServerInstance.Release.COMPONENT) {
-            if (getItem().hasItemMeta()) {
-                final ItemMeta meta = getItem().getItemMeta();
-                meta.setCustomModelData(model);
-                getItem().setItemMeta(meta);
-                return true;
+            if (model == null) {
+                removeComponent("minecraft:custom_model_data");
             } else {
-                return model == null;
+                setComponent("minecraft:custom_model_data", model);
             }
+            return true;
         }
         return set(model, "CustomModelData");
     }
@@ -377,19 +466,22 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public boolean setHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
-            boolean result = false;
-            // Replace with component conversion
-            if (getItem().hasItemMeta()) {
-                final ItemFlag[] values = ItemFlag.values();
-                final ItemMeta meta = getItem().getItemMeta();
-                meta.removeItemFlags(values);
-                for (int ordinal : hideFlags) {
-                    meta.addItemFlags(values[ordinal]);
-                    result = true;
-                }
-                getItem().setItemMeta(meta);
+            boolean result = addHideFlags(hideFlags);
+            final Set<Integer> toRemove = new HashSet<>(Set.of(0, 1, 2, 3, 4, 5, 6, 7));
+            for (int ordinal : hideFlags) {
+                toRemove.remove(ordinal);
             }
-            return result;
+            if (toRemove.isEmpty()) {
+                return result;
+            } else {
+                final int[] flags = new int[toRemove.size()];
+                int index = 0;
+                for (Integer ordinal : toRemove) {
+                    flags[index] = ordinal;
+                    index++;
+                }
+                return removeHideFlags(flags) || result;
+            }
         }
         return setEnum(hideFlags, "HideFlags");
     }
@@ -418,22 +510,32 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
     @Deprecated
+    @SuppressWarnings("unchecked")
     public boolean removeHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
         if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
-            // Replace with component conversion
-            if (getItem().hasItemMeta()) {
-                final ItemFlag[] values = ItemFlag.values();
-                final ItemMeta meta = getItem().getItemMeta();
-                for (int ordinal : hideFlags) {
-                    final ItemFlag flag = values[ordinal];
-                    if (meta.hasItemFlag(flag)) {
-                        meta.removeItemFlags(flag);
-                        result = true;
+            for (int ordinal : hideFlags) {
+                if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) continue;
+                if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
+                    result = result || hasComponent("minecraft:hide_additional_tooltip");
+                    removeComponent("minecraft:hide_additional_tooltip");
+                    continue;
+                }
+                final String name = HIDE_FLAGS.get(ordinal);
+                final Object component = DataComponent.Map.get(components, ComponentType.of(name));
+                if (component == null) continue;
+                Map<String, Object> map = (Map<String, Object>) ComponentType.encodeJava(name, component).orElse(null);
+                if (map != null && Boolean.FALSE.equals(map.get("show_in_tooltip"))) {
+                    result = true;
+                    if (map.size() == 1) {
+                        removeComponent(name);
+                    } else {
+                        map = new HashMap<>(map);
+                        map.put("show_in_tooltip", true);
+                        setComponent(name, map);
                     }
                 }
-                getItem().setItemMeta(meta);
             }
             return result;
         }
@@ -503,9 +605,8 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return Model id, null if the item doesn't have model.
      */
     public Integer getCustomModelData() {
-        // Replace with component value getter
         if (ServerInstance.Release.COMPONENT) {
-            return getItem().hasItemMeta() && getItem().getItemMeta().hasCustomModelData() ? getItem().getItemMeta().getCustomModelData() : null;
+            return (Integer) ComponentType.encodeJava("minecraft:custom_model_data", getComponent("minecraft:custom_model_data")).orElse(null);
         }
         return get("CustomModelData");
     }

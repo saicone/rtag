@@ -25,7 +25,6 @@ public class ItemObject {
     private static final Class<?> CRAFT_ITEM = EasyLookup.classById("CraftItemStack");
     private static final Object CUSTOM_DATA = ComponentType.of("minecraft:custom_data");
     private static final Object ITEM_REGISTRY; // Remove in 2.0.0
-    private static final Object ITEM_CODEC;
 
     private static final Map<String, Object> tagPaths = new LinkedHashMap<>();
     private static final Map<String, Object> componentPaths = new LinkedHashMap<>();
@@ -51,7 +50,6 @@ public class ItemObject {
 
         // Constants
         Object const$item = null;
-        Object const$codec = null;
         // Constructors
         MethodHandle new$ItemStack = null;
         MethodHandle new$CustomData = null;
@@ -74,7 +72,6 @@ public class ItemObject {
         try {
             // Old method names
             String registry$item = "h";
-            String codec = "b";
             String createStack = "createStack";
             String save = "save";
             String apply = "c";
@@ -88,7 +85,6 @@ public class ItemObject {
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 registry$item = "ITEM";
-                codec = "CODEC";
                 getItem = "get";
                 setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
@@ -130,7 +126,6 @@ public class ItemObject {
                 EasyLookup.addNMSClass("core.RegistryBlocks", "DefaultedRegistry");
 
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
-                const$codec = MC_ITEM.getDeclaredField(codec).get(null);
 
                 new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
 
@@ -173,7 +168,6 @@ public class ItemObject {
             e.printStackTrace();
         }
         ITEM_REGISTRY = const$item;
-        ITEM_CODEC = const$codec;
         newItem = new$ItemStack;
         newCustomData = new$CustomData;
         newMinecraftKey = new$MinecraftKey;
@@ -289,8 +283,10 @@ public class ItemObject {
 
         // --- Not exist in old versions
         // - 24w09a
+        initPath("minecraft:creative_slot_lock", "tag", "components", "minecraft:creative_slot_lock");
         initPath("minecraft:intangible_projectile", "tag", "components", "minecraft:intangible_projectile");
         initPath("minecraft:enchantment_glint_override", "tag", "components", "minecraft:enchantment_glint_override");
+        initPath("minecraft:map_post_processing", "tag", "components", "minecraft:map_post_processing");
         // - 24w12a
         initPath("minecraft:food", "tag", "components", "minecraft:food");
         initPath("minecraft:max_stack_size", "tag", "components", "minecraft:max_stack_size");
@@ -300,6 +296,7 @@ public class ItemObject {
         initPath("minecraft:tool", "tag", "components", "minecraft:tool");
         initPath("minecraft:hide_tooltip", "tag", "components", "minecraft:hide_tooltip");
         // - 24w13a
+        initPath("minecraft:item_name", "tag", "components", "minecraft:item_name");
         initPath("minecraft:ominous_bottle_amplifier", "tag", "components", "minecraft:ominous_bottle_amplifier");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags

@@ -38,7 +38,10 @@ public class RtagPlugin extends JavaPlugin {
     private void loadRtagClass(String... names) {
         for (String name : names) {
             try {
-                Class.forName("com.saicone.rtag." + name);
+                final Class<?> clazz = Class.forName("com.saicone.rtag." + name);
+                for (Class<?> declared : clazz.getDeclaredClasses()) {
+                    Class.forName(declared.getName());
+                }
             } catch (ClassNotFoundException ignored) { }
         }
     }

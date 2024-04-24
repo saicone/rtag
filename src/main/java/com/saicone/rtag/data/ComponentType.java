@@ -2,6 +2,7 @@ package com.saicone.rtag.data;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import com.saicone.rtag.tag.TagBase;
@@ -9,6 +10,7 @@ import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -30,9 +32,16 @@ public class ComponentType {
     @ApiStatus.Experimental
     public static final DynamicOps<Object> JAVA_OPS;
 
+    // Use reflection due newer DataFixerUpper is compiled different
+    private static final MethodHandle RESULT;
+    private static final MethodHandle CODEC;
+
     static {
         DynamicOps<Object> nbtOps = null;
         DynamicOps<Object> javaOps = null;
+        // Methods
+        MethodHandle method$result = null;
+        MethodHandle method$codec = null;
         if (ServerInstance.Release.COMPONENT) {
             try {
                 // Maybe move registry handling into separated utility class
@@ -42,7 +51,7 @@ public class ComponentType {
                 // Old names
                 String registry$components = "as";
                 String registry$map = "f";
-                String resource$key = "b";
+                String resource$key = "a";
                 String holder$value = "a";
                 String codec = "b";
                 String nbtOps$instance = "a";
@@ -62,6 +71,10 @@ public class ComponentType {
                 final Method keyMethod = EasyLookup.classById("MinecraftKey").getDeclaredMethod(resource$key);
                 final Method valueMethod = EasyLookup.classById("Holder").getDeclaredMethod(holder$value);
                 final Method codecMethod = EasyLookup.classById("DataComponentType").getDeclaredMethod(codec);
+
+                method$result = EasyLookup.unreflectMethod(DataResult.class.getDeclaredMethod("result"));
+                method$codec = EasyLookup.unreflectMethod(codecMethod);
+
                 for (var entry : componentsMap.entrySet()) {
                     if (entry.getValue() == null) {
                         continue;
@@ -85,21 +98,33 @@ public class ComponentType {
         }
         NBT_OPS = nbtOps;
         JAVA_OPS = javaOps;
+        RESULT = method$result;
+        CODEC = method$codec;
     }
 
     ComponentType() {
     }
 
     public static Object of(Object type) {
-        if (type instanceof String) {
-            return of((String) type);
-        } else {
+        if (COMPONENT_TYPE.isInstance(type)) {
             return type;
         }
+        return of(String.valueOf(type));
     }
 
     public static Object of(String name) {
         return TYPES.get(key(name));
+    }
+
+    public static Codec<Object> codec(Object type) {
+        if (COMPONENT_TYPE.isInstance(type)) {
+            try {
+                return (Codec<Object>) CODEC.invoke(type);
+            } catch (Throwable t) {
+                throw new RuntimeException("Cannot get codec from component type", t);
+            }
+        }
+        return codec(String.valueOf(type));
     }
 
     public static Codec<Object> codec(String name) {
@@ -122,43 +147,66 @@ public class ComponentType {
         return TYPES.containsKey(key(name));
     }
 
-    public static Optional<Object> parse(String name, Object object) {
+    public static Optional<Object> parse(Object type, Object object) {
         if (TagBase.isTag(object)) {
-            return parseNbt(name, object);
+            return parseNbt(type, object);
         } else if (object instanceof JsonElement) {
-            return parseJson(name, (JsonElement) object);
+            return parseJson(type, (JsonElement) object);
         } else {
-            return parseJava(name, object);
+            return parseJava(type, object);
         }
     }
 
-    public static Optional<Object> parseNbt(String name, Object nbt) {
-        final Codec<Object> codec = codec(name);
-        return codec == null ? Optional.empty() : codec.parse(NBT_OPS, nbt).result();
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<Object> parse(Object type, DynamicOps<T> dynamicOps, T object) {
+        final Codec<Object> codec = codec(type);
+        if (codec == null) {
+            return Optional.empty();
+        }
+        try {
+            return (Optional<Object>) RESULT.invoke(codec.parse(dynamicOps, object));
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot parse component", t);
+        }
     }
 
-    public static Optional<Object> parseJson(String name, JsonElement json) {
-        final Codec<Object> codec = codec(name);
-        return codec == null ? Optional.empty() : codec.parse(JsonOps.INSTANCE, json).result();
+    public static Optional<Object> parseNbt(Object type, Object nbt) {
+        return parse(type, NBT_OPS, nbt);
     }
 
-    public static Optional<Object> parseJava(String name, Object object) {
-        final Codec<Object> codec = codec(name);
-        return codec == null ? Optional.empty() : codec.parse(JAVA_OPS, object).result();
+    public static Optional<Object> parseJson(Object type, JsonElement json) {
+        return parse(type, JsonOps.INSTANCE, json);
     }
 
-    public static Optional<Object> encodeNbt(String name, Object component) {
-        final Codec<Object> codec = codec(name);
-        return codec == null ? Optional.empty() : codec.encodeStart(NBT_OPS, component).result();
+    public static Optional<Object> parseJava(Object type, Object object) {
+        return parse(type, JAVA_OPS, object);
     }
 
-    public static Optional<JsonElement> encodeJson(String name, Object component) {
-        final Codec<Object> codec = codec(name);
-        return codec == null ? Optional.empty() : codec.encodeStart(JsonOps.INSTANCE, component).result();
+    @SuppressWarnings("unchecked")
+    public static <T> Optional<T> encode(Object type, DynamicOps<T> dynamicOps, Object component) {
+        if (component == null) {
+            return Optional.empty();
+        }
+        final Codec<Object> codec = codec(type);
+        if (codec == null) {
+            return Optional.empty();
+        }
+        try {
+            return (Optional<T>) RESULT.invoke(codec.encodeStart(dynamicOps, component));
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot encode component", t);
+        }
     }
 
-    public static Optional<Object> encodeJava(String name, Object component) {
-        final Codec<Object> codec = codec(name);
-        return codec == null ? Optional.empty() : codec.encodeStart(JAVA_OPS, component).result();
+    public static Optional<Object> encodeNbt(Object type, Object component) {
+        return encode(type, NBT_OPS, component);
+    }
+
+    public static Optional<JsonElement> encodeJson(Object type, Object component) {
+        return encode(type, JsonOps.INSTANCE, component);
+    }
+
+    public static Optional<Object> encodeJava(Object type, Object component) {
+        return encode(type, JAVA_OPS, component);
     }
 }
