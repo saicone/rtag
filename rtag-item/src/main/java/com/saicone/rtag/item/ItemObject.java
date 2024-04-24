@@ -23,7 +23,7 @@ public class ItemObject {
     private static final String ROOT_PATH = "==root";
     private static final Class<?> MC_ITEM = EasyLookup.classById("ItemStack");
     private static final Class<?> CRAFT_ITEM = EasyLookup.classById("CraftItemStack");
-    private static final Object CUSTOM_DATA = ComponentType.of("minecraft:custom_data");
+    private static final Object CUSTOM_DATA;
     private static final Object ITEM_REGISTRY; // Remove in 2.0.0
 
     private static final Map<String, Object> tagPaths = new LinkedHashMap<>();
@@ -49,6 +49,7 @@ public class ItemObject {
         initPaths();
 
         // Constants
+        Object const$customData = null;
         Object const$item = null;
         // Constructors
         MethodHandle new$ItemStack = null;
@@ -125,6 +126,7 @@ public class ItemObject {
             if (ServerInstance.Release.COMPONENT) {
                 EasyLookup.addNMSClass("core.RegistryBlocks", "DefaultedRegistry");
 
+                const$customData = ComponentType.of("minecraft:custom_data");
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
 
                 new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
@@ -167,6 +169,7 @@ public class ItemObject {
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        CUSTOM_DATA = const$customData;
         ITEM_REGISTRY = const$item;
         newItem = new$ItemStack;
         newCustomData = new$CustomData;
