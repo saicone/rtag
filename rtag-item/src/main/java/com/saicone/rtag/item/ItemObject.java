@@ -1,6 +1,5 @@
 package com.saicone.rtag.item;
 
-import com.mojang.serialization.Codec;
 import com.saicone.rtag.Rtag;
 import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.data.DataComponent;
@@ -155,7 +154,7 @@ public class ItemObject {
             set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
             if (ServerInstance.Release.COMPONENT) {
-                method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider", "NBTBase");
+                method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
                 method$getTag = EasyLookup.unreflectGetter("CustomData", getTag);
@@ -426,7 +425,7 @@ public class ItemObject {
         }
         try {
             if (ServerInstance.Release.COMPONENT) {
-                return save.invoke(item, Rtag.getMinecraftRegistry(), TagCompound.newTag());
+                return save.invoke(item, Rtag.getMinecraftRegistry());
             } else {
                 return save.invoke(item, TagCompound.newTag());
             }
@@ -749,7 +748,11 @@ public class ItemObject {
     public static void setCustomDataTag(Object item, Object tag) {
         if (ServerInstance.Release.COMPONENT) {
             try {
-                DataComponent.MapPatch.set(DataComponent.Holder.getComponents(item), CUSTOM_DATA, newCustomData.invoke(tag));
+                if (tag == null || TagCompound.getValue(tag).isEmpty()) {
+                    DataComponent.MapPatch.remove(DataComponent.Holder.getComponents(item), CUSTOM_DATA);
+                } else {
+                    DataComponent.MapPatch.set(DataComponent.Holder.getComponents(item), CUSTOM_DATA, newCustomData.invoke(tag));
+                }
             } catch (Throwable t) {
                 throw new RuntimeException("Cannot set custom data tag to Minecraft ItemStack", t);
             }
