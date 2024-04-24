@@ -222,7 +222,11 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @return    An item representation using readable Map as compound.
      */
     public ItemStack fromReadableMap(Map<String, Object> map) {
-        return fromMap(parseMap(map, (float) map.getOrDefault(getVersionKey(), getVersion()), false));
+        if (map.containsKey(getVersionKey())) {
+            return fromMap(parseMap(map, ((Number) map.getOrDefault(getVersionKey(), getVersion())).floatValue(), false));
+        } else {
+            return fromMap(map);
+        }
     }
 
     @SuppressWarnings("unchecked")
