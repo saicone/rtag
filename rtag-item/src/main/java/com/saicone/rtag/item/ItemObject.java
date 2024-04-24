@@ -236,10 +236,10 @@ public class ItemObject {
                 "custom_color", "CustomPotionColor",
                 "custom_effects", "custom_potion_effects"
         ));
-        initPath("minecraft:writable_book_contents", Map.of(
-                "filtered_pages", "filtered_pages",
-                "pages", "pages"
-        ));
+//        initPath("minecraft:writable_book_contents", Map.of(
+//                "filtered_pages", "filtered_pages",
+//                "pages", "pages"
+//        ));
         initPath("minecraft:written_book_contents", Map.of(
                 "filtered_pages", "filtered_pages",
                 "filtered_title", "filtered_title",
@@ -349,7 +349,11 @@ public class ItemObject {
             }
         }
         final String key = String.valueOf(tagPath[tagPath.length - 1]);
-        map.put(map.get(key) == null ? key : ROOT_PATH, appendFirst(componentPath, "components"));
+        if (map.get(key) instanceof Map) {
+            ((Map<String, Object>) map.get(key)).put(ROOT_PATH, appendFirst(componentPath, "components"));
+        } else {
+            map.put(key, appendFirst(componentPath, "components"));
+        }
     }
 
     /**
@@ -543,7 +547,7 @@ public class ItemObject {
         }
 
         Map<String, Object> map = tagPaths;
-        Object[] tagPath = null;
+        Object[] componentPath = null;
         int i;
         for (i = srcPos; i < src.length ; i++) {
             Object value = map.get(String.valueOf(src[i]));
@@ -552,25 +556,26 @@ public class ItemObject {
                 continue;
             }
             if (value instanceof Object[]) {
-                tagPath = (Object[]) value;
+                componentPath = (Object[]) value;
             } else {
-                tagPath = (Object[]) map.get(ROOT_PATH);
+                componentPath = (Object[]) map.get(ROOT_PATH);
+                i--;
             }
             break;
         }
 
-        if (tagPath == null) {
+        if (componentPath == null) {
             return src;
         }
-        if (destPos < 0 || destPos >= tagPath.length) {
+        if (destPos < 0 || destPos >= componentPath.length) {
             throw new IndexOutOfBoundsException("Destination position out of range:" + srcPos);
         }
 
         i++;
         final int srcLength = src.length - i;
-        final int destLength = tagPath.length - destPos;
+        final int destLength = componentPath.length - destPos;
         final Object[] path = new Object[srcLength + destLength];
-        System.arraycopy(tagPath, destPos, path, 0, destLength);
+        System.arraycopy(componentPath, destPos, path, 0, destLength);
         if (i < src.length) {
             System.arraycopy(src, i, path, destLength, srcLength);
         }

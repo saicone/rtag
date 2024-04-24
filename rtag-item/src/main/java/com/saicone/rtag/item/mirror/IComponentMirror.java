@@ -67,18 +67,27 @@ public class IComponentMirror implements ItemMirror {
     public void upgrade(Object compound, String id, float from, float to) {
         if (to >= 20.04f && from <= 20.03f) {
             for (Object[] path : extractPaths(compound)) {
-                Rtag.INSTANCE.move(compound, path, ItemObject.getComponentPath(path), true);
+                if (path.length < 2) continue;
+                final Object[] componentPath = ItemObject.getComponentPath(path);
+                if (componentPath.length > 1) {
+                    if (componentPath[1].equals("minecraft:custom_data")) continue;
+                    if (componentPath[1].equals("minecraft:written_book_contents") && id.equalsIgnoreCase("minecraft:writable_book")) {
+                        componentPath[1] = "writable_book_contents";
+                    }
+                }
+                Rtag.INSTANCE.move(compound, path, componentPath, true);
             }
             if (TagCompound.hasKey(compound, "tag")) {
                 Rtag.INSTANCE.move(compound, new Object[] { "tag" }, new Object[] { "components", "minecraft:custom_data" }, true);
             }
             final Object components = TagCompound.get(compound, "components");
             if (components != null) {
-                upgradeHideFlags(components, id);
                 final Map<String, Object> value = TagCompound.getValue(components);
                 for (String key : new ArrayList<>(value.keySet())) {
                     final Transformation transformation = TRANSFORMATIONS.get(key);
-                    if (transformation == null) continue;
+                    if (transformation == null) {
+                        continue;
+                    }
 
                     final Object val = value.get(key);
                     final boolean result;
@@ -94,6 +103,7 @@ public class IComponentMirror implements ItemMirror {
                         value.remove(key);
                     }
                 }
+                upgradeHideFlags(components, id);
             }
         }
     }
@@ -283,9 +293,10 @@ public class IComponentMirror implements ItemMirror {
             for (Object enchantment : value) {
                 levels.put(
                         (String) TagBase.getValue(TagCompound.get(enchantment, "id")),
-                        TagBase.newTag(Integer.parseInt(String.valueOf(TagCompound.get(enchantment, "lvl"))))
+                        Integer.parseInt(String.valueOf(TagCompound.get(enchantment, "lvl")))
                 );
             }
+            TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, levels, id, "levels");
         }
 
@@ -364,6 +375,7 @@ public class IComponentMirror implements ItemMirror {
 
         @Override
         public boolean upgradeObject(Object components, String id, Object value) {
+            TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, value, id, "rgb");
         }
 
@@ -405,6 +417,7 @@ public class IComponentMirror implements ItemMirror {
                     }
                 });
             }
+            TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, value, id, "modifiers");
         }
 
