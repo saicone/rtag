@@ -108,15 +108,26 @@ public enum EnchantmentTag {
         this(version, (short) id, aliases);
     }
 
-    @SuppressWarnings("deprecation")
     EnchantmentTag(int version, short id, String... aliases) {
         this.version = version;
         this.id = id;
         this.aliases = aliases;
+        Enchantment enchantment = parseEnchantment(name());
+        if (enchantment == null) {
+            for (String alias : aliases) {
+                enchantment = parseEnchantment(alias);
+                if (enchantment != null) break;
+            }
+        }
+        this.enchantment = enchantment;
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Enchantment parseEnchantment(String s) {
         if (ServerInstance.Release.LEGACY) {
-            this.enchantment = Enchantment.getByName(this.name());
+            return Enchantment.getByName(s);
         } else {
-            this.enchantment = Enchantment.getByKey(NamespacedKey.minecraft(this.name().toLowerCase()));
+            return Enchantment.getByKey(NamespacedKey.minecraft(s));
         }
     }
 
