@@ -16,10 +16,18 @@ public class IDisplayMirror implements ItemMirror {
 
     private final boolean convertName;
 
+    /**
+     * Constructs an IDisplayMirror with default options.
+     */
     public IDisplayMirror() {
         this(true);
     }
 
+    /**
+     * Constructs an IDisplayMirror with specified name conversion option.
+     *
+     * @param convertName true to convert names between versions.
+     */
     public IDisplayMirror(boolean convertName) {
         this.convertName = convertName;
     }

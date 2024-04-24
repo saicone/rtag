@@ -219,7 +219,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public boolean hasComponent(Object type) {
         final Object componentType = ComponentType.of(type);
         if (patch != null && patch.has(componentType)) {
-            return patch.get(componentType) != null;
+            return patch.get(componentType).isPresent();
         }
         return DataComponent.Map.has(components, componentType);
     }

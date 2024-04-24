@@ -36,6 +36,7 @@ allprojects {
         options {
             links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
             links 'https://hub.spigotmc.org/javadocs/spigot/'
+            links 'https://javadoc.io/doc/org.jetbrains/annotations/latest/'
         }
     }
 
@@ -83,6 +84,7 @@ tasks.register('allJavadoc', Javadoc) {
     options {
         links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
+        links 'https://javadoc.io/doc/org.jetbrains/annotations/latest/'
     }
     destinationDir = file(project.layout.buildDirectory.dir('docs/all-javadoc'))
 }

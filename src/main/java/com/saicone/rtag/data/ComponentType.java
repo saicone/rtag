@@ -17,8 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Class to invoke methods inside DataComponentType and handle types in a flexible way.
+ *
+ * @author Rubenicos
+ */
 @ApiStatus.Experimental
-@SuppressWarnings("javadoc")
 public class ComponentType {
 
     private static final Class<?> COMPONENT_TYPE = EasyLookup.classById("DataComponentType");
@@ -26,8 +30,14 @@ public class ComponentType {
     private static final Map<String, Object> TYPES = new HashMap<>();
     private static final Map<String, Codec<Object>> CODECS = new HashMap<>();
 
+    /**
+     * DynamicOpsNBT public instance from Minecraft code.
+     */
     @ApiStatus.Experimental
     public static final DynamicOps<Object> NBT_OPS;
+    /**
+     * JavaOps public instance from DataFixerUpper library.
+     */
     // Get by reflection due newer DataFixerUpper versions require Java 17
     @ApiStatus.Experimental
     public static final DynamicOps<Object> JAVA_OPS;
@@ -105,6 +115,13 @@ public class ComponentType {
     ComponentType() {
     }
 
+    /**
+     * Get provided DataComponentType or parse from ID.<br>
+     * This method may return a null object if the provided ID doesn't exist.
+     *
+     * @param type the type to get.
+     * @return     the same DataComponentType or a new one from cache.
+     */
     public static Object of(Object type) {
         if (COMPONENT_TYPE.isInstance(type)) {
             return type;
@@ -112,10 +129,24 @@ public class ComponentType {
         return of(String.valueOf(type));
     }
 
+    /**
+     * Parse DataComponentType from ID.
+     *
+     * @param name the type name to get.
+     * @return     a DataComponentType from cache or null if provided ID doesn't exist.
+     */
     public static Object of(String name) {
         return TYPES.get(key(name));
     }
 
+    /**
+     * Get declared codec from DataComponentType instance or ID.<br>
+     * Take in count that not all the component types provide a codec instance.
+     *
+     * @param type the data type to get codec.
+     * @return     a codec from DataComponentType or from cache by ID.
+     */
+    @SuppressWarnings("unchecked")
     public static Codec<Object> codec(Object type) {
         if (COMPONENT_TYPE.isInstance(type)) {
             try {
@@ -127,10 +158,23 @@ public class ComponentType {
         return codec(String.valueOf(type));
     }
 
+    /**
+     * Get declared codec from DataComponentType ID.<br>
+     * Take in count that not all the component types provide a codec instance.
+     *
+     * @param name the type name to get codec.
+     * @return     a codec from cache by type ID.
+     */
     public static Codec<Object> codec(String name) {
         return CODECS.get(key(name));
     }
 
+    /**
+     * Parse provided component key into namespaced format.
+     *
+     * @param name the name key to parse.
+     * @return     a namespaced key.
+     */
     public static String key(String name) {
         if (name.startsWith("minecraft:") || name.contains(":")) {
             return name;
@@ -139,14 +183,34 @@ public class ComponentType {
         }
     }
 
+    /**
+     * Check if the provided object is instance of DataComponentType.
+     *
+     * @param object the object to check.
+     * @return       true if the object is a DataComponentType.
+     */
     public static boolean isType(Object object) {
         return COMPONENT_TYPE.isInstance(object);
     }
 
+    /**
+     * Check if the provided DataComponentType ID exists.
+     *
+     * @param name the type name to check.
+     * @return     true if the component type exists.
+     */
     public static boolean exists(String name) {
         return TYPES.containsKey(key(name));
     }
 
+    /**
+     * Parse provided object into new component declared type.<br>
+     * This method allows any NBT, JsonElement and regular Java object to parse.
+     *
+     * @param type   the DataComponentType instance or ID with declared type.
+     * @param object the object to parse into component object type.
+     * @return       an optional object with the result of conversion.
+     */
     public static Optional<Object> parse(Object type, Object object) {
         if (TagBase.isTag(object)) {
             return parseNbt(type, object);
@@ -157,6 +221,15 @@ public class ComponentType {
         }
     }
 
+    /**
+     * Parse provided object by object provider into new component declared type.
+     *
+     * @param type       the DataComponentType instance or ID with declared type.
+     * @param dynamicOps the object provider to parse object.
+     * @param object     the object to parse into component object type.
+     * @return           an optional object with the result of conversion.
+     * @param <T>        the declared type.
+     */
     @SuppressWarnings("unchecked")
     public static <T> Optional<Object> parse(Object type, DynamicOps<T> dynamicOps, T object) {
         final Codec<Object> codec = codec(type);
@@ -170,18 +243,48 @@ public class ComponentType {
         }
     }
 
+    /**
+     * Parse provided tag into new component declared type.
+     *
+     * @param type the DataComponentType instance or ID with declared type.
+     * @param nbt  the nbt object to parse into component object type.
+     * @return     an optional object with the result of conversion.
+     */
     public static Optional<Object> parseNbt(Object type, Object nbt) {
         return parse(type, NBT_OPS, nbt);
     }
 
+    /**
+     * Parse provided json into new component declared type.
+     *
+     * @param type the DataComponentType instance or ID with declared type.
+     * @param json the json object to parse into component object type.
+     * @return     an optional object with the result of conversion.
+     */
     public static Optional<Object> parseJson(Object type, JsonElement json) {
         return parse(type, JsonOps.INSTANCE, json);
     }
 
+    /**
+     * Parse provided regular Java object into new component declared type.
+     *
+     * @param type   the DataComponentType instance or ID with declared type.
+     * @param object the object to parse into component object type.
+     * @return       an optional object with the result of conversion.
+     */
     public static Optional<Object> parseJava(Object type, Object object) {
         return parse(type, JAVA_OPS, object);
     }
 
+    /**
+     * Encode declared component object type into declared object from object provider type.
+     *
+     * @param type       the DataComponentType instance or ID with declared type.
+     * @param dynamicOps the object provider to create objects from type.
+     * @param component  the declared component object to encode.
+     * @return           an optional object with the result of conversion.
+     * @param <T>        the declared type.
+     */
     @SuppressWarnings("unchecked")
     public static <T> Optional<T> encode(Object type, DynamicOps<T> dynamicOps, Object component) {
         if (component == null) {
@@ -198,14 +301,35 @@ public class ComponentType {
         }
     }
 
+    /**
+     * Encode declared component object type into tag object.
+     *
+     * @param type      the DataComponentType instance or ID with declared type.
+     * @param component the declared component object to encode.
+     * @return          an optional object with the result of conversion.
+     */
     public static Optional<Object> encodeNbt(Object type, Object component) {
         return encode(type, NBT_OPS, component);
     }
 
+    /**
+     * Encode declared component object type into json object.
+     *
+     * @param type      the DataComponentType instance or ID with declared type.
+     * @param component the declared component object to encode.
+     * @return          an optional object with the result of conversion.
+     */
     public static Optional<JsonElement> encodeJson(Object type, Object component) {
         return encode(type, JsonOps.INSTANCE, component);
     }
 
+    /**
+     * Encode declared component object type into regular Java object.
+     *
+     * @param type      the DataComponentType instance or ID with declared type.
+     * @param component the declared component object to encode.
+     * @return          an optional object with the result of conversion.
+     */
     public static Optional<Object> encodeJava(Object type, Object component) {
         return encode(type, JAVA_OPS, component);
     }

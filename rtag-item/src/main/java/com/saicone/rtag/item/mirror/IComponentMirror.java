@@ -12,6 +12,12 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * IComponentMirror class to convert item
+ * components across versions.
+ *
+ * @author Rubenicos
+ */
 @ApiStatus.Experimental
 public class IComponentMirror implements ItemMirror {
 
@@ -184,36 +190,103 @@ public class IComponentMirror implements ItemMirror {
         return paths;
     }
 
+    /**
+     * Component transformation interface, to upgrade/downgrade components from/into NBT format.
+     */
     public interface Transformation {
 
+        /**
+         * Upgrade map value into new component format.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param value      Value of component as Java map.
+         * @return           true to continue with conversion or false to delete component.
+         */
         default boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
             return true;
         }
 
+        /**
+         * Upgrade list value into new component format.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param value      Value of component as Java list.
+         * @return           true to continue with conversion or false to delete component.
+         */
         default boolean upgradeList(Object components, String id, List<Object> value) {
             return true;
         }
 
+        /**
+         * Upgrade any value into new component format.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param value      Value of component as Java object.
+         * @return           true to continue with conversion or false to delete component.
+         */
         default boolean upgradeObject(Object components, String id, Object value) {
             return true;
         }
 
+        /**
+         * Downgrade map value from new component format.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param value      Value of component as Java map.
+         * @return           true to continue with conversion or false to delete component.
+         */
         default boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
             return true;
         }
 
+        /**
+         * Downgrade list value from new component format.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param value      Value of component as Java list.
+         * @return           true to continue with conversion or false to delete component.
+         */
         default boolean downgradeList(Object components, String id, List<Object> value) {
             return true;
         }
 
+        /**
+         * Downgrade any value from new component format.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param value      Value of component as Java object.
+         * @return           true to continue with conversion or false to delete component.
+         */
         default boolean downgradeObject(Object components, String id, Object value) {
             return true;
         }
 
+        /**
+         * Move map key without any special transformation.
+         *
+         * @param map     The map to edit.
+         * @param fromKey Origin key to get value from map.
+         * @param toKey   New key to set current value.
+         */
         default void move(Map<String, Object> map, String fromKey, String toKey) {
             move(map, fromKey, toKey, null);
         }
 
+        /**
+         * Move map key and apply transformation into value.
+         *
+         * @param map            The map to edit.
+         * @param fromKey        Origin key to get value from map.
+         * @param toKey          New key to set current value.
+         * @param transformation The transformation to apply into value.
+         * @return               true if value was moved or false if doesn't exist or was deleted by transformation.
+         */
         default boolean move(Map<String, Object> map, String fromKey, String toKey, Function<Object, Object> transformation) {
             Object value = map.get(fromKey);
             map.remove(fromKey);
@@ -232,6 +305,12 @@ public class IComponentMirror implements ItemMirror {
             return false;
         }
 
+        /**
+         * Set old hide flag into custom data component.
+         *
+         * @param components The component map from item.
+         * @param ordinal    Old flag ordinal value.
+         */
         default void setFlag(Object components, int ordinal) {
             int bitField = Rtag.INSTANCE.getOptional(components, "minecraft:custom_data", "HideFlags").asInt(0);
             final byte bit = (byte) (1 << ordinal);
@@ -240,9 +319,17 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Tooltip transformation, to convert any show in tooltip option into old hide flag format.
+     */
     public static class TooltipDowngrade implements Transformation {
         private final int ordinal;
 
+        /**
+         * Constructs a TooltipDowngrade with specified flag ordinal.
+         *
+         * @param ordinal The flag ordinal to apply on detect tooltip option.
+         */
         public TooltipDowngrade(int ordinal) {
             this.ordinal = ordinal;
         }
@@ -253,6 +340,12 @@ public class IComponentMirror implements ItemMirror {
             return true;
         }
 
+        /**
+         * Downgrade show in tooltip option from specified component map.
+         *
+         * @param components The component map from item.
+         * @param value      Value of component as Java map
+         */
         public void downgradeTooltip(Object components, Map<String, Object> value) {
             if (Boolean.FALSE.equals(TagBase.getValue(value.get("show_in_tooltip")))) {
                 setFlag(components, ordinal);
@@ -261,7 +354,13 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Unbreakable component transformation.
+     */
     public static class Unbreakable extends TooltipDowngrade {
+        /**
+         * Construct an Unbreakable transformation with default options.
+         */
         public Unbreakable() {
             super(2);
         }
@@ -282,7 +381,16 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Enchantments component transformation.<br>
+     * This transformation allow to convert any regular enchantment format.
+     */
     public static class Enchantments extends TooltipDowngrade {
+        /**
+         * Construct an Enchantments transformation with specified flag ordinal value
+         *
+         * @param ordinal The flag ordinal value.
+         */
         public Enchantments(int ordinal) {
             super(ordinal);
         }
@@ -319,8 +427,16 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Build component transformation.<br>
+     * This transformation allow to convert any regular build predicate format.
+     */
     public static class CanBuild extends TooltipDowngrade {
-
+        /**
+         * Construct a Build transformation with specified flag ordinal value.
+         *
+         * @param ordinal The flag ordinal value.
+         */
         public CanBuild(int ordinal) {
             super(ordinal);
         }
@@ -368,7 +484,13 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * DyedColor component transformation.
+     */
     public static class DyedColor extends TooltipDowngrade {
+        /**
+         * Construct an DyedColor transformation with default options.
+         */
         public DyedColor() {
             super(6);
         }
@@ -390,7 +512,13 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * AttributeModifiers component transformation.
+     */
     public static class AttributeModifiers extends TooltipDowngrade {
+        /**
+         * Construct an AttributeModifiers transformation with default options.
+         */
         public AttributeModifiers() {
             super(1);
         }
@@ -453,6 +581,10 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * ChargedProjectiles component transformation.<br>
+     * This transformation is just to add/remove old "Charged" boolean tag across versions.
+     */
     public static class ChargedProjectiles implements Transformation {
         @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
@@ -466,6 +598,11 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * MapDecorations component transformation.<br>
+     * This transformation save any new map decoration if it's not compatible with older server version,
+     * and bring back when it's converted into newer version.
+     */
     public static class MapDecorations implements Transformation {
         @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
@@ -555,6 +692,9 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * PotionContents component transformation.
+     */
     public static class PotionContents implements Transformation {
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
@@ -573,6 +713,10 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * BookContents component transformation.<br>
+     * This transformation allow to convert any regular book component format.
+     */
     public static class BookContents implements Transformation {
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
@@ -647,6 +791,11 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * FireworkExplosion component transformation.<br>
+     * This transformation save the new explosion shape if it's not compatible with older server version,
+     * and bring back when it's converted into newer version.
+     */
     public static class FireworkExplosion implements Transformation {
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
@@ -659,6 +808,11 @@ public class IComponentMirror implements ItemMirror {
             return true;
         }
 
+        /**
+         * Upgrade provided explosion data.
+         *
+         * @param explosion The explosion map to upgrade.
+         */
         public void upgradeExplosion(Map<String, Object> explosion) {
             move(explosion, "Type", "shape", shape -> Shape.VALUES[(int) shape].name().toLowerCase());
             move(explosion, "Colors", "colors");
@@ -676,6 +830,13 @@ public class IComponentMirror implements ItemMirror {
             return true;
         }
 
+        /**
+         * Downgrade provided explosion data.
+         *
+         * @param explosion      The explosion map to downgrade.
+         * @param continueOnFail Continue transformation on fail.
+         * @return               The explosion shape name, or null if conversion fail.
+         */
         public Object downgradeExplosion(Map<String, Object> explosion, boolean continueOnFail) {
             final Object name = explosion.get("shape");
             final boolean contains = Shape.ORDINALS.containsKey((String) TagBase.getValue(name));
@@ -707,6 +868,11 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Fireworks component transformation.<br>
+     * This transformation save any new explosion shape if it's not compatible with older server version,
+     * and bring back when it's converted into newer version.
+     */
     public static class Fireworks extends FireworkExplosion {
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
@@ -742,6 +908,9 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * BaseColor component transformation.
+     */
     public static class BaseColor implements Transformation {
         @Override
         public boolean upgradeObject(Object components, String id, Object value) {
@@ -754,6 +923,11 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * BannerPatterns component transformation.<br>
+     * This transformation save any new banner pattern if it's not compatible with older server version,
+     * and bring back when it's converted into newer version.
+     */
     public static class BannerPatterns implements Transformation {
         @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
@@ -855,6 +1029,9 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Container component transformation.
+     */
     public static class Container implements Transformation {
         @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
@@ -883,6 +1060,9 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Bees component transformation.
+     */
     public static class Bees implements Transformation {
         @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {

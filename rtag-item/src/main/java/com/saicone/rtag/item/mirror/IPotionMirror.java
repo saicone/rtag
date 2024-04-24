@@ -40,10 +40,18 @@ public class IPotionMirror implements ItemMirror {
 
     private final boolean convertDamage;
 
+    /**
+     * Constructs an IPotionMirror with default options.
+     */
     public IPotionMirror() {
         this(true);
     }
 
+    /**
+     * Constructs an IPotionMirror with specified damage conversion option.
+     *
+     * @param convertDamage true to convert old potion damage into potion effect.
+     */
     public IPotionMirror(boolean convertDamage) {
         this.convertDamage = convertDamage;
     }

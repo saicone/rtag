@@ -43,6 +43,11 @@ public class IEnchantMirror implements ItemMirror {
     private final String fromKey;
     private final String toKey;
 
+    /**
+     * Constructs an IEnchantMirror with specified server versions to create keys automatically.
+     *
+     * @param version The server version to create keys for.
+     */
     public IEnchantMirror(float version) {
         if (version < 13f) {
             // "Enchantments" -> "ench"

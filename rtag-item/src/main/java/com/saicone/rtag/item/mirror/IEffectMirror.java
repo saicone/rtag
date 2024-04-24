@@ -9,6 +9,11 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * IEffectMirror class to convert item effect format across versions.
+ *
+ * @author Rubenicos
+ */
 public class IEffectMirror implements ItemMirror {
 
     private static final Map<Integer, String> ALIASES = Map.of(
@@ -29,10 +34,18 @@ public class IEffectMirror implements ItemMirror {
     private final String fromDuration;
     private final String toDuration;
 
+    /**
+     * Constructs an IEffectMirror for current server instance version.
+     */
     public IEffectMirror() {
         this(ServerInstance.VERSION);
     }
 
+    /**
+     * Constructs an IEffectMirror with specified server version to generate map names.
+     *
+     * @param version The server version to create keys for.
+     */
     public IEffectMirror(float version) {
         if (version >= 20.02) {
             this.fromId = "EffectId";
@@ -47,6 +60,14 @@ public class IEffectMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Constructs an IEffectMirror with specified key names.
+     *
+     * @param fromId       Effect ID key to get.
+     * @param toId         Effect ID key to set.
+     * @param fromDuration Effect duration key to get.
+     * @param toDuration   Effect duration key to set.
+     */
     public IEffectMirror(String fromId, String toId, String fromDuration, String toDuration) {
         this.fromId = fromId;
         this.toId = toId;

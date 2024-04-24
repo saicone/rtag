@@ -103,6 +103,7 @@ public class IContainerMirror implements ItemMirror {
 
     /**
      * Process current item container components to convert items inside.
+     *
      * @param components ItemStack components.
      * @param from       Version specified in compound.
      * @param to         Version to convert.
