@@ -185,10 +185,10 @@ public class DataComponent {
         }
 
         @SuppressWarnings("unchecked")
-        public static Builder builder() {
+        public static Builder<Object> builder() {
             try {
                 final Object build = BUILDER.invoke();
-                return new Builder(build, (Reference2ObjectMap<Object, Object>) BUILDER_MAP.invoke(build)) {
+                return new Builder<>(build, (Reference2ObjectMap<Object, Object>) BUILDER_MAP.invoke(build)) {
                     @Override
                     public Object build() {
                         try {
@@ -392,17 +392,12 @@ public class DataComponent {
         }
 
         @SuppressWarnings("unchecked")
-        public static Builder builder() {
+        public static Builder<Optional<?>> builder() {
             try {
                 final Object build = BUILDER.invoke();
-                return new Builder(build, (Reference2ObjectMap<Object, Object>) BUILDER_MAP.invoke(build)) {
+                return new Builder<>(build, (Reference2ObjectMap<Object, Optional<?>>) BUILDER_MAP.invoke(build)) {
                     @Override
-                    public Builder set(Object type, Object value) {
-                        return super.set(type, Optional.of(value));
-                    }
-
-                    @Override
-                    public Builder remove(Object type) {
+                    public Builder<Optional<?>> remove(Object type) {
                         getMap().put(type, Optional.empty());
                         return this;
                     }
@@ -457,12 +452,12 @@ public class DataComponent {
     }
 
     @ApiStatus.Experimental
-    public static class Builder {
+    public static class Builder<V> {
 
         private final Object builder;
-        private final Reference2ObjectMap<Object, Object> map;
+        private final Reference2ObjectMap<Object, V> map;
 
-        public Builder(Object builder, Reference2ObjectMap<Object, Object> map) {
+        public Builder(Object builder, Reference2ObjectMap<Object, V> map) {
             this.builder = builder;
             this.map = map;
         }
@@ -471,7 +466,7 @@ public class DataComponent {
             return builder;
         }
 
-        public Reference2ObjectMap<Object, Object> getMap() {
+        public Reference2ObjectMap<Object, V> getMap() {
             return map;
         }
 
@@ -479,18 +474,18 @@ public class DataComponent {
             return map.containsKey(type);
         }
 
-        public Object get(Object type) {
+        public V get(Object type) {
             return map.get(type);
         }
 
         @Contract("_, _ -> this")
-        public Builder set(Object type, Object value) {
+        public Builder<V> set(Object type, V value) {
             map.put(type, value);
             return this;
         }
 
         @Contract("_ -> this")
-        public Builder remove(Object type) {
+        public Builder<V> remove(Object type) {
             map.remove(type);
             return this;
         }

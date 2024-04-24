@@ -465,11 +465,11 @@ public class ItemObject {
             }
             final Object components = TagCompound.get(compound, "components");
             if (components != null) {
-                final DataComponent.Builder builder = DataComponent.Patch.builder();
+                final DataComponent.Builder<Optional<?>> builder = DataComponent.Patch.builder();
                 for (Map.Entry<String, Object> entry : TagCompound.getValue(components).entrySet()) {
                     final Object type = ComponentType.of(entry.getKey());
                     if (type != null) {
-                        ComponentType.parseNbt(entry.getKey(), entry.getValue()).ifPresent(component -> builder.set(type, component));
+                        ComponentType.parseNbt(entry.getKey(), entry.getValue()).ifPresent(component -> builder.set(type, Optional.of(component)));
                     }
                 }
                 apply(item, builder.build());

@@ -38,7 +38,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     );
 
     private final Object components;
-    private DataComponent.Builder patch;
+    private DataComponent.Builder<Optional<?>> patch;
 
     /**
      * Create an RtagItem using ItemStack.
@@ -144,7 +144,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         return components;
     }
 
-    private DataComponent.Builder getPatch() {
+    private DataComponent.Builder<Optional<?>> getPatch() {
         if (patch == null) {
             patch = DataComponent.Patch.builder();
         }
@@ -231,7 +231,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.Experimental
     public void setComponent(Object type) {
-        getPatch().set(ComponentType.of(type), Rtag.UNIT);
+        getPatch().set(ComponentType.of(type), Optional.of(Rtag.UNIT));
     }
 
     /**
@@ -242,9 +242,10 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.Experimental
     public void setComponent(Object type, Object value) {
-        getPatch().set(ComponentType.of(type), ComponentType.parse(type, value).orElseThrow(() ->
+        final Object parsed = ComponentType.parse(type, value).orElseThrow(() ->
                 new RuntimeException("Cannot parse provided value into defined component type")
-        ));
+        );
+        getPatch().set(ComponentType.of(type), Optional.of(parsed));
     }
 
     /**
@@ -254,7 +255,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.Experimental
     public void removeComponent(Object type) {
-        getPatch().set(ComponentType.of(type), null);
+        getPatch().remove(ComponentType.of(type));
     }
 
     /**
@@ -267,7 +268,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public Object getComponent(Object type) {
         final Object componentType = ComponentType.of(type);
         if (patch != null && patch.has(componentType)) {
-            return patch.get(componentType);
+            return patch.get(componentType).orElse(null);
         }
         return DataComponent.Map.get(components, componentType);
     }
