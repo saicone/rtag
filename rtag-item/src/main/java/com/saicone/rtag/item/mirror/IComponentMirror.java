@@ -57,6 +57,7 @@ public class IComponentMirror implements ItemMirror {
         });
         TRANSFORMATIONS.put("minecraft:firework_explosion", new FireworkExplosion());
         TRANSFORMATIONS.put("minecraft:fireworks", new Fireworks());
+        TRANSFORMATIONS.put("minecraft:profile", new Profile());
         TRANSFORMATIONS.put("minecraft:base_color", new BaseColor());
         TRANSFORMATIONS.put("minecraft:banner_patterns", new BannerPatterns());
         TRANSFORMATIONS.put("minecraft:container", new Container());
@@ -903,6 +904,84 @@ public class IComponentMirror implements ItemMirror {
             }
             if (!saved.isEmpty()) {
                 Rtag.INSTANCE.set(components, saved, "minecraft:custom_data", "savedExplosions");
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Profile component transformation.<br>
+     * This transformation also fix any invalid texture name.
+     */
+    public static class Profile implements Transformation {
+        @Override
+        public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
+            move(value, "Name", "name");
+            move(value, "Id", "id");
+            move(value, "Properties", "properties");
+            // Fix blank name
+            if (!value.containsKey("name") || ((String) TagBase.getValue(value.get("name"))).isBlank()) {
+                value.put("name", TagBase.newTag("null"));
+            }
+            if (value.containsKey("properties")) {
+                final List<Object> list = new ArrayList<>();
+                final Map<String, Object> properties = TagCompound.getValue(value.get("properties"));
+                for (Map.Entry<String, Object> entry : properties.entrySet()) {
+                    boolean textures = entry.getKey().equals("textures");
+                    for (Object property : TagList.getValue(entry.getValue())) {
+                        final Map<String, Object> propertyMap = TagCompound.getValue(property);
+                        propertyMap.put("name", TagBase.newTag(entry.getKey()));
+                        if (textures) {
+                            move(propertyMap, "Value", "value");
+                            move(propertyMap, "Signature", "signature");
+                        }
+                        list.add(property);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    value.put("properties", TagList.newTag(list));
+                } else {
+                    value.remove("properties");
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+            move(value, "name", "Name");
+            move(value, "id", "Id");
+            move(value, "properties", "Properties");
+            if (value.containsKey("Properties")) {
+                final Map<String, Object> map = new HashMap<>();
+                final List<Object> properties = TagList.getValue(value.get("Properties"));
+                final Iterator<Object> iterator = properties.iterator();
+                while (iterator.hasNext()) {
+                    final Object property = iterator.next();
+                    final Map<String, Object> propertyMap = TagCompound.getValue(property);
+                    final String name = (String) TagBase.getValue(propertyMap.get("name"));
+                    propertyMap.remove("name");
+                    if (name.equals("textures")) {
+                        move(propertyMap, "value", "Value");
+                        move(propertyMap, "signature", "Signature");
+                    } else {
+                        Object list = map.get(name);
+                        if (list == null) {
+                            list = TagList.newTag();
+                            map.put(name, list);
+                        }
+                        TagList.add(list, property);
+                        iterator.remove();
+                    }
+                }
+                if (!properties.isEmpty()) {
+                    map.put("textures", value.get("Properties"));
+                }
+                if (!map.isEmpty()) {
+                    value.put("Properties", TagCompound.newTag(map));
+                } else {
+                    value.remove("Properties");
+                }
             }
             return true;
         }
