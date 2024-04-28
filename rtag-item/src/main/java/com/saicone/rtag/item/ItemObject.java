@@ -89,11 +89,11 @@ public class ItemObject {
                 getItem = "get";
                 setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
-                    createStack = "parseOptional";
+                    createStack = "parse";
                     save = "saveOptional";
-                    apply = "applyComponents";
+                    apply = "applyComponentsAndValidate";
                     copy = "copy";
-                    getTag = "getUnsafe";
+                    getTag = "tag";
                     setCount = "setCount";
                 } else {
                     createStack = "of";

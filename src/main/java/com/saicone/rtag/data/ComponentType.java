@@ -70,7 +70,7 @@ public class ComponentType {
                 if (ServerInstance.Type.MOJANG_MAPPED) {
                     registry$components = "DATA_COMPONENT_TYPE";
                     registry$map = "byLocation";
-                    resource$key = "getNamespace";
+                    resource$key = "getPath";
                     holder$value = "value";
                     codec = "codec";
                     nbtOps$instance = "INSTANCE";

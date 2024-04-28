@@ -229,7 +229,7 @@ tag.setHideFlags(4);
 
 ### Components
 
-:::warning This is a experimental feature
+:::warning This is an experimental feature
 
 Any usage can be changed/removed on a future release, it's not suggested to use this unless you are shading the library in your project.
 
