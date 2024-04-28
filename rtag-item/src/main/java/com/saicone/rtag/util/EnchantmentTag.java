@@ -1,6 +1,7 @@
 package com.saicone.rtag.util;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -124,10 +125,13 @@ public enum EnchantmentTag {
 
     @SuppressWarnings("deprecation")
     private static Enchantment parseEnchantment(String s) {
-        if (ServerInstance.Release.LEGACY) {
-            return Enchantment.getByName(s);
-        } else {
+        if (ServerInstance.VERSION >= 20.03f) {
+            // Registry exist in older versions, but since 1.20.3 there is a deprecation notice
+            return Registry.ENCHANTMENT.match(s);
+        } else if (ServerInstance.Release.FLAT) {
             return Enchantment.getByKey(NamespacedKey.minecraft(s));
+        } else {
+            return Enchantment.getByName(s);
         }
     }
 
