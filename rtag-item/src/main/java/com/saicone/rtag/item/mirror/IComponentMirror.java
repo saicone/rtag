@@ -160,7 +160,11 @@ public class IComponentMirror implements ItemMirror {
                 }
             }
             for (Object[] path : extractPaths(compound)) {
-                Rtag.INSTANCE.move(compound, path, ItemObject.getTagPath(path), true);
+                if (path.length < 2) continue;
+                final Object[] tagPath = ItemObject.getTagPath(path);
+                if (tagPath.length > 1) {
+                    Rtag.INSTANCE.move(compound, path, tagPath, true);
+                }
             }
         }
     }
