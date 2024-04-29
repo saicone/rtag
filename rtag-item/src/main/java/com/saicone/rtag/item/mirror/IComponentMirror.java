@@ -72,6 +72,11 @@ public class IComponentMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, float from, float to) {
+        final Object count = TagCompound.get(compound, "Count");
+        if (count != null) {
+            TagCompound.remove(compound, "Count");
+            TagCompound.set(compound, "count", TagBase.newTag(((Number) TagBase.getValue(count)).intValue()));
+        }
         if (to >= 20.04f && from <= 20.03f) {
             for (Object[] path : extractPaths(compound)) {
                 if (path.length < 2) continue;
@@ -138,6 +143,13 @@ public class IComponentMirror implements ItemMirror {
 
     @Override
     public void downgrade(Object compound, String id, float from, float to) {
+        final Object count = TagCompound.get(compound, "count");
+        if (count != null) {
+            TagCompound.remove(compound, "count");
+            TagCompound.set(compound, "Count", TagBase.newTag((byte) Math.min((int) TagBase.getValue(count), Byte.MAX_VALUE)));
+        } else {
+            TagCompound.set(compound, "Count", TagBase.newTag((byte) 1));
+        }
         final Object components;
         if (from >= 20.04f && to <= 20.03f && (components = TagCompound.get(compound, "components")) != null) {
             final Map<String, Object> value = TagCompound.getValue(components);
