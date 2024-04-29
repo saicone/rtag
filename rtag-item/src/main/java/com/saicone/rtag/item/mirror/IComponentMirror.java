@@ -32,6 +32,8 @@ public class IComponentMirror implements ItemMirror {
             "minecraft:dyed_color",
             "minecraft:trim"
     );
+    private static final Byte TRUE = 1;
+    private static final Byte FALSE = 0;
 
     static {
         TRANSFORMATIONS.put("minecraft:unbreakable", new Unbreakable());
@@ -72,16 +74,23 @@ public class IComponentMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, float from, float to) {
-        final Object count = TagCompound.get(compound, "Count");
-        if (count != null) {
-            TagCompound.remove(compound, "Count");
-            TagCompound.set(compound, "count", TagBase.newTag(((Number) TagBase.getValue(count)).intValue()));
-        }
-        final Object tag;
-        if (to >= 20.04f && from <= 20.03f && (tag = TagCompound.get(compound, "tag")) != null) {
+        if (to >= 20.04f && from <= 20.03f) {
+            // Rename count and convert to int
+            final Object count = TagCompound.get(compound, "Count");
+            if (count != null) {
+                TagCompound.remove(compound, "Count");
+                TagCompound.set(compound, "count", TagBase.newTag(((Number) TagBase.getValue(count)).intValue()));
+            }
+
+            // Move tag to components
+            final Object tag = TagCompound.get(compound, "tag");
+            if (tag == null) return;
+
             final Set<Object[]> paths = extractPaths(compound);
             TagCompound.remove(compound, "tag");
             TagCompound.set(compound, "components", tag);
+
+            // Move tag paths into component paths
             for (Object[] path : paths) {
                 if (path.length < 2) continue;
                 final Object[] componentPath = ItemObject.getComponentPath(path);
@@ -95,31 +104,32 @@ public class IComponentMirror implements ItemMirror {
                 }
                 Rtag.INSTANCE.move(compound, path, componentPath, true);
             }
-            final Object components = TagCompound.get(compound, "components");
-            if (components != null) {
-                final Map<String, Object> value = TagCompound.getValue(components);
-                for (String key : new ArrayList<>(value.keySet())) {
-                    final Transformation transformation = TRANSFORMATIONS.get(key);
-                    if (transformation == null) {
-                        continue;
-                    }
 
-                    final Object val = value.get(key);
-                    final boolean result;
-                    if (TagCompound.isTagCompound(val)) {
-                        result = transformation.upgradeComponent(components, key, TagCompound.getValue(val));
-                    } else if (TagList.isTagList(val)) {
-                        result = transformation.upgradeList(components, key, TagList.getValue(val));
-                    } else {
-                        result = transformation.upgradeObject(components, key, TagBase.getValue(val));
-                    }
-
-                    if (!result) {
-                        value.remove(key);
-                    }
+            // Apply components transformations into new format
+            final Map<String, Object> value = TagCompound.getValue(tag);
+            for (String key : new ArrayList<>(value.keySet())) {
+                final Transformation transformation = TRANSFORMATIONS.get(key);
+                if (transformation == null) {
+                    continue;
                 }
-                upgradeHideFlags(components, id);
+
+                final Object val = value.get(key);
+                final boolean result;
+                if (TagCompound.isTagCompound(val)) {
+                    result = transformation.upgradeComponent(tag, key, TagCompound.getValue(val));
+                } else if (TagList.isTagList(val)) {
+                    result = transformation.upgradeList(tag, key, TagList.getValue(val));
+                } else {
+                    result = transformation.upgradeObject(tag, key, TagBase.getValue(val));
+                }
+
+                if (!result) {
+                    value.remove(key);
+                }
             }
+
+            // Convert hide flags into components
+            upgradeHideFlags(tag, id);
         }
     }
 
@@ -149,17 +159,24 @@ public class IComponentMirror implements ItemMirror {
 
     @Override
     public void downgrade(Object compound, String id, float from, float to) {
-        final Object count = TagCompound.get(compound, "count");
-        if (count != null) {
-            TagCompound.remove(compound, "count");
-            TagCompound.set(compound, "Count", TagBase.newTag((byte) Math.min((int) TagBase.getValue(count), Byte.MAX_VALUE)));
-        } else {
-            TagCompound.set(compound, "Count", TagBase.newTag((byte) 1));
-        }
-        final Object components;
-        if (from >= 20.04f && to <= 20.03f && (components = TagCompound.get(compound, "components")) != null) {
+        if (from >= 20.04f && to <= 20.03f) {
+            // Rename count and convert to byte
+            final Object count = TagCompound.get(compound, "count");
+            if (count != null) {
+                TagCompound.remove(compound, "count");
+                TagCompound.set(compound, "Count", TagBase.newTag((byte) Math.min((int) TagBase.getValue(count), Byte.MAX_VALUE)));
+            } else {
+                TagCompound.set(compound, "Count", TagBase.newTag((byte) 1));
+            }
+
+            // Move components to tag
+            final Object components = TagCompound.get(compound, "components");
+            if (components == null) return;
+
             TagCompound.remove(compound, "components");
             TagCompound.set(compound, "tag", components);
+
+            // Apply components transformations into old format (also generate hide flags)
             final Map<String, Object> value = TagCompound.getValue(components);
             for (String key : new ArrayList<>(value.keySet())) {
                 final Transformation transformation = TRANSFORMATIONS.get(key);
@@ -179,6 +196,8 @@ public class IComponentMirror implements ItemMirror {
                     value.remove(key);
                 }
             }
+
+            // Move component paths into tag paths
             for (Object[] path : extractPaths(compound)) {
                 if (path.length < 2) continue;
                 final Object[] tagPath = ItemObject.getTagPath(path);
@@ -372,7 +391,7 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java map
          */
         public void downgradeTooltip(Object components, Map<String, Object> value) {
-            if (Boolean.FALSE.equals(TagBase.getValue(value.get("show_in_tooltip")))) {
+            if (FALSE.equals(TagBase.getValue(value.get("show_in_tooltip")))) {
                 setFlag(components, ordinal);
             }
             value.remove("show_in_tooltip");
@@ -392,7 +411,7 @@ public class IComponentMirror implements ItemMirror {
 
         @Override
         public boolean upgradeObject(Object components, String id, Object value) {
-            if (Boolean.TRUE.equals(value)) {
+            if (TRUE.equals(value)) {
                 return Rtag.INSTANCE.set(components, Map.of("show_in_tooltip", true), id);
             } else {
                 return false;
