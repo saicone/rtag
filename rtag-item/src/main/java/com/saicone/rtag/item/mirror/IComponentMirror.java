@@ -77,20 +77,23 @@ public class IComponentMirror implements ItemMirror {
             TagCompound.remove(compound, "Count");
             TagCompound.set(compound, "count", TagBase.newTag(((Number) TagBase.getValue(count)).intValue()));
         }
-        if (to >= 20.04f && from <= 20.03f) {
-            for (Object[] path : extractPaths(compound)) {
+        final Object tag;
+        if (to >= 20.04f && from <= 20.03f && (tag = TagCompound.get(compound, "tag")) != null) {
+            final Set<Object[]> paths = extractPaths(compound);
+            TagCompound.remove(compound, "tag");
+            TagCompound.set(compound, "components", tag);
+            for (Object[] path : paths) {
                 if (path.length < 2) continue;
                 final Object[] componentPath = ItemObject.getComponentPath(path);
                 if (componentPath.length > 1) {
-                    if (componentPath[1].equals("minecraft:custom_data")) continue;
                     if (componentPath[1].equals("minecraft:written_book_contents") && id.equalsIgnoreCase("minecraft:writable_book")) {
                         componentPath[1] = "writable_book_contents";
                     }
                 }
+                if (path[0].equals("tag")) {
+                    path[0] = "components";
+                }
                 Rtag.INSTANCE.move(compound, path, componentPath, true);
-            }
-            if (TagCompound.hasKey(compound, "tag")) {
-                Rtag.INSTANCE.move(compound, new Object[] { "tag" }, new Object[] { "components", "minecraft:custom_data" }, true);
             }
             final Object components = TagCompound.get(compound, "components");
             if (components != null) {
@@ -129,6 +132,9 @@ public class IComponentMirror implements ItemMirror {
         final OptionalType optional = Rtag.INSTANCE.getOptional(components, "minecraft:custom_data", "HideFlags");
         if (optional.isEmpty()) return;
         Rtag.INSTANCE.set(components, null, "minecraft:custom_data", "HideFlags");
+        if (TagCompound.getValue(TagCompound.get(components, "minecraft:custom_data")).isEmpty()) {
+            TagCompound.remove(components, "minecraft:custom_data");
+        }
         final Set<Integer> flags = optional.asOrdinalSet(8);
         for (Integer flag : flags) {
             if (flag == 5) {
@@ -152,6 +158,8 @@ public class IComponentMirror implements ItemMirror {
         }
         final Object components;
         if (from >= 20.04f && to <= 20.03f && (components = TagCompound.get(compound, "components")) != null) {
+            TagCompound.remove(compound, "components");
+            TagCompound.set(compound, "tag", components);
             final Map<String, Object> value = TagCompound.getValue(components);
             for (String key : new ArrayList<>(value.keySet())) {
                 final Transformation transformation = TRANSFORMATIONS.get(key);

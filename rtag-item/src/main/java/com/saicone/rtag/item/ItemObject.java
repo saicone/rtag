@@ -275,13 +275,12 @@ public class ItemObject {
                 "explosions", "Explosions",
                 "flight_duration", "Flight"
         ));
-        if (ServerInstance.Release.LEGACY) {
-            initPath("minecraft:damage", "Damage");
-            initPath("minecraft:enchantments", "tag", "ench");
-        } else {
-            initPath("minecraft:damage", "tag", "Damage");
-            initPath("minecraft:enchantments", "tag", "Enchantments");
-        }
+        // -- Legacy
+        //initPath("minecraft:damage", "Damage");
+        //initPath("minecraft:enchantments", "tag", "ench");
+
+        initPath("minecraft:damage", "tag", "Damage");
+        initPath("minecraft:enchantments", "tag", "Enchantments");
         initPath("minecraft:custom_data", "tag");
 
         // --- Not exist in old versions
