@@ -418,7 +418,7 @@ public class IComponentMirror implements ItemMirror {
             for (Object enchantment : value) {
                 levels.put(
                         (String) TagBase.getValue(TagCompound.get(enchantment, "id")),
-                        Integer.parseInt(String.valueOf(TagCompound.get(enchantment, "lvl")))
+                        ((Number) TagBase.getValue(TagCompound.get(enchantment, "lvl"))).intValue()
                 );
             }
             TagCompound.remove(components, id);
