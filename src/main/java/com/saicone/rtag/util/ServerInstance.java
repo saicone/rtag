@@ -99,18 +99,14 @@ public class ServerInstance {
             }
             FULL_VERSION = Integer.parseInt(String.join("", split));
 
-            DATA_VERSION = dataVersion(FULL_VERSION);
+            if (MAJOR_VERSION >= 13) {
+                DATA_VERSION = getDataVersion(serverPackage);
+            } else {
+                DATA_VERSION = dataVersion(FULL_VERSION);
+            }
         } else {
             // CraftBukkit without relocation detected, let's get data version first (only for +1.13 servers)
-            int data = Integer.MAX_VALUE;
-            try {
-                final Class<?> magicNumbersClass = Class.forName(serverPackage + ".util.CraftMagicNumbers");
-                final Object craftMagicNumbers = magicNumbersClass.getDeclaredField("INSTANCE").get(null);
-                data = (int) magicNumbersClass.getDeclaredMethod("getDataVersion").invoke(craftMagicNumbers);
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-            DATA_VERSION = data;
+            DATA_VERSION = getDataVersion(serverPackage);
 
             // Get all version values using data version
             PACKAGE_VERSION = version(DATA_VERSION);
@@ -125,6 +121,17 @@ public class ServerInstance {
     }
 
     ServerInstance() {
+    }
+
+    private static int getDataVersion(String serverPackage) {
+        try {
+            final Class<?> magicNumbersClass = Class.forName(serverPackage + ".util.CraftMagicNumbers");
+            final Object craftMagicNumbers = magicNumbersClass.getDeclaredField("INSTANCE").get(null);
+            return (int) magicNumbersClass.getDeclaredMethod("getDataVersion").invoke(craftMagicNumbers);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return Integer.MAX_VALUE;
+        }
     }
 
     /**
