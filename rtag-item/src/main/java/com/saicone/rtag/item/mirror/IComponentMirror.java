@@ -953,9 +953,6 @@ public class IComponentMirror implements ItemMirror {
     public static class Profile implements Transformation {
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
-            move(value, "Name", "name");
-            move(value, "Id", "id");
-            move(value, "Properties", "properties");
             // Fix blank name
             if (!value.containsKey("name") || ((String) TagBase.getValue(value.get("name"))).isBlank()) {
                 value.put("name", TagBase.newTag("null"));
@@ -986,12 +983,9 @@ public class IComponentMirror implements ItemMirror {
 
         @Override
         public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
-            move(value, "name", "Name");
-            move(value, "id", "Id");
-            move(value, "properties", "Properties");
-            if (value.containsKey("Properties")) {
+            if (value.containsKey("properties")) {
                 final Map<String, Object> map = new HashMap<>();
-                final List<Object> properties = TagList.getValue(value.get("Properties"));
+                final List<Object> properties = TagList.getValue(value.get("properties"));
                 final Iterator<Object> iterator = properties.iterator();
                 while (iterator.hasNext()) {
                     final Object property = iterator.next();
@@ -1012,12 +1006,12 @@ public class IComponentMirror implements ItemMirror {
                     }
                 }
                 if (!properties.isEmpty()) {
-                    map.put("textures", value.get("Properties"));
+                    map.put("textures", value.get("properties"));
                 }
                 if (!map.isEmpty()) {
-                    value.put("Properties", TagCompound.newTag(map));
+                    value.put("properties", TagCompound.newTag(map));
                 } else {
-                    value.remove("Properties");
+                    value.remove("properties");
                 }
             }
             return true;

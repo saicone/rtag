@@ -213,7 +213,11 @@ public class ItemObject {
         initPath("minecraft:entity_data", "tag", "EntityTag");
         initPath("minecraft:instrument", "tag", "instrument");
         initPath("minecraft:recipes", "tag", "Recipes");
-        initPath("minecraft:profile", "tag", "SkullOwner");
+        initPath("minecraft:profile", new Object[] { "tag", "SkullOwner" }, Map.of(
+                "name", "Name",
+                "id", "Id",
+                "properties", "Properties"
+        ));
         initPath("minecraft:note_block_sound", "tag", "BlockEntityTag", "note_block_sound");
         initPath("minecraft:base_color", "tag", "BlockEntityTag", "Base");
         initPath("minecraft:banner_patterns", "tag", "BlockEntityTag", "Patterns");
