@@ -111,7 +111,7 @@ public class ItemObject {
                         save = "b";
                         setTag = "c";
                         if (ServerInstance.Release.COMPONENT) {
-                            getTag = "e";
+                            getTag = ServerInstance.DATA_VERSION >= 3839 ? "f" : "e";
                         } else if (ServerInstance.MAJOR_VERSION >= 20) {
                             getTag = "v";
                         } else if (ServerInstance.MAJOR_VERSION >= 19) {
