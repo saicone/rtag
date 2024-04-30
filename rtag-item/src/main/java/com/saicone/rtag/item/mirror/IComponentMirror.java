@@ -821,7 +821,7 @@ public class IComponentMirror implements ItemMirror {
     public static class FireworkExplosion implements Transformation {
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
-            upgradeExplosion(value);
+            upgradeExplosion(value, false);
             Object saved = Rtag.INSTANCE.getExact(components, "minecraft:custom_data", "savedExplosion");
             if (saved != null) {
                 Rtag.INSTANCE.set(components, null, "minecraft:custom_data", "savedExplosion");
@@ -834,18 +834,26 @@ public class IComponentMirror implements ItemMirror {
          * Upgrade provided explosion data.
          *
          * @param explosion The explosion map to upgrade.
+         * @param move      true to move explosion keys to newer format.
          */
-        public void upgradeExplosion(Map<String, Object> explosion) {
-            move(explosion, "Type", "shape", shape -> Shape.VALUES[(int) shape].name().toLowerCase());
-            move(explosion, "Colors", "colors");
-            move(explosion, "FadeColors", "fade_colors");
-            move(explosion, "Trail", "has_trail");
-            move(explosion, "Flicker", "has_twinkle");
+        public void upgradeExplosion(Map<String, Object> explosion, boolean move) {
+            if (move) {
+                move(explosion, "Type", "shape", shape -> Shape.VALUES[(int) shape].name().toLowerCase());
+                move(explosion, "Colors", "colors");
+                move(explosion, "FadeColors", "fade_colors");
+                move(explosion, "Trail", "has_trail");
+                move(explosion, "Flicker", "has_twinkle");
+            } else {
+                final Object shape = TagBase.getValue(explosion.get("shape"));
+                if (shape != null) {
+                    explosion.put("shape", TagBase.newTag(Shape.VALUES[(int) shape].name().toLowerCase()));
+                }
+            }
         }
 
         @Override
         public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
-            final Object saved = downgradeExplosion(value, true);
+            final Object saved = downgradeExplosion(value, true, false);
             if (saved != null) {
                 Rtag.INSTANCE.set(components, saved, "minecraft:custom_data", "savedExplosion");
             }
@@ -857,17 +865,25 @@ public class IComponentMirror implements ItemMirror {
          *
          * @param explosion      The explosion map to downgrade.
          * @param continueOnFail Continue transformation on fail.
+         * @param move           true to move explosion keys to newer format.
          * @return               The explosion shape name, or null if conversion fail.
          */
-        public Object downgradeExplosion(Map<String, Object> explosion, boolean continueOnFail) {
+        public Object downgradeExplosion(Map<String, Object> explosion, boolean continueOnFail, boolean move) {
             final Object name = explosion.get("shape");
             final boolean contains = Shape.ORDINALS.containsKey((String) TagBase.getValue(name));
             if (contains || continueOnFail) {
-                move(explosion, "shape", "Type", shape -> contains ? Shape.ORDINALS.get((String) shape) : (byte) 0);
-                move(explosion, "colors", "Colors");
-                move(explosion, "fade_colors", "FadeColors");
-                move(explosion, "has_trail", "Trail");
-                move(explosion, "has_twinkle", "Flicker");
+                if (move) {
+                    move(explosion, "shape", "Type", shape -> contains ? Shape.ORDINALS.get((String) shape) : (byte) 0);
+                    move(explosion, "colors", "Colors");
+                    move(explosion, "fade_colors", "FadeColors");
+                    move(explosion, "has_trail", "Trail");
+                    move(explosion, "has_twinkle", "Flicker");
+                } else {
+                    final Object shape = TagBase.getValue(explosion.get("shape"));
+                    if (shape != null) {
+                        explosion.put("shape", TagBase.newTag(contains ? Shape.ORDINALS.get((String) shape) : (byte) 0));
+                    }
+                }
             }
             return contains ? null : name;
         }
@@ -900,7 +916,7 @@ public class IComponentMirror implements ItemMirror {
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
             final List<Object> explosions = TagList.getValue(value.get("explosions"));
             for (Object explosion : explosions) {
-                upgradeExplosion(TagCompound.getValue(explosion));
+                upgradeExplosion(TagCompound.getValue(explosion), true);
             }
             Object saved = Rtag.INSTANCE.getExact(components, "minecraft:custom_data", "savedExplosions");
             if (saved != null) {
@@ -917,7 +933,7 @@ public class IComponentMirror implements ItemMirror {
             final Iterator<Object> iterator = explosions.iterator();
             while (iterator.hasNext()) {
                 final Object explosion = iterator.next();
-                final Object result = downgradeExplosion(TagCompound.getValue(explosion), false);
+                final Object result = downgradeExplosion(TagCompound.getValue(explosion), false, true);
                 if (result != null) {
                     saved.add(explosion);
                     iterator.remove();
