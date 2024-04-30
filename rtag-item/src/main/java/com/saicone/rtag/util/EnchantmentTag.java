@@ -132,7 +132,7 @@ public enum EnchantmentTag {
             // Registry exist in older versions, but since 1.20.3 there is a deprecation notice
             return Registry.ENCHANTMENT.match(s);
         } else if (ServerInstance.Release.FLAT) {
-            return Enchantment.getByKey(NamespacedKey.minecraft(s));
+            return Enchantment.getByKey(NamespacedKey.minecraft(s.toLowerCase()));
         } else {
             return Enchantment.getByName(s);
         }
