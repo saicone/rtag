@@ -64,10 +64,12 @@ public class IPotionMirror implements ItemMirror {
     @Override
     public void upgrade(Object compound, String id, Object components, float from, float to) {
         if (from <= 20.01f && POTION_ITEMS.contains(id)) {
-            final Map<String, Object> map = TagCompound.getValue(components);
-            if (map.containsKey("CustomPotionEffects")) {
-                final Object customPotionEffects = map.remove("CustomPotionEffects");
-                map.put("custom_potion_effects", customPotionEffects);
+            if (to >= 20.02f) {
+                final Map<String, Object> map = TagCompound.getValue(components);
+                if (map.containsKey("CustomPotionEffects")) {
+                    final Object customPotionEffects = map.remove("CustomPotionEffects");
+                    map.put("custom_potion_effects", customPotionEffects);
+                }
             }
             upgrade(compound, id, from, to);
         }
@@ -96,11 +98,16 @@ public class IPotionMirror implements ItemMirror {
     public void downgrade(Object compound, String id, Object components, float from, float to) {
         if (to <= 20.01f && POTION_ITEMS.contains(id)) {
             final Map<String, Object> map = TagCompound.getValue(components);
-            if (map.containsKey("custom_potion_effects")) {
-                final Object customPotionEffects = map.remove("custom_potion_effects");
-                map.put("CustomPotionEffects", customPotionEffects);
+            if (from >= 20.02f) {
+                if (map.containsKey("custom_potion_effects")) {
+                    final Object customPotionEffects = map.remove("custom_potion_effects");
+                    map.put("CustomPotionEffects", customPotionEffects);
+                }
             }
             if (from >= 9f && to < 9f && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
+                if (id.equals("minecraft:splash_potion")) {
+                    TagCompound.set(compound, "id", POTION);
+                }
                 String potion = (String) TagBase.getValue(map.get("Potion"));
                 if (potion == null || potion.equals("empty") || potion.equals("water")) return;
 

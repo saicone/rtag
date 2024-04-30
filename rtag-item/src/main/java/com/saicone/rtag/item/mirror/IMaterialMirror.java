@@ -64,7 +64,7 @@ public class IMaterialMirror implements ItemMirror {
     @Override
     public void downgrade(Object compound, String id, float from, float to) {
         // Compatibility with IPotionMirror
-        if (from >= 9f && to < 9f && id.equals("minecraft:potion")) {
+        if (from >= 9f && to < 9f && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
             return;
         }
         resolveMaterial(compound, id, getDamage(compound, null, from), null, from, to);
@@ -73,7 +73,7 @@ public class IMaterialMirror implements ItemMirror {
     @Override
     public void downgrade(Object compound, String id, Object components, float from, float to) {
         // Compatibility with IPotionMirror
-        if (from >= 9f && to < 9f && id.equals("minecraft:potion")) {
+        if (from >= 9f && to < 9f && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
             return;
         }
         resolveSaved(compound, id, getDamage(compound, components, from), components, from, to);

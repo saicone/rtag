@@ -82,14 +82,14 @@ public class IEffectMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, Object components, float from, float to) {
-        if (from <= 20.01f && id.equals("minecraft:suspicious_stew")) {
+        if (from <= 20.01f && to >= 20.02f && id.equals("minecraft:suspicious_stew")) {
             processEffects(components, "Effects", "effects", true);
         }
     }
 
     @Override
     public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (to <= 20.01f && id.equals("minecraft:suspicious_stew")) {
+        if (to <= 20.01f && from >= 20.02f && id.equals("minecraft:suspicious_stew")) {
             processEffects(components, "effects", "Effects", false);
         }
     }

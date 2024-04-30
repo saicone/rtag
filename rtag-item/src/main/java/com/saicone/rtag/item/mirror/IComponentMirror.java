@@ -45,7 +45,6 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:attribute_modifiers", new AttributeModifiers());
         TRANSFORMATIONS.put("minecraft:charged_projectiles", new ChargedProjectiles());
         TRANSFORMATIONS.put("minecraft:map_decorations", new MapDecorations());
-        TRANSFORMATIONS.put("minecraft:potion_contents", new PotionContents());
         TRANSFORMATIONS.put("minecraft:writable_book_contents", new BookContents());
         TRANSFORMATIONS.put("minecraft:written_book_contents", new BookContents());
         TRANSFORMATIONS.put("minecraft:trim", new TooltipDowngrade(7));
@@ -733,27 +732,6 @@ public class IComponentMirror implements ItemMirror {
                     ORDINALS.put(value.name().toLowerCase(), (byte) value.ordinal());
                 }
             }
-        }
-    }
-
-    /**
-     * PotionContents component transformation.
-     */
-    public static class PotionContents implements Transformation {
-        @Override
-        public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
-            move(value, "Potion", "potion");
-            move(value, "CustomPotionColor", "custom_color");
-            move(value, "custom_potion_effects", "custom_effects");
-            return true;
-        }
-
-        @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
-            move(value, "potion", "Potion");
-            move(value, "custom_color", "CustomPotionColor");
-            move(value, "custom_effects", "custom_potion_effects");
-            return true;
         }
     }
 
