@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Base64;
 import java.util.UUID;
@@ -49,6 +50,7 @@ public class SkullTexture {
 
     private static final MethodHandle getProfile;
     private static final MethodHandle setProfile;
+    private static final MethodHandle getValue;
 
     private static final Cache<String, String> TEXTURE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.HOURS).build();
 
@@ -60,6 +62,7 @@ public class SkullTexture {
         }
         MethodHandle get$profile = null;
         MethodHandle set$profile = null;
+        MethodHandle get$value = null;
         try {
             EasyLookup.addOBCClass("entity.CraftPlayer");
             EasyLookup.addOBCClass("inventory.CraftMetaSkull");
@@ -72,11 +75,22 @@ public class SkullTexture {
             } else {
                 set$profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
             }
+
+            String value = "value";
+            for (Method method : Property.class.getDeclaredMethods()) {
+                if (method.getName().equals("getValue")) {
+                    // Old name found
+                    value = "getValue";
+                    break;
+                }
+            }
+            get$value = EasyLookup.method(Property.class, value, String.class);
         } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
         }
         getProfile = get$profile;
         setProfile = set$profile;
+        getValue = get$value;
     }
 
     SkullTexture() {
@@ -182,7 +196,11 @@ public class SkullTexture {
                 GameProfile profile = ((GameProfile) getProfile.invoke(player));
                 for (Property texture : profile.getProperties().get("textures")) {
                     if (texture != null) {
-                        return texture.getValue();
+                        try {
+                            return (String) getValue.invoke(texture);
+                        } catch (Throwable t) {
+                            throw new RuntimeException("Cannot get texture value from Property object");
+                        }
                     }
                 }
             } catch (Throwable t) {
