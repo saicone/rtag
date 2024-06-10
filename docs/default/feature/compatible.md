@@ -10,7 +10,11 @@ There are some compatible APIs that Rtag can interact with.
 
 The `PersistentDataContainer` API was introduced in Bukkit 1.14 to save custom tags at different objects like items, entities and tile entities, making NBT tag editor easier for most developers, basically the same utility as Rtag but limited to custom tags, only with [compatible objects](../../intro/#compatible-objects) and plugin instance usage, so you need to understand NBT tags to make something functional.
 
-With Rtag it's possible to edit objects from `PersistentDataContainer` because are saved in the path `PublicBukkitValues -> <plugin>:<key>`.
+With Rtag it's possible to edit objects from `PersistentDataContainer` because are saved in tag paths:
+
+* Items and tile entities: `PublicBukkitValues -> <plugin>:<key>`.
+* Entities: `BukkitValues -> <plugin>:<key>`.
+* Chunks: `ChunkBukkitValues -> <plugin>:<key>`.
 
 ### Example
 
@@ -19,17 +23,24 @@ For example, if a plugin named "CoolPlugin" save a `String` value into "asd" key
 ```java
 // Using item
 RtagItem tag = new RtagItem(item);
-// Using entity
-RtagEntity tag = new RtagEntity(entity);
 // Using block
 RtagBlock tag = new RtagBlock(block);
 
 // Get
 String value = tag.get("PublicBukkitValues", "coolplugin:asd");
-
 // Set
 String str = "Hello";
 tag.get(str, "PublicBukkitValues", "coolplugin:asd");
+
+
+// Using entity
+RtagEntity tag = new RtagEntity(entity);
+
+// Get
+String value = tag.get("BukkitValues", "coolplugin:asd");
+// Set
+String str = "Hello";
+tag.get(str, "BukkitValues", "coolplugin:asd");
 ```
 
 ## NBT Injector from Item-NBT-API
