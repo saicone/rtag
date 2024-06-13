@@ -74,6 +74,8 @@ public class ComponentType {
                     holder$value = "value";
                     codec = "codec";
                     nbtOps$instance = "INSTANCE";
+                } else if (ServerInstance.MAJOR_VERSION >= 21) {
+                    registry$components = "aq";
                 }
 
                 final Object componentsRegistry = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$components).get(null);

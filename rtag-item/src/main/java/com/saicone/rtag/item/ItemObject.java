@@ -73,6 +73,7 @@ public class ItemObject {
         try {
             // Old method names
             String registry$item = "h";
+            String key$parse = "a";
             String createStack = "createStack";
             String save = "save";
             String apply = "c";
@@ -86,6 +87,7 @@ public class ItemObject {
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 registry$item = "ITEM";
+                key$parse = "parse";
                 getItem = "get";
                 setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
@@ -102,6 +104,9 @@ public class ItemObject {
             } else if (ServerInstance.MAJOR_VERSION >= 11) {
                 if (ServerInstance.Release.COMPONENT) {
                     apply = "a";
+                    if (ServerInstance.MAJOR_VERSION >= 21) {
+                        registry$item = "g";
+                    }
                 } else {
                     apply = "load";
                 }
@@ -129,7 +134,11 @@ public class ItemObject {
                 const$customData = ComponentType.of("minecraft:custom_data");
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
 
-                new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
+                if (ServerInstance.MAJOR_VERSION >= 21) {
+                    new$MinecraftKey = EasyLookup.staticMethod("MinecraftKey", key$parse, "MinecraftKey", String.class);
+                } else {
+                    new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
+                }
 
                 method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
                 method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
@@ -304,6 +313,8 @@ public class ItemObject {
         // - 24w13a
         initPath("minecraft:item_name", "tag", "components", "minecraft:item_name");
         initPath("minecraft:ominous_bottle_amplifier", "tag", "components", "minecraft:ominous_bottle_amplifier");
+        // - 24w21a
+        initPath("minecraft:jukebox_playable", "tag", "components", "minecraft:jukebox_playable");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }

@@ -83,26 +83,26 @@ public class BlockObject {
             method$getHandle = EasyLookup.method("CraftWorld", "getHandle", "WorldServer");
 
             if (ServerInstance.Release.COMPONENT) {
-                method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound", "HolderLookup.Provider");
-                method$getWorld = EasyLookup.method("TileEntity", getWorld, "World");
+                method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound", "HolderLookup.Provider");
+                method$getWorld = EasyLookup.method(TILE_ENTITY, getWorld, "World");
                 method$getRegistry = EasyLookup.method("IWorldReader", getRegistry, "IRegistryCustom");
             } else if (ServerInstance.MAJOR_VERSION >= 18) {
-                method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound");
+                method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound");
             } else {
                 // (1.8) void method
-                method$save = EasyLookup.method("TileEntity", save, "NBTTagCompound", "NBTTagCompound");
+                method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound", "NBTTagCompound");
             }
 
             if (ServerInstance.Release.COMPONENT) {
-                method$load = EasyLookup.method("TileEntity", load, void.class, "NBTTagCompound", "HolderLookup.Provider");
+                method$load = EasyLookup.method(TILE_ENTITY, load, void.class, "NBTTagCompound", "HolderLookup.Provider");
             } else if (ServerInstance.MAJOR_VERSION == 16) {
-                method$getPosition = EasyLookup.method("TileEntity", "getPosition", "BlockPosition");
-                method$getWorld = EasyLookup.method("TileEntity", "getWorld", "World");
+                method$getPosition = EasyLookup.method(TILE_ENTITY, "getPosition", "BlockPosition");
+                method$getWorld = EasyLookup.method(TILE_ENTITY, "getWorld", "World");
                 method$getType = EasyLookup.method("World", "getType", "IBlockData", "BlockPosition");
 
-                method$load = EasyLookup.method("TileEntity", load, void.class, "IBlockData", "NBTTagCompound");
+                method$load = EasyLookup.method(TILE_ENTITY, load, void.class, "IBlockData", "NBTTagCompound");
             } else {
-                method$load = EasyLookup.method("TileEntity", load, void.class, "NBTTagCompound");
+                method$load = EasyLookup.method(TILE_ENTITY, load, void.class, "NBTTagCompound");
             }
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();

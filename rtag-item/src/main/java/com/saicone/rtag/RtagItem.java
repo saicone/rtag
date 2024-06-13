@@ -411,7 +411,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         }
         // Since 1.20.5, items cannot hold invalid enchantments
         if (ServerInstance.Release.COMPONENT) {
-            getItem().addEnchantment(tag.getEnchantment(), level);
+            getItem().addUnsafeEnchantment(tag.getEnchantment(), level);
             return true;
         }
         final Object enchantment = getEnchantment(tag);
