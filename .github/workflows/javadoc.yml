@@ -21,7 +21,7 @@ jobs:
         shell: bash
 
       - name: Deploy javadoc to Github repository
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           folder: build/docs/all-javadoc
           ssh-key: ${{ secrets.DEPLOY_KEY }}
