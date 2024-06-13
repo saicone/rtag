@@ -3,8 +3,16 @@ name: Java CI
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'rtag-*/**'
+      - 'src/**'
+      - 'build.gradle'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'rtag-*/**'
+      - 'src/**'
+      - 'build.gradle'
 
 jobs:
   build:
