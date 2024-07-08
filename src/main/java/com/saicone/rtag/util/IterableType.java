@@ -3,6 +3,7 @@ package com.saicone.rtag.util;
 import java.lang.reflect.Array;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -51,12 +52,15 @@ public abstract class IterableType<T> implements Iterable<T> {
     @Override
     @SuppressWarnings("unchecked")
     public Iterator<T> iterator() {
-        Objects.requireNonNull(getIterable(), "Cannot iterate over empty object");
-        if (getIterable() instanceof Iterable) {
-            return ((Iterable<T>) getIterable()).iterator();
-        } else if (getIterable() instanceof Object[]) {
+        final Object value = getIterable();
+        Objects.requireNonNull(value, "Cannot iterate over empty object");
+        if (value instanceof Iterable) {
+            return ((Iterable<T>) value).iterator();
+        } else if (value instanceof Map) {
+            return (java.util.Iterator<T>) ((Map<?, ?>) value).entrySet().iterator();
+        } else if (value instanceof Object[]) {
             return new ObjectArrayIterator();
-        } else if (getIterable().getClass().isArray()) {
+        } else if (value.getClass().isArray()) {
             return new PrimitiveArrayIterator();
         } else {
             return new SingleObjectIterator();
@@ -139,9 +143,12 @@ public abstract class IterableType<T> implements Iterable<T> {
                 throw new ConcurrentModificationException();
             }
             Object newArray = Array.newInstance(getIterable().getClass().getComponentType(), size - 1);
+            boolean decrement = false;
             for (int i = 0; i < size; i++) {
                 if (i != index) {
-                    Array.set(newArray, i, get(i));
+                    Array.set(newArray, decrement ? i - 1 : i, get(i));
+                } else {
+                    decrement = true;
                 }
             }
             setIterable((T) newArray);
@@ -170,9 +177,8 @@ public abstract class IterableType<T> implements Iterable<T> {
 
         @Override
         public void remove() {
-            if (consumed || getIterable() == null) {
+            if (consumed) {
                 setIterable(null);
-                consumed = false;
             } else {
                 throw new IllegalStateException();
             }
