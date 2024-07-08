@@ -58,10 +58,13 @@ public class EasyLookup {
             addNMSClass("nbt.NBTTagString", "StringTag");
             if (ServerInstance.MAJOR_VERSION >= 13) {
                 addNMSClass("nbt.DynamicOpsNBT", "NbtOps");
-            }
-            if (ServerInstance.VERSION >= 19.02f) {
-                EasyLookup.addNMSClass("core.registries.BuiltInRegistries");
-                EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation");
+                if (ServerInstance.VERSION >= 18.02f) {
+                    EasyLookup.addNMSClass("resources.RegistryOps");
+                    if (ServerInstance.VERSION >= 19.02f) {
+                        EasyLookup.addNMSClass("core.registries.BuiltInRegistries");
+                        EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation");
+                    }
+                }
             }
             if (ServerInstance.Release.COMPONENT) {
                 addNMSClass("core.component.DataComponentHolder");
@@ -86,7 +89,7 @@ public class EasyLookup {
                 addNMSClass("world.level.IWorldReader", "LevelReader");
                 if (ServerInstance.Release.COMPONENT) {
                     addNMSClassId("HolderLookup.Provider", "core.HolderLookup$a", "core.HolderLookup$Provider");
-                } else if (ServerInstance.VERSION >= 19.02) {
+                } else if (ServerInstance.VERSION >= 19.02f) {
                     addNMSClassId("HolderLookup.Provider", "core.HolderLookup$b", "core.HolderLookup$Provider");
                 }
             }

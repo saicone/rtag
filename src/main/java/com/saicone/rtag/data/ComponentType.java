@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import com.saicone.rtag.Rtag;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
@@ -26,6 +27,8 @@ import java.util.Optional;
 public class ComponentType {
 
     private static final Class<?> COMPONENT_TYPE = EasyLookup.classById("DataComponentType");
+    private static final Class<?> REGISTRY_OPS_TYPE = EasyLookup.classById("RegistryOps");
+    private static final Class<?> ERROR_TYPE;
 
     private static final Map<String, Object> TYPES = new HashMap<>();
     private static final Map<String, Codec<Object>> CODECS = new HashMap<>();
@@ -42,14 +45,24 @@ public class ComponentType {
     @ApiStatus.Experimental
     public static final DynamicOps<Object> JAVA_OPS;
 
+    private static final MethodHandle CREATE;
     // Use reflection due newer DataFixerUpper is compiled different
     private static final MethodHandle RESULT;
     private static final MethodHandle CODEC;
 
+    // Maybe move this into other place
+    private static DynamicOps<Object> REGISTRY_NBT_OPS;
+    private static DynamicOps<JsonElement> REGISTRY_JSON_OPS;
+    private static DynamicOps<Object> REGISTRY_JAVA_OPS;
+
     static {
+        // Classes
+        Class<?> class$Error = null;
+        // Instances
         DynamicOps<Object> nbtOps = null;
         DynamicOps<Object> javaOps = null;
         // Methods
+        MethodHandle method$create = null;
         MethodHandle method$result = null;
         MethodHandle method$codec = null;
         if (ServerInstance.Release.COMPONENT) {
@@ -59,24 +72,33 @@ public class ComponentType {
                 EasyLookup.addNMSClass("core.Holder");
 
                 // Old names
+                String nbtOps$instance = "a";
+                String registry$create = "a";
                 String registry$components = "as";
                 String registry$map = "f";
                 String resource$key = "a";
                 String holder$value = "a";
                 String codec = "b";
-                String nbtOps$instance = "a";
 
                 // New names
                 if (ServerInstance.Type.MOJANG_MAPPED) {
+                    nbtOps$instance = "INSTANCE";
+                    registry$create = "create";
                     registry$components = "DATA_COMPONENT_TYPE";
                     registry$map = "byLocation";
                     resource$key = "getPath";
                     holder$value = "value";
                     codec = "codec";
-                    nbtOps$instance = "INSTANCE";
                 } else if (ServerInstance.MAJOR_VERSION >= 21) {
                     registry$components = "aq";
                 }
+
+                class$Error = EasyLookup.addClass("com.mojang.serialization.DataResult$Error");
+
+                nbtOps = (DynamicOps<Object>) EasyLookup.classById("DynamicOpsNBT").getDeclaredField(nbtOps$instance).get(null);
+                javaOps = (DynamicOps<Object>) Class.forName("com.mojang.serialization.JavaOps").getDeclaredField("INSTANCE").get(null);
+
+                method$create = EasyLookup.staticMethod("RegistryOps", registry$create, "RegistryOps", DynamicOps.class, "HolderLookup.Provider");
 
                 final Object componentsRegistry = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$components).get(null);
                 final Map<Object, Object> componentsMap = (Map<Object, Object>) EasyLookup.field("RegistryMaterials", registry$map).get(componentsRegistry);
@@ -101,17 +123,24 @@ public class ComponentType {
                         CODECS.put(key(key), valueCodec);
                     }
                 }
-
-                nbtOps = (DynamicOps<Object>) EasyLookup.classById("DynamicOpsNBT").getDeclaredField(nbtOps$instance).get(null);
-                javaOps = (DynamicOps<Object>) Class.forName("com.mojang.serialization.JavaOps").getDeclaredField("INSTANCE").get(null);
             } catch (NoSuchFieldException | ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
                 e.printStackTrace();
             }
         }
+        ERROR_TYPE = class$Error;
         NBT_OPS = nbtOps;
         JAVA_OPS = javaOps;
+        CREATE = method$create;
         RESULT = method$result;
         CODEC = method$codec;
+
+        try {
+            REGISTRY_NBT_OPS = (DynamicOps<Object>) CREATE.invoke(NBT_OPS, Rtag.getMinecraftRegistry());
+            REGISTRY_JSON_OPS = (DynamicOps<JsonElement>) CREATE.invoke(JsonOps.INSTANCE, Rtag.getMinecraftRegistry());
+            REGISTRY_JAVA_OPS = (DynamicOps<Object>) CREATE.invoke(JAVA_OPS, Rtag.getMinecraftRegistry());
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     ComponentType() {
@@ -239,9 +268,19 @@ public class ComponentType {
             return Optional.empty();
         }
         try {
-            return (Optional<Object>) RESULT.invoke(codec.parse(dynamicOps, object));
+            final DynamicOps<T> registryOps;
+            if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
+                registryOps = dynamicOps;
+            } else {
+                registryOps = (DynamicOps<T>) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
+            }
+            final DataResult<Object> dataResult = codec.parse(registryOps, object);
+            if (ERROR_TYPE.isInstance(dataResult)) {
+                throw new IllegalArgumentException("" + dataResult);
+            }
+            return (Optional<Object>) RESULT.invoke(dataResult);
         } catch (Throwable t) {
-            throw new RuntimeException("Cannot parse component", t);
+            throw new RuntimeException("Cannot parse component" + (type instanceof String ? " '" + type + "'" : ""), t);
         }
     }
 
@@ -253,7 +292,7 @@ public class ComponentType {
      * @return     an optional object with the result of conversion.
      */
     public static Optional<Object> parseNbt(Object type, Object nbt) {
-        return parse(type, NBT_OPS, nbt);
+        return parse(type, REGISTRY_NBT_OPS, nbt);
     }
 
     /**
@@ -264,7 +303,7 @@ public class ComponentType {
      * @return     an optional object with the result of conversion.
      */
     public static Optional<Object> parseJson(Object type, JsonElement json) {
-        return parse(type, JsonOps.INSTANCE, json);
+        return parse(type, REGISTRY_JSON_OPS, json);
     }
 
     /**
@@ -275,7 +314,7 @@ public class ComponentType {
      * @return       an optional object with the result of conversion.
      */
     public static Optional<Object> parseJava(Object type, Object object) {
-        return parse(type, JAVA_OPS, object);
+        return parse(type, REGISTRY_JAVA_OPS, object);
     }
 
     /**
@@ -297,9 +336,19 @@ public class ComponentType {
             return Optional.empty();
         }
         try {
-            return (Optional<T>) RESULT.invoke(codec.encodeStart(dynamicOps, component));
+            final DynamicOps<T> registryOps;
+            if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
+                registryOps = dynamicOps;
+            } else {
+                registryOps = (DynamicOps<T>) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
+            }
+            final DataResult<T> dataResult = codec.encodeStart(registryOps, component);
+            if (ERROR_TYPE.isInstance(dataResult)) {
+                throw new IllegalArgumentException("" + dataResult);
+            }
+            return (Optional<T>) RESULT.invoke(dataResult);
         } catch (Throwable t) {
-            throw new RuntimeException("Cannot encode component", t);
+            throw new RuntimeException("Cannot encode component" + (type instanceof String ? " '" + type + "'" : ""), t);
         }
     }
 
@@ -311,7 +360,7 @@ public class ComponentType {
      * @return          an optional object with the result of conversion.
      */
     public static Optional<Object> encodeNbt(Object type, Object component) {
-        return encode(type, NBT_OPS, component);
+        return encode(type, REGISTRY_NBT_OPS, component);
     }
 
     /**
@@ -322,7 +371,7 @@ public class ComponentType {
      * @return          an optional object with the result of conversion.
      */
     public static Optional<JsonElement> encodeJson(Object type, Object component) {
-        return encode(type, JsonOps.INSTANCE, component);
+        return encode(type, REGISTRY_JSON_OPS, component);
     }
 
     /**
@@ -333,6 +382,6 @@ public class ComponentType {
      * @return          an optional object with the result of conversion.
      */
     public static Optional<Object> encodeJava(Object type, Object component) {
-        return encode(type, JAVA_OPS, component);
+        return encode(type, REGISTRY_JAVA_OPS, component);
     }
 }
