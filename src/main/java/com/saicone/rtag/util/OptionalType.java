@@ -618,6 +618,46 @@ public class OptionalType extends IterableType<Object> {
     }
 
     /**
+     * Get the actual value as Enum type.<br>
+     * This method only works if the actual value is a String or Number.
+     *
+     * @param enumType      Enum type class.
+     * @return              A Enum value.
+     * @param <E>           Enum required type.
+     */
+    public <E extends Enum<E>> E asEnum(Class<E> enumType) {
+        return asEnum(enumType, null);
+    }
+
+    /**
+     * Get the actual value as Enum type.<br>
+     * This method only works if the actual value is a String or Number.
+     *
+     * @param enumType      Enum type class.
+     * @param def           Default UUID value.
+     * @return              A Enum value or default value.
+     * @param <E>           Enum required type.
+     */
+    public <E extends Enum<E>> E asEnum(Class<E> enumType, E def) {
+        return by(enumType, (object) -> {
+            if (object instanceof String) {
+                final String name = String.valueOf(object);
+                for (E value : enumType.getEnumConstants()) {
+                    if (value.name().equalsIgnoreCase(name)) {
+                        return value;
+                    }
+                }
+                return null;
+            } else if (object instanceof Number) {
+                final int ordinal = ((Number) object).intValue();
+                return enumType.getEnumConstants()[ordinal];
+            } else {
+                return null;
+            }
+        }, def);
+    }
+
+    /**
      * Get the actual value as Enum type Set.<br>
      * This method only works if the actual value is a bitField.
      *
