@@ -33,7 +33,6 @@ public class ItemObject {
     private static final MethodHandle newCustomData;
     private static final MethodHandle newMinecraftKey; // Remove in 2.0.0
     private static final MethodHandle getHandleField;
-    private static final MethodHandle setHandleField;
     private static final MethodHandle save;
     private static final MethodHandle apply;
     private static final MethodHandle copy;
@@ -43,6 +42,7 @@ public class ItemObject {
     private static final MethodHandle setTag; // < 1.20.5
     private static final MethodHandle setCount; // >= 1.20.5
     private static final MethodHandle asBukkitCopy;
+    private static final MethodHandle asCraftMirror;
     private static final MethodHandle asNMSCopy;
 
     static {
@@ -57,8 +57,6 @@ public class ItemObject {
         MethodHandle new$MinecraftKey = null;
         // Getters
         MethodHandle get$handle = null;
-        // Setters
-        MethodHandle set$handle = null;
         // Methods
         MethodHandle method$save = null;
         MethodHandle method$apply = null;
@@ -70,6 +68,7 @@ public class ItemObject {
         MethodHandle method$setCount = null;
         MethodHandle method$asBukkitCopy = null;
         MethodHandle method$asNMSCopy = null;
+        MethodHandle method$asCraftMirror = null;
         try {
             // Old method names
             String registry$item = "h";
@@ -157,7 +156,6 @@ public class ItemObject {
 
             // Private field
             get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
-            set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
             if (ServerInstance.Release.COMPONENT) {
                 method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
@@ -173,6 +171,7 @@ public class ItemObject {
                 method$setTag = EasyLookup.method(MC_ITEM, setTag, void.class, "NBTTagCompound");
             }
             method$asBukkitCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asBukkitCopy", ItemStack.class, "ItemStack");
+            method$asCraftMirror = EasyLookup.staticMethod(CRAFT_ITEM, "asCraftMirror", CRAFT_ITEM, "ItemStack");
             // Bukkit -> Minecraft
             method$asNMSCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asNMSCopy", "ItemStack", ItemStack.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
@@ -184,7 +183,6 @@ public class ItemObject {
         newCustomData = new$CustomData;
         newMinecraftKey = new$MinecraftKey;
         getHandleField = get$handle;
-        setHandleField = set$handle;
         save = method$save;
         apply = method$apply;
         copy = method$copy;
@@ -194,6 +192,7 @@ public class ItemObject {
         setTag = method$setTag;
         setCount = method$setCount;
         asBukkitCopy = method$asBukkitCopy;
+        asCraftMirror = method$asCraftMirror;
         asNMSCopy = method$asNMSCopy;
     }
 
@@ -733,22 +732,14 @@ public class ItemObject {
      */
     @SuppressWarnings("deprecation")
     public static void setHandle(ItemStack item, Object handle) {
-        if (CRAFT_ITEM.isInstance(item)) {
-            try {
-                setHandleField.invoke(item, handle);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set handle into CraftItemStack", t);
+        final ItemStack mirror = asCraftMirror(handle);
+        if (mirror != null) {
+            item.setType(mirror.getType());
+            item.setAmount(mirror.getAmount());
+            if (ServerInstance.Release.LEGACY) {
+                item.setDurability(mirror.getDurability());
             }
-        } else {
-            ItemStack copy = asBukkitCopy(handle);
-            if (copy != null) {
-                item.setType(copy.getType());
-                item.setAmount(copy.getAmount());
-                if (ServerInstance.Release.LEGACY) {
-                    item.setDurability(copy.getDurability());
-                }
-                item.setItemMeta(copy.getItemMeta());
-            }
+            item.setItemMeta(mirror.getItemMeta());
         }
     }
 
@@ -804,6 +795,21 @@ public class ItemObject {
     public static ItemStack asBukkitCopy(Object item) {
         try {
             return (ItemStack) asBukkitCopy.invoke(item);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot convert Minecraft ItemStack into Bukkit ItemStack", t);
+        }
+    }
+
+    /**
+     * Convert Minecraft ItemStack into Bukkit ItemStack.<br>
+     * Take in count this method creates a new CraftItemStack instance.
+     *
+     * @param item Minecraft ItemStack.
+     * @return     Bukkit ItemStack.
+     */
+    public static ItemStack asCraftMirror(Object item) {
+        try {
+            return (ItemStack) asCraftMirror.invoke(item);
         } catch (Throwable t) {
             throw new RuntimeException("Cannot convert Minecraft ItemStack into Bukkit ItemStack", t);
         }
