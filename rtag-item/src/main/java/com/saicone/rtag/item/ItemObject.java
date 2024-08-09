@@ -33,6 +33,7 @@ public class ItemObject {
     private static final MethodHandle newCustomData;
     private static final MethodHandle newMinecraftKey; // Remove in 2.0.0
     private static final MethodHandle getHandleField;
+    private static final MethodHandle setHandleField;
     private static final MethodHandle save;
     private static final MethodHandle apply;
     private static final MethodHandle copy;
@@ -57,6 +58,8 @@ public class ItemObject {
         MethodHandle new$MinecraftKey = null;
         // Getters
         MethodHandle get$handle = null;
+        // Setters
+        MethodHandle set$handle = null;
         // Methods
         MethodHandle method$save = null;
         MethodHandle method$apply = null;
@@ -156,6 +159,7 @@ public class ItemObject {
 
             // Private field
             get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
+            set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
             if (ServerInstance.Release.COMPONENT) {
                 method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
@@ -183,6 +187,7 @@ public class ItemObject {
         newCustomData = new$CustomData;
         newMinecraftKey = new$MinecraftKey;
         getHandleField = get$handle;
+        setHandleField = set$handle;
         save = method$save;
         apply = method$apply;
         copy = method$copy;
@@ -496,6 +501,25 @@ public class ItemObject {
     }
 
     /**
+     * Load Minecraft ItemStack handle into Bukkit ItemStack.
+     *
+     * @param item   Bukkit ItemStack.
+     * @param handle Minecraft ItemStack.
+     */
+    @SuppressWarnings("deprecation")
+    public static void loadHandle(ItemStack item, Object handle) {
+        final ItemStack mirror = asCraftMirror(handle);
+        if (mirror != null) {
+            item.setType(mirror.getType());
+            item.setAmount(mirror.getAmount());
+            if (ServerInstance.Release.LEGACY) {
+                item.setDurability(mirror.getDurability());
+            }
+            item.setItemMeta(mirror.getItemMeta());
+        }
+    }
+
+    /**
      * Apply data component into ItemStack.<br>
      * On versions before 1.20.5 this method load NBTTagCompound into item.
      *
@@ -732,14 +756,22 @@ public class ItemObject {
      */
     @SuppressWarnings("deprecation")
     public static void setHandle(ItemStack item, Object handle) {
-        final ItemStack mirror = asCraftMirror(handle);
-        if (mirror != null) {
-            item.setType(mirror.getType());
-            item.setAmount(mirror.getAmount());
-            if (ServerInstance.Release.LEGACY) {
-                item.setDurability(mirror.getDurability());
+        if (CRAFT_ITEM.isInstance(item)) {
+            try {
+                setHandleField.invoke(item, handle);
+            } catch (Throwable t) {
+                throw new RuntimeException("Cannot set handle into CraftItemStack", t);
             }
-            item.setItemMeta(mirror.getItemMeta());
+        } else {
+            ItemStack copy = asBukkitCopy(handle);
+            if (copy != null) {
+                item.setType(copy.getType());
+                item.setAmount(copy.getAmount());
+                if (ServerInstance.Release.LEGACY) {
+                    item.setDurability(copy.getDurability());
+                }
+                item.setItemMeta(copy.getItemMeta());
+            }
         }
     }
 

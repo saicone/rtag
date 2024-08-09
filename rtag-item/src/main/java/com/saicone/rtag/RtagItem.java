@@ -161,7 +161,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         if (patch != null) {
             ItemObject.apply(getLiteralObject(), patch.build());
         }
-        ItemObject.setHandle(getTypeObject(), getLiteralObject());
+        ItemObject.loadHandle(getTypeObject(), getLiteralObject());
         return getTypeObject();
     }
 
