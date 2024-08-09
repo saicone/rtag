@@ -22,3 +22,9 @@ dependencies {
 }
 
 jar.dependsOn (shadowJar)
+
+shadowJar {
+    manifest {
+        attributes 'Paperweight-Mappings-Namespace': 'mojang'
+    }
+}
