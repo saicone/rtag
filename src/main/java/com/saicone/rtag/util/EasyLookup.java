@@ -25,11 +25,11 @@ public class EasyLookup {
     private static final Map<String, Class<?>> classes = new HashMap<>();
     private static final MethodPredicate[] methodPredicates = new MethodPredicate[] {
             (m, type, params) -> m.getReturnType().equals(type) && Arrays.equals(m.getParameterTypes(), params),
-            (m, type, params) -> m.getReturnType().isAssignableFrom(type) && Arrays.equals(m.getParameterTypes(), params),
-            (m, type, params) -> m.getReturnType().equals(type) && isAssignableFrom(m.getParameterTypes(), params),
-            (m, type, params) -> m.getReturnType().isAssignableFrom(type) && isAssignableFrom(m.getParameterTypes(), params),
+            (m, type, params) -> type.isAssignableFrom(m.getReturnType()) && Arrays.equals(m.getParameterTypes(), params),
+            (m, type, params) -> m.getReturnType().equals(type) && isAssignableFrom(params, m.getParameterTypes()),
+            (m, type, params) -> type.isAssignableFrom(m.getReturnType()) && isAssignableFrom(params, m.getParameterTypes()),
             (m, type, params) -> Arrays.equals(m.getParameterTypes(), params),
-            (m, type, params) -> isAssignableFrom(m.getParameterTypes(), params)
+            (m, type, params) -> isAssignableFrom(params, m.getParameterTypes())
     };
     private static final String nmsPackage = ServerInstance.Release.UNIVERSAL ? "net.minecraft." : ("net.minecraft.server." + ServerInstance.PACKAGE_VERSION + ".");
     private static final String obcPackage = Bukkit.getServer().getClass().getPackage().getName() + ".";
@@ -436,7 +436,7 @@ public class EasyLookup {
         } catch (NoSuchMethodException ignored) { }
         // Find using constructor parameters
         for (Constructor<?> constructor : from.getDeclaredConstructors()) {
-            if (isAssignableFrom(constructor.getParameterTypes(), parameterTypes)) {
+            if (isAssignableFrom(parameterTypes, constructor.getParameterTypes())) {
                 return constructor;
             }
         }
@@ -589,16 +589,16 @@ public class EasyLookup {
     /**
      * Same has {@link Class#isAssignableFrom(Class)} but using class arrays.
      *
-     * @param methodParameters The Class array that check.
-     * @param parameterTypes   The Class array to be checked.
-     * @return                 true if parameterTypes can be assigned to methodParameters in respecting order.
+     * @param baseTypes    The Class array that check.
+     * @param checkedTypes The Class array to be checked.
+     * @return             true if checkedTypes can be assigned to baseTypes in respecting order.
      */
-    public static boolean isAssignableFrom(Class<?>[] methodParameters, Class<?>[] parameterTypes) {
-        if (methodParameters.length != parameterTypes.length) {
+    public static boolean isAssignableFrom(Class<?>[] baseTypes, Class<?>[] checkedTypes) {
+        if (baseTypes.length != checkedTypes.length) {
             return false;
         }
-        for (int i = 0; i < methodParameters.length; i++) {
-            if (!methodParameters[i].isAssignableFrom(parameterTypes[i])) {
+        for (int i = 0; i < baseTypes.length; i++) {
+            if (!baseTypes[i].isAssignableFrom(checkedTypes[i])) {
                 return false;
             }
         }
@@ -806,7 +806,7 @@ public class EasyLookup {
         // Find with name
         try {
             final Field field = from.getDeclaredField(name);
-            if (Modifier.isStatic(field.getModifiers()) == isStatic && field.getType().isAssignableFrom(type)) {
+            if (Modifier.isStatic(field.getModifiers()) == isStatic && type.isAssignableFrom(field.getType())) {
                 return field;
             }
         } catch (NoSuchFieldException ignored) { }
@@ -817,7 +817,7 @@ public class EasyLookup {
             }
         }
         for (Field field : from.getDeclaredFields()) {
-            if (field.getType().isAssignableFrom(type)) {
+            if (type.isAssignableFrom(field.getType())) {
                 return field;
             }
         }
