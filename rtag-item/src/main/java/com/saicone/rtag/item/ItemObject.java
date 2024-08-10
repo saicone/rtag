@@ -29,11 +29,10 @@ public class ItemObject {
     private static final Map<String, Object> tagPaths = new LinkedHashMap<>();
     private static final Map<String, Object> componentPaths = new LinkedHashMap<>();
 
+    // Minecraft-related
     private static final MethodHandle newItem;
     private static final MethodHandle newCustomData;
     private static final MethodHandle newMinecraftKey; // Remove in 2.0.0
-    private static final MethodHandle getHandleField;
-    private static final MethodHandle setHandleField;
     private static final MethodHandle save;
     private static final MethodHandle apply;
     private static final MethodHandle copy;
@@ -42,6 +41,12 @@ public class ItemObject {
     private static final MethodHandle setItem; // Remove in 2.0.0
     private static final MethodHandle setTag; // < 1.20.5
     private static final MethodHandle setCount; // >= 1.20.5
+
+    // CraftBukkit-related
+    private static final MethodHandle newCraftItem;
+    private static final MethodHandle getHandleField;
+    private static final MethodHandle setHandleField;
+    private static final MethodHandle getCraftStack;
     private static final MethodHandle asBukkitCopy;
     private static final MethodHandle asCraftMirror;
     private static final MethodHandle asNMSCopy;
@@ -56,6 +61,7 @@ public class ItemObject {
         MethodHandle new$ItemStack = null;
         MethodHandle new$CustomData = null;
         MethodHandle new$MinecraftKey = null;
+        MethodHandle new$CraftItemStack = null;
         // Getters
         MethodHandle get$handle = null;
         // Setters
@@ -69,6 +75,7 @@ public class ItemObject {
         MethodHandle method$setItem = null;
         MethodHandle method$setTag = null;
         MethodHandle method$setCount = null;
+        MethodHandle method$getCraftStack = null;
         MethodHandle method$asBukkitCopy = null;
         MethodHandle method$asNMSCopy = null;
         MethodHandle method$asCraftMirror = null;
@@ -136,43 +143,45 @@ public class ItemObject {
                 const$customData = ComponentType.of("minecraft:custom_data");
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
 
+                EasyLookup.addNMSClass("world.item.component.CustomData");
+                new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, Optional.class, "HolderLookup.Provider", "NBTBase");
+                new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
                 if (ServerInstance.MAJOR_VERSION >= 21) {
                     new$MinecraftKey = EasyLookup.staticMethod("MinecraftKey", key$parse, "MinecraftKey", String.class);
                 } else {
                     new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
                 }
 
-                method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
-                method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
-            }
-
-            if (ServerInstance.Release.COMPONENT) {
-                EasyLookup.addNMSClass("world.item.component.CustomData");
-                new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, Optional.class, "HolderLookup.Provider", "NBTBase");
-                new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
-            } else if (ServerInstance.MAJOR_VERSION >= 13 || ServerInstance.MAJOR_VERSION <= 10) {
-                new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
-            } else {
-                // (1.11 - 1.12) Only by public constructor
-                new$ItemStack = EasyLookup.constructor(MC_ITEM, "NBTTagCompound");
-            }
-
-            // Private field
-            get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
-            set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
-
-            if (ServerInstance.Release.COMPONENT) {
                 method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
+                method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
                 method$getTag = EasyLookup.unreflectGetter("CustomData", getTag);
+                method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
                 method$setCount = EasyLookup.method(MC_ITEM, setCount, void.class, int.class);
             } else {
+                if (ServerInstance.MAJOR_VERSION >= 13 || ServerInstance.MAJOR_VERSION <= 10) {
+                    new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
+                } else {
+                    // (1.11 - 1.12) Only by public constructor
+                    new$ItemStack = EasyLookup.constructor(MC_ITEM, "NBTTagCompound");
+                }
+
                 method$save = EasyLookup.method(MC_ITEM, save, "NBTTagCompound", "NBTTagCompound");
                 // Private method
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "NBTTagCompound");
                 method$getTag = EasyLookup.method(MC_ITEM, getTag, "NBTTagCompound");
                 method$setTag = EasyLookup.method(MC_ITEM, setTag, void.class, "NBTTagCompound");
+            }
+
+            new$CraftItemStack = EasyLookup.constructor(CRAFT_ITEM, ItemStack.class);
+
+            // Private field
+            get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
+            set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
+
+            if (ServerInstance.Platform.PAPER && ServerInstance.MAJOR_VERSION >= 21) {
+                method$getCraftStack = EasyLookup.method(CRAFT_ITEM, "getCraftStack", CRAFT_ITEM, ItemStack.class);
             }
             method$asBukkitCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asBukkitCopy", ItemStack.class, "ItemStack");
             method$asCraftMirror = EasyLookup.staticMethod(CRAFT_ITEM, "asCraftMirror", CRAFT_ITEM, "ItemStack");
@@ -181,13 +190,13 @@ public class ItemObject {
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+
         CUSTOM_DATA = const$customData;
         ITEM_REGISTRY = const$item;
+
         newItem = new$ItemStack;
         newCustomData = new$CustomData;
         newMinecraftKey = new$MinecraftKey;
-        getHandleField = get$handle;
-        setHandleField = set$handle;
         save = method$save;
         apply = method$apply;
         copy = method$copy;
@@ -196,6 +205,11 @@ public class ItemObject {
         setItem = method$setItem;
         setTag = method$setTag;
         setCount = method$setCount;
+
+        newCraftItem = new$CraftItemStack;
+        getHandleField = get$handle;
+        setHandleField = set$handle;
+        getCraftStack = method$getCraftStack;
         asBukkitCopy = method$asBukkitCopy;
         asCraftMirror = method$asCraftMirror;
         asNMSCopy = method$asNMSCopy;
@@ -684,6 +698,33 @@ public class ItemObject {
             System.arraycopy(src, i, path, destLength, srcLength);
         }
         return path;
+    }
+
+    /**
+     * Get delegated CraftItemStack from ItemStack object or the object itself
+     * if it's already a craft item.<br>
+     * On non-paper platforms with versions before 1.21 this method will try to
+     * convert the Bukkit ItemStack into CraftItemStack
+     *
+     * @param item the Bukkit ItemStack to extract delegated craft item.
+     * @return     a CraftItemStack instance.
+     */
+    public static ItemStack getCraftStack(ItemStack item) {
+        if (getCraftStack != null) {
+            try {
+                return (ItemStack) getCraftStack.invoke(item);
+            } catch (Throwable t) {
+                throw new RuntimeException("Cannot get CraftItemStack from ItemStack object", t);
+            }
+        } else if (CRAFT_ITEM.isInstance(item)) {
+            return item;
+        } else {
+            try {
+                return (ItemStack) newCraftItem.invoke(item);
+            } catch (Throwable t) {
+                throw new RuntimeException("Cannot create CraftItemStack using ItemStack object", t);
+            }
+        }
     }
 
     /**
