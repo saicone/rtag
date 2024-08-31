@@ -73,7 +73,12 @@ public class IComponentMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, float from, float to) {
-        if (to >= 20.04f && from <= 20.03f) {
+        if (to < 20.04f) {
+            return;
+        }
+
+        // Convert old tag to components
+        if (from <= 20.03f) {
             // Rename count and convert to int
             final Object count = TagCompound.get(compound, "Count");
             if (count != null) {
@@ -130,6 +135,20 @@ public class IComponentMirror implements ItemMirror {
             // Convert hide flags into components
             upgradeHideFlags(tag, id);
         }
+
+        // Update components
+
+        final Object components = TagCompound.get(compound, "components");
+        if (components == null) return;
+
+        // Apply components transformations
+        final Map<String, Object> value = TagCompound.getValue(components);
+        for (String key : new ArrayList<>(value.keySet())) {
+            final Transformation transformation = TRANSFORMATIONS.get(key);
+            if (transformation == null) continue;
+
+            transformation.upgrade(components, key, value.get(key), from, to);
+        }
     }
 
     @Override
@@ -158,7 +177,25 @@ public class IComponentMirror implements ItemMirror {
 
     @Override
     public void downgrade(Object compound, String id, float from, float to) {
-        if (from >= 20.04f && to <= 20.03f) {
+        if (from < 20.04f) {
+            return;
+        }
+
+        // Downgrade components
+        final Object components = TagCompound.get(compound, "components");
+        if (components != null) {
+            // Apply components transformations
+            final Map<String, Object> value = TagCompound.getValue(components);
+            for (String key : new ArrayList<>(value.keySet())) {
+                final Transformation transformation = TRANSFORMATIONS.get(key);
+                if (transformation == null) continue;
+
+                transformation.downgrade(components, key, value.get(key), from, to);
+            }
+        }
+
+        // Convert components to old tag
+        if (to <= 20.03f) {
             // Rename count and convert to byte
             final Object count = TagCompound.get(compound, "count");
             if (count != null) {
@@ -169,7 +206,6 @@ public class IComponentMirror implements ItemMirror {
             }
 
             // Move components to tag
-            final Object components = TagCompound.get(compound, "components");
             if (components == null) return;
 
             TagCompound.remove(compound, "components");
@@ -239,6 +275,19 @@ public class IComponentMirror implements ItemMirror {
     public interface Transformation {
 
         /**
+         * Upgrade component value from lower version.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param component  The component itself.
+         * @param from       Version specified in compound.
+         * @param to         Version to convert.
+         */
+        default void upgrade(Object components, String id, Object component, float from, float to) {
+            // empty default method
+        }
+
+        /**
          * Upgrade map value into new component format.
          *
          * @param components The component map from item.
@@ -272,6 +321,19 @@ public class IComponentMirror implements ItemMirror {
          */
         default boolean upgradeObject(Object components, String id, Object value) {
             return true;
+        }
+
+        /**
+         * Downgrade component value from upper version.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param component  The component itself.
+         * @param from       Version specified in compound.
+         * @param to         Version to convert.
+         */
+        default void downgrade(Object components, String id, Object component, float from, float to) {
+            // empty default method
         }
 
         /**
@@ -442,8 +504,12 @@ public class IComponentMirror implements ItemMirror {
         public boolean upgradeList(Object components, String id, List<Object> value) {
             final Map<String, Object> levels = new HashMap<>();
             for (Object enchantment : value) {
+                String key = (String) TagBase.getValue(TagCompound.get(enchantment, "id"));
+                if (key.equals("minecraft:sweeping")) {
+                    key = "minecraft:sweeping_edge";
+                }
                 levels.put(
-                        (String) TagBase.getValue(TagCompound.get(enchantment, "id")),
+                        key,
                         ((Number) TagBase.getValue(TagCompound.get(enchantment, "lvl"))).intValue()
                 );
             }
@@ -457,9 +523,13 @@ public class IComponentMirror implements ItemMirror {
             if (value.containsKey("levels")) {
                 final List<Object> enchantments = new ArrayList<>();
                 for (Map.Entry<String, Object> entry : TagCompound.getValue(value.get("levels")).entrySet()) {
+                    String key = entry.getKey();
+                    if (key.equals("minecraft:sweeping_edge")) {
+                        key = "minecraft:sweeping";
+                    }
                     final int level = (int) TagBase.getValue(entry.getValue());
                     enchantments.add(TagCompound.newTag(Map.of(
-                            "id", TagBase.newTag(entry.getKey()),
+                            "id", TagBase.newTag(key),
                             "lvl", TagBase.newTag(level > Short.MAX_VALUE ? Short.MAX_VALUE : (short) level)
                     )));
                 }
@@ -567,6 +637,33 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21f && from < 21f) {
+                final Object modifiers = TagCompound.get(component, "modifiers");
+                if (modifiers != null) {
+                    for (Object modifier : TagList.getValue(modifiers)) {
+                        final Map<String, Object> map = TagCompound.getValue(modifier);
+                        final Object name = map.remove("name");
+                        if (name != null) {
+                            final String nameValue = (String) TagBase.getValue(name);
+                            if (nameValue.indexOf(':') > 0) {
+                                map.put("id", name);
+                                map.remove("uuid");
+                                continue;
+                            }
+                        }
+                        final Object uuid = map.remove("uuid");
+                        if (uuid != null) {
+                            map.put("id", TagBase.newTag("minecraft:" + TagBase.getValue(uuid)));
+                        } else {
+                            map.put("id", TagBase.newTag("minecraft:" + UUID.randomUUID()));
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
             for (Object modifier : value) {
                 final Map<String, Object> map = TagCompound.getValue(modifier);
@@ -590,6 +687,25 @@ public class IComponentMirror implements ItemMirror {
             }
             TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, value, id, "modifiers");
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (to < 21f && from >= 21f) {
+                final Object modifiers = TagCompound.get(component, "modifiers");
+                if (modifiers != null) {
+                    for (Object modifier : TagList.getValue(modifiers)) {
+                        final Map<String, Object> map = TagCompound.getValue(modifier);
+                        final Object key = map.remove("id");
+                        if (key != null) {
+                            map.put("name", key);
+                        } else {
+                            map.put("name", TagBase.newTag(UUID.randomUUID()));
+                        }
+                        map.put("uuid", TagBase.newTag(UUID.randomUUID()));
+                    }
+                }
+            }
         }
 
         @Override
