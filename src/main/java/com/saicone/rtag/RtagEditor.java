@@ -94,7 +94,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      *
      * @return An object with NBTTagCompound inside.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public Object getObject() {
         return literalObject;

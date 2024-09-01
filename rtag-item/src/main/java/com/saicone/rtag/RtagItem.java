@@ -281,7 +281,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @param hideFlags Flags to check.
      * @return          true if the item has all the flags.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean hasHideFlags(int... hideFlags) {
@@ -362,7 +362,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @param hideFlags Flags to add.
      * @return          true if the flags was added.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean addHideFlags(int... hideFlags) {
@@ -462,7 +462,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @param hideFlags Flags to set.
      * @return          true if the flags was set.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public boolean setHideFlags(int... hideFlags) {
         // Since 1.20.5, items cannot hold hide flags
@@ -509,7 +509,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @param hideFlags Flags to remove.
      * @return          true if the flags was removed.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean removeHideFlags(int... hideFlags) {
@@ -619,7 +619,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      *
      * @return A set of flag ordinals.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public Set<Integer> getHideFlags() {
         // Since 1.20.5, items cannot hold hide flags

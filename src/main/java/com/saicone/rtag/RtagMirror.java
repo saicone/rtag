@@ -52,7 +52,7 @@ public class RtagMirror {
      *
      * @param ignored Ignored Rtag instance.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public RtagMirror(Rtag ignored) {
     }
@@ -64,7 +64,7 @@ public class RtagMirror {
      *
      * @return the current Rtag instance or null.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public Rtag getRtag() {
         if (this instanceof Rtag) {
@@ -81,7 +81,7 @@ public class RtagMirror {
      *
      * @param rtag Ignored Rtag instance.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public void setRtag(Rtag rtag) {
         // empty method

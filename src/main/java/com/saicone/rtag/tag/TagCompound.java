@@ -27,7 +27,7 @@ public class TagCompound {
      * @deprecated Use {@link TStream#COMPOUND} instead.
      * @see TStream#COMPOUND
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final TStream<Object> DATA = TStream.COMPOUND;
 

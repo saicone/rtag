@@ -102,7 +102,7 @@ public class Rtag extends RtagMirror {
      *
      * @param mirror Mirror instance.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     @SuppressWarnings("unused")
     public Rtag(RtagMirror mirror) {
@@ -115,7 +115,7 @@ public class Rtag extends RtagMirror {
      *
      * @return The Rtag itself.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public RtagMirror getMirror() {
         return this;
@@ -486,7 +486,7 @@ public class Rtag extends RtagMirror {
      * @param object Object to convert.
      * @return       NBTBase tag or null.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public Object toTag(Object object) {
         return newTag(object);
@@ -503,7 +503,7 @@ public class Rtag extends RtagMirror {
      * @param <T> Object type to cast the value.
      * @return    Converted value, null if any error occurs.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public <T> T fromTag(Object tag) {
         return OptionalType.cast(getTagValue(tag));
@@ -518,7 +518,7 @@ public class Rtag extends RtagMirror {
      * @param tag Tag to convert.
      * @return    Converted object.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public Object fromTagExact(Object tag) {
         return getTagValue(tag);

@@ -235,70 +235,70 @@ public class ServerInstance {
     /**
      * @deprecated Use {@link ServerInstance#PACKAGE_VERSION} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final String version = PACKAGE_VERSION;
     /**
      * @deprecated Use {@link ServerInstance#FULL_VERSION} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final int fullVersion = FULL_VERSION;
     /**
      * @deprecated Use {@link ServerInstance#MAJOR_VERSION} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final int verNumber = MAJOR_VERSION;
     /**
      * @deprecated Use {@link ServerInstance#RELEASE_VERSION} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final int release = RELEASE_VERSION;
     /**
      * @deprecated Use {@link ServerInstance#DATA_VERSION} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final int dataVersion = DATA_VERSION;
 
     /**
      * @deprecated Use {@link Release#LEGACY} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final boolean isLegacy = Release.LEGACY;
     /**
      * @deprecated Use {@link Release#UNIVERSAL} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final boolean isUniversal = Release.UNIVERSAL;
 
     /**
      * @deprecated Use {@link Platform#SPIGOT} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final boolean isSpigot = Platform.SPIGOT;
     /**
      * @deprecated Use {@link Platform#PAPER} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final boolean isPaper = Platform.PAPER;
     /**
      * @deprecated Use {@link Platform#FOLIA} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final boolean isFolia = Platform.FOLIA;
 
     /**
      * @deprecated Use {@link Type#MOJANG_MAPPED} instead.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static final boolean isMojangMapped = Type.MOJANG_MAPPED;
 

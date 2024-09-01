@@ -475,7 +475,7 @@ public class ItemObject {
      * @param item     ItemStack instance.
      * @param compound The NBTTagCompound to load.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static void load(Object item, Object compound) {
         if (ServerInstance.Release.COMPONENT) {
@@ -782,7 +782,7 @@ public class ItemObject {
      * @param item ItemStack instance.
      * @return     The NBTTagCompound inside provided item.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static Object getTag(Object item) {
         return getCustomDataTag(item);
@@ -852,7 +852,7 @@ public class ItemObject {
      * @param item ItemStack instance.
      * @param tag  NBTTagCompound to put into item.
      */
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static void setTag(Object item, Object tag) {
        setCustomDataTag(item, tag);
