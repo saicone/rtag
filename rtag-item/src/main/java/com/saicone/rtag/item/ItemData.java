@@ -1,18 +1,35 @@
 package com.saicone.rtag.item;
 
+import com.saicone.rtag.Rtag;
+import com.saicone.rtag.tag.TagBase;
+import com.saicone.rtag.tag.TagCompound;
+import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.ChatComponent;
+import com.saicone.rtag.util.ItemMaterialTag;
+import com.saicone.rtag.util.ServerInstance;
+
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Function;
 
 public class ItemData {
 
     private static final String ROOT_PATH = "==root";
 
+    // Paths
     private static final Map<String, Object> TAG_PATHS = new LinkedHashMap<>();
     private static final Map<String, Object> COMPONENT_PATHS = new LinkedHashMap<>();
+    // Detectors
+    private static final TreeMap<Float, Function<Map<String, Object>, Boolean>> COMPONENT_DETECTORS = new TreeMap<>(Comparator.reverseOrder());
+    private static final TreeMap<Float, Function<Map<String, Object>, Boolean>> TAG_DETECTORS = new TreeMap<>(Comparator.reverseOrder());
 
     static {
-        initPaths();
+        loadPaths();
+        loadComponentDetectors();
+        loadTagDetectors();
     }
 
     ItemData() {
@@ -152,49 +169,145 @@ public class ItemData {
         return path;
     }
 
+    /**
+     * Get current version number from item compound.
+     *
+     * @param compound NBTTagCompound that represent an item.
+     * @return         A valid version number or null.
+     */
+    public static Float getItemVersion(Object compound) {
+        final Map<String, Object> value = TagCompound.getValue(compound);
+        Object providedVersion = TagBase.getValue(value.get("DataVersion"));
+        if (providedVersion == null) {
+            providedVersion = TagBase.getValue(value.get("v"));
+        }
+
+        if (providedVersion instanceof Number) {
+            final int dataVersion = ((Number) providedVersion).intValue();
+            final int release = ServerInstance.release(dataVersion);
+            return Float.parseFloat(ServerInstance.verNumber(dataVersion) + "." + (release < 10 ? "0" : "") + release);
+        }
+
+        // Calculate the minimum version
+        final Float detectedVersion = detectVersion(compound, value);
+
+        // Get full item id
+        String id = (String) TagBase.getValue(value.get("id"));
+        if (id.startsWith("minecraft:")) {
+            id = id.substring(10);
+        }
+        if (detectedVersion != null && detectedVersion < 13f) {
+            final int damage = Rtag.INSTANCE.getOptional(compound, "Damage").asInt(0);
+            if (damage > 0) {
+                id = id + ":" + damage;
+            }
+        }
+
+        // Compare material version with detected version
+        final Float materialVersion = findMaterialVersion(id, detectedVersion == null ? 8f : detectedVersion);
+        final float finalVersion = Math.max(detectedVersion == null ? 0f : detectedVersion, materialVersion == null ? 0f : materialVersion);
+
+        return finalVersion > 0 ? finalVersion : null;
+    }
+
+    private static Float detectVersion(Object compound, Map<String, Object> value) {
+        // Detect by item components
+        final Object components = value.get("components");
+        if (components != null || TagBase.getValue(value.get("Count")) instanceof Integer) {
+            final Float version = detectVersion(components, COMPONENT_DETECTORS);
+            return version == null ? 20.04f : version;
+        }
+
+        // Detect by old tag value
+        final Float version = detectVersion(value.get("tag"), TAG_DETECTORS);
+        if (version == null) {
+            // Detect by old entity tag
+            String entity = Rtag.INSTANCE.get(compound, "EntityTag", "id");
+            if (entity != null) {
+                if (entity.equals(entity.toLowerCase())) {
+                    if (entity.startsWith("minecraft:")) {
+                        return 11.01f;
+                    } else {
+                        return 12.01f;
+                    }
+                } else {
+                    return 9.01f;
+                }
+            }
+        }
+        return version;
+    }
+
+    private static Float detectVersion(Object compound, TreeMap<Float, Function<Map<String, Object>, Boolean>> detectors) {
+        if (compound != null) {
+            final Map<String, Object> map = TagCompound.getValue(compound);
+            for (var entry : detectors.entrySet()) {
+                if (entry.getValue().apply(map)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Float findMaterialVersion(String id, float minimumVersion) {
+        final String mat = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
+        for (ItemMaterialTag material : ItemMaterialTag.VALUES) {
+            for (Map.Entry<Float, String> entry : material.getNames().entrySet()) {
+                if (entry.getKey() < minimumVersion) {
+                    continue;
+                }
+                if (entry.getValue().equalsIgnoreCase(mat)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
+    }
+
     // Data initialization
 
-    private static void initPaths() {
-        initPath("minecraft:repair_cost", "tag", "RepairCost");
-        initPath("minecraft:unbreakable", "tag", "Unbreakable");
-        initPath("minecraft:stored_enchantments", "tag", "StoredEnchantments");
-        initPath("minecraft:custom_name", "tag", "display", "Name");
-        initPath("minecraft:lore", "tag", "display", "Lore");
-        initPath("minecraft:dyed_color", "tag", "display", "color");
-        initPath("minecraft:map_color", "tag", "display", "MapColor");
-        initPath("minecraft:map_decorations", "tag", "Decorations");
-        initPath("minecraft:map_id", "tag", "map");
-        initPath("minecraft:can_break", "tag", "CanDestroy");
-        initPath("minecraft:can_place_on", "tag", "CanPlaceOn");
-        initPath("minecraft:attribute_modifiers", "tag", "AttributeModifiers");
-        initPath("minecraft:charged_projectiles", "tag", "ChargedProjectiles");
-        initPath("minecraft:bundle_contents", "tag", "Items");
-        initPath("minecraft:custom_model_data", "tag", "CustomModelData");
-        initPath("minecraft:trim", "tag", "Trim");
-        initPath("minecraft:suspicious_stew_effects", "tag", "effects");
-        initPath("minecraft:debug_stick_state", "tag", "DebugProperty");
-        initPath("minecraft:entity_data", "tag", "EntityTag");
-        initPath("minecraft:instrument", "tag", "instrument");
-        initPath("minecraft:recipes", "tag", "Recipes");
-        initPath("minecraft:profile", new Object[] { "tag", "SkullOwner" }, Map.of(
+    private static void loadPaths() {
+        loadPath("minecraft:repair_cost", "tag", "RepairCost");
+        loadPath("minecraft:unbreakable", "tag", "Unbreakable");
+        loadPath("minecraft:stored_enchantments", "tag", "StoredEnchantments");
+        loadPath("minecraft:custom_name", "tag", "display", "Name");
+        loadPath("minecraft:lore", "tag", "display", "Lore");
+        loadPath("minecraft:dyed_color", "tag", "display", "color");
+        loadPath("minecraft:map_color", "tag", "display", "MapColor");
+        loadPath("minecraft:map_decorations", "tag", "Decorations");
+        loadPath("minecraft:map_id", "tag", "map");
+        loadPath("minecraft:can_break", "tag", "CanDestroy");
+        loadPath("minecraft:can_place_on", "tag", "CanPlaceOn");
+        loadPath("minecraft:attribute_modifiers", "tag", "AttributeModifiers");
+        loadPath("minecraft:charged_projectiles", "tag", "ChargedProjectiles");
+        loadPath("minecraft:bundle_contents", "tag", "Items");
+        loadPath("minecraft:custom_model_data", "tag", "CustomModelData");
+        loadPath("minecraft:trim", "tag", "Trim");
+        loadPath("minecraft:suspicious_stew_effects", "tag", "effects");
+        loadPath("minecraft:debug_stick_state", "tag", "DebugProperty");
+        loadPath("minecraft:entity_data", "tag", "EntityTag");
+        loadPath("minecraft:instrument", "tag", "instrument");
+        loadPath("minecraft:recipes", "tag", "Recipes");
+        loadPath("minecraft:profile", new Object[] { "tag", "SkullOwner" }, Map.of(
                 "name", "Name",
                 "id", "Id",
                 "properties", "Properties"
         ));
-        initPath("minecraft:note_block_sound", "tag", "BlockEntityTag", "note_block_sound");
-        initPath("minecraft:base_color", "tag", "BlockEntityTag", "Base");
-        initPath("minecraft:banner_patterns", "tag", "BlockEntityTag", "Patterns");
-        initPath("minecraft:pot_decorations", "tag", "BlockEntityTag", "sherds");
-        initPath("minecraft:container", "tag", "BlockEntityTag", "Items");
-        initPath("minecraft:bees", "tag", "BlockEntityTag", "Bees");
-        initPath("minecraft:lock", "tag", "BlockEntityTag", "Lock");
-        initPath("minecraft:container_loot", new Object[] { "tag", "BlockEntityTag" }, Map.of(
+        loadPath("minecraft:note_block_sound", "tag", "BlockEntityTag", "note_block_sound");
+        loadPath("minecraft:base_color", "tag", "BlockEntityTag", "Base");
+        loadPath("minecraft:banner_patterns", "tag", "BlockEntityTag", "Patterns");
+        loadPath("minecraft:pot_decorations", "tag", "BlockEntityTag", "sherds");
+        loadPath("minecraft:container", "tag", "BlockEntityTag", "Items");
+        loadPath("minecraft:bees", "tag", "BlockEntityTag", "Bees");
+        loadPath("minecraft:lock", "tag", "BlockEntityTag", "Lock");
+        loadPath("minecraft:container_loot", new Object[] { "tag", "BlockEntityTag" }, Map.of(
                 "loot_table", "LootTable",
                 "seed", "LootTableSeed"
         ));
-        initPath("minecraft:block_entity_data", "tag", "BlockEntityTag");
-        initPath("minecraft:block_state", "tag", "BlockStateTag");
-        initPath("minecraft:potion_contents", Map.of(
+        loadPath("minecraft:block_entity_data", "tag", "BlockEntityTag");
+        loadPath("minecraft:block_state", "tag", "BlockStateTag");
+        loadPath("minecraft:potion_contents", Map.of(
                 "potion", "Potion",
                 "custom_color", "CustomPotionColor",
                 "custom_effects", "custom_potion_effects"
@@ -203,7 +316,7 @@ public class ItemData {
 //                "filtered_pages", "filtered_pages",
 //                "pages", "pages"
 //        ));
-        initPath("minecraft:written_book_contents", Map.of(
+        loadPath("minecraft:written_book_contents", Map.of(
                 "filtered_pages", "filtered_pages",
                 "filtered_title", "filtered_title",
                 "pages", "pages",
@@ -212,7 +325,7 @@ public class ItemData {
                 "generation", "generation",
                 "resolved", "resolved"
         ));
-        initPath("minecraft:bucket_entity_data", Map.of(
+        loadPath("minecraft:bucket_entity_data", Map.of(
                 "NoAI", "NoAI",
                 "Silent", "Silent",
                 "NoGravity", "NoGravity",
@@ -224,21 +337,21 @@ public class ItemData {
                 "HuntingCooldown", "HuntingCooldown",
                 "BucketVariantTag", "BucketVariantTag"
         ));
-        initPath("minecraft:lodestone_tracker", Map.of(
+        loadPath("minecraft:lodestone_tracker", Map.of(
                 "tracked", "LodestoneTracked",
                 "target", Map.of(
                         "pos", "LodestonePos",
                         "dimension", "LodestoneDimension"
                 )
         ));
-        initPath("minecraft:firework_explosion", new Object[] { "tag", "Explosion" }, Map.of(
+        loadPath("minecraft:firework_explosion", new Object[] { "tag", "Explosion" }, Map.of(
                 "shape", "Type",
                 "colors", "Colors",
                 "fade_colors", "FadeColors",
                 "has_trail", "Trail",
                 "has_twinkle", "Flicker"
         ));
-        initPath("minecraft:fireworks", new Object[] { "tag", "Fireworks" }, Map.of(
+        loadPath("minecraft:fireworks", new Object[] { "tag", "Fireworks" }, Map.of(
                 "explosions", "Explosions",
                 "flight_duration", "Flight"
         ));
@@ -246,43 +359,43 @@ public class ItemData {
         //initPath("minecraft:damage", "Damage");
         //initPath("minecraft:enchantments", "tag", "ench");
 
-        initPath("minecraft:damage", "tag", "Damage");
-        initPath("minecraft:enchantments", "tag", "Enchantments");
-        initPath("minecraft:custom_data", "tag");
+        loadPath("minecraft:damage", "tag", "Damage");
+        loadPath("minecraft:enchantments", "tag", "Enchantments");
+        loadPath("minecraft:custom_data", "tag");
 
         // --- Not exist in old versions
         // - 24w09a
-        initPath("minecraft:creative_slot_lock", "tag", "components", "minecraft:creative_slot_lock");
-        initPath("minecraft:intangible_projectile", "tag", "components", "minecraft:intangible_projectile");
-        initPath("minecraft:enchantment_glint_override", "tag", "components", "minecraft:enchantment_glint_override");
-        initPath("minecraft:map_post_processing", "tag", "components", "minecraft:map_post_processing");
+        loadPath("minecraft:creative_slot_lock", "tag", "components", "minecraft:creative_slot_lock");
+        loadPath("minecraft:intangible_projectile", "tag", "components", "minecraft:intangible_projectile");
+        loadPath("minecraft:enchantment_glint_override", "tag", "components", "minecraft:enchantment_glint_override");
+        loadPath("minecraft:map_post_processing", "tag", "components", "minecraft:map_post_processing");
         // - 24w12a
-        initPath("minecraft:food", "tag", "components", "minecraft:food");
-        initPath("minecraft:max_stack_size", "tag", "components", "minecraft:max_stack_size");
-        initPath("minecraft:max_damage", "tag", "components", "minecraft:max_damage");
-        initPath("minecraft:fire_resistant", "tag", "components", "minecraft:fire_resistant");
-        initPath("minecraft:rarity", "tag", "components", "minecraft:rarity");
-        initPath("minecraft:tool", "tag", "components", "minecraft:tool");
-        initPath("minecraft:hide_tooltip", "tag", "components", "minecraft:hide_tooltip");
+        loadPath("minecraft:food", "tag", "components", "minecraft:food");
+        loadPath("minecraft:max_stack_size", "tag", "components", "minecraft:max_stack_size");
+        loadPath("minecraft:max_damage", "tag", "components", "minecraft:max_damage");
+        loadPath("minecraft:fire_resistant", "tag", "components", "minecraft:fire_resistant");
+        loadPath("minecraft:rarity", "tag", "components", "minecraft:rarity");
+        loadPath("minecraft:tool", "tag", "components", "minecraft:tool");
+        loadPath("minecraft:hide_tooltip", "tag", "components", "minecraft:hide_tooltip");
         // - 24w13a
-        initPath("minecraft:item_name", "tag", "components", "minecraft:item_name");
-        initPath("minecraft:ominous_bottle_amplifier", "tag", "components", "minecraft:ominous_bottle_amplifier");
+        loadPath("minecraft:item_name", "tag", "components", "minecraft:item_name");
+        loadPath("minecraft:ominous_bottle_amplifier", "tag", "components", "minecraft:ominous_bottle_amplifier");
         // - 24w21a
-        initPath("minecraft:jukebox_playable", "tag", "components", "minecraft:jukebox_playable");
+        loadPath("minecraft:jukebox_playable", "tag", "components", "minecraft:jukebox_playable");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
 
-    private static void initPath(String name, Object... path) {
+    private static void loadPath(String name, Object... path) {
         COMPONENT_PATHS.put(name, path);
         loadTagPath(path, new Object[] { name });
     }
 
-    private static void initPath(String name, Map<String, Object> aliases) {
-        initPath(name, new Object[] { "tag" }, aliases);
+    private static void loadPath(String name, Map<String, Object> aliases) {
+        loadPath(name, new Object[] { "tag" }, aliases);
     }
 
-    private static void initPath(String name, Object[] path, Map<String, Object> aliases) {
+    private static void loadPath(String name, Object[] path, Map<String, Object> aliases) {
         COMPONENT_PATHS.put(name, loadComponentPath(new Object[] { name }, path, aliases));
     }
 
@@ -321,6 +434,106 @@ public class ItemData {
         } else {
             map.put(key, appendFirst(componentPath, "components"));
         }
+    }
+
+    private static void loadComponentDetectors() {
+        COMPONENT_DETECTORS.put(21.02f, components ->
+                components.containsKey("minecraft:repairable")
+                        || components.containsKey("minecraft:enchantable")
+                        || components.containsKey("minecraft:consumable")
+                        || components.containsKey("minecraft:use_cooldown")
+                        || components.containsKey("minecraft:use_remainder")
+        );
+        COMPONENT_DETECTORS.put(21.01f, components -> {
+            if (components.containsKey("minecraft:jukebox_playable")) {
+                return true;
+            }
+
+            final Object food = components.get("minecraft:food");
+            if (food != null && TagCompound.get(food, "using_converts_to") != null) {
+                return true;
+            }
+
+            final Object attributeModifiers = components.get("minecraft:attribute_modifiers");
+            return attributeModifiers != null && TagCompound.get(attributeModifiers, "id") != null;
+        });
+    }
+
+    private static void loadTagDetectors() {
+        TAG_DETECTORS.put(20.02f, tag ->
+                tag.containsKey("custom_potion_effects")
+                        || tag.containsKey("effects")
+        );
+        TAG_DETECTORS.put(19.03f, tag -> hasHideFlag(tag, 128));
+        TAG_DETECTORS.put(17.01f, tag -> tag.containsKey("Items"));
+        TAG_DETECTORS.put(16.02f, tag -> hasHideFlag(tag, 64));
+        TAG_DETECTORS.put(16.01f, tag ->
+                tag.containsKey("SkullOwner")
+                        && TagBase.getValue(TagCompound.get(tag.get("SkullOwner"), "Id")) instanceof int[]
+        );
+        TAG_DETECTORS.put(14.01f, tag -> {
+            if (tag.containsKey("CustomModelData") || tag.containsKey("BlockStateTag")) {
+                return true;
+            }
+            if (tag.containsKey("display")) {
+                final Object lore = TagCompound.get(tag.get("display"), "Lore");
+                if (lore != null) {
+                    for (Object line : TagList.getValue(lore)) {
+                        if (!ChatComponent.isChatComponent(TagBase.getValue(line))) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        });
+        TAG_DETECTORS.put(13.01f, tag -> {
+            if (tag.containsKey("Damage") || tag.containsKey("Enchantments")) {
+                return true;
+            }
+            if (tag.containsKey("display")) {
+                final Object name = TagCompound.get(tag.get("display"), "Name");
+                if (name != null) {
+                    return ChatComponent.isChatComponent(TagBase.getValue(name));
+                }
+            }
+            return false;
+        });
+        TAG_DETECTORS.put(11.01f, tag -> hasEnchantment(tag, 10, 22, 49, 71));
+        TAG_DETECTORS.put(9.01f, tag -> tag.containsKey("Potion") || hasEnchantment(tag, 9, 70));
+        TAG_DETECTORS.put(8.01f, tag ->
+                tag.containsKey("CanDestroy")
+                        || tag.containsKey("HideFlags")
+                        || tag.containsKey("BlockEntityTag")
+        );
+        TAG_DETECTORS.put(7.01f, tag -> tag.containsKey("Unbreakable"));
+    }
+
+    private static boolean hasHideFlag(Map<String, Object> tag, int flag) {
+        if (tag.containsKey("HideFlags")) {
+            final int flags = (int) TagBase.getValue(tag.get("HideFlags"));
+            if ((flags & flag) != flag) {
+                return false;
+            }
+            return flags > 0;
+        }
+        return false;
+    }
+
+    private static boolean hasEnchantment(Map<String, Object> tag, int... enchants) {
+        final Object enchantments = tag.getOrDefault("ench", tag.get("StoredEnchantments"));
+        if (enchantments != null) {
+            for (Object entry : TagList.getValue(enchantments)) {
+                final short id = (short) TagBase.getValue(TagCompound.get(entry, "id"));
+                for (int enchant : enchants) {
+                    if (id == enchant) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static Object[] append(Object[] array, Object obj) {

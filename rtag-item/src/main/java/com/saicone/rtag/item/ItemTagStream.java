@@ -90,6 +90,7 @@ public class ItemTagStream extends TStream<ItemStack> {
                 mirrors.add(0, new IComponentMirror());
             }
         } else {
+            mirrors.add(new IComponentMirror());
             mirrors.add(new IMaterialMirror());
             mirrors.add(new IContainerMirror(instance, true));
             mirrors.add(new IBundleMirror(instance, true));
@@ -147,30 +148,17 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     /**
-     * Get current version number from compound.
+     * Get current version number from item compound.
      *
-     * @param compound NBTTagCompound to read.
+     * @param compound NBTTagCompound that represent an item.
      * @return         A valid version number or null.
      */
-    protected Float getVersion(Object compound) {
-        final Map<String, Object> value = TagCompound.getValue(compound);
-        Object version = TagBase.getValue(value.get(getVersionKey()));
+    public Float getVersion(Object compound) {
+        Object version = TagBase.getValue(TagCompound.get(compound, getVersionKey()));
         if (version instanceof Number) {
             return ((Number) version).floatValue();
         }
-
-        version = TagBase.getValue(value.get("DataVersion"));
-        if (version == null) {
-            version = TagBase.getValue(value.get("v"));
-        }
-
-        if (version instanceof Number) {
-            final int dataVersion = ((Number) version).intValue();
-            final int release = ServerInstance.release(dataVersion);
-            return Float.parseFloat(ServerInstance.verNumber(dataVersion) + "." + (release < 10 ? "0" : "") + release);
-        }
-
-        return null;
+        return ItemData.getItemVersion(compound);
     }
 
     /**
