@@ -42,6 +42,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
     private transient DataComponent.Builder<Optional<?>> patch;
     private transient boolean edited = false;
+    private transient boolean copied = true;
 
     /**
      * Create an RtagItem using ItemStack.
@@ -128,7 +129,14 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
     @Override
     public Object getLiteralObject(ItemStack item) {
-        return ItemObject.getHandle(ItemObject.getCraftStack(item));
+        final ItemStack craftItem = ItemObject.getCraftStack(item);
+        if (craftItem == null) {
+            this.copied = true;
+            return ItemObject.asNMSCopy(item);
+        }
+
+        this.copied = false;
+        return ItemObject.getUncheckedHandle(craftItem);
     }
 
     /**
@@ -185,7 +193,10 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @Override
     public ItemStack load() {
-        ItemObject.loadHandle(getTypeObject(), loadInto(getLiteralObject()));
+        final Object literal = loadInto(getLiteralObject());
+        if (this.copied) {
+            ItemObject.loadHandle(getTypeObject(), literal);
+        }
         return getTypeObject();
     }
 
@@ -195,7 +206,12 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return Copy of the original item with changes loaded.
      */
     public ItemStack loadCopy() {
-        return ItemObject.asBukkitCopy(loadInto(ItemObject.copy(getLiteralObject())));
+        final Object copy = loadInto(ItemObject.copy(getLiteralObject()));
+        if (this.copied) {
+            return ItemObject.asBukkitCopy(copy);
+        } else {
+            return ItemObject.asCraftMirror(copy);
+        }
     }
 
     /**

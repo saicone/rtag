@@ -233,6 +233,20 @@ public class ItemObject {
     }
 
     /**
+     * Create CraftItemStack from ItemStack object.
+     *
+     * @param item The item to use as constructor parameter.
+     * @return     A new CraftItemStack.
+     */
+    public static ItemStack newCraftItem(ItemStack item) {
+        try {
+            return (ItemStack) newCraftItem.invoke(item);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot create CraftItemStack using ItemStack object", t);
+        }
+    }
+
+    /**
      * Check if the provided object is instance of Minecraft ItemStack.
      *
      * @param object the object to check.
@@ -465,8 +479,8 @@ public class ItemObject {
     /**
      * Get delegated CraftItemStack from ItemStack object or the object itself
      * if it's already a craft item.<br>
-     * On non-paper platforms with versions before 1.21 this method will try to
-     * convert the Bukkit ItemStack into CraftItemStack
+     * On non-paper platforms with versions before 1.21 this method will return
+     * the provided item if is CraftItemStack instance.
      *
      * @param item the Bukkit ItemStack to extract delegated craft item.
      * @return     a CraftItemStack instance.
@@ -481,11 +495,7 @@ public class ItemObject {
         } else if (CRAFT_ITEM.isInstance(item)) {
             return item;
         } else {
-            try {
-                return (ItemStack) newCraftItem.invoke(item);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot create CraftItemStack using ItemStack object", t);
-            }
+            return null;
         }
     }
 
@@ -498,13 +508,23 @@ public class ItemObject {
      */
     public static Object getHandle(ItemStack item) {
         if (CRAFT_ITEM.isInstance(item)) {
-            try {
-                return getHandleField.invoke(item);
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
-            }
+            return getUncheckedHandle(item);
         } else {
             return asNMSCopy(item);
+        }
+    }
+
+    /**
+     * Get defined Minecraft ItemStack inside CraftItemStack.
+     *
+     * @param item A CraftItemStack.
+     * @return     Minecraft ItemStack or null.
+     */
+    public static Object getUncheckedHandle(ItemStack item) {
+        try {
+            return getHandleField.invoke(item);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
