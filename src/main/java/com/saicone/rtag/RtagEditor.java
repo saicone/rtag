@@ -22,7 +22,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
 
     protected final Rtag rtag;
     protected final T typeObject;
-    protected final Object literalObject;
+    protected Object literalObject;
     protected Object tag;
 
     /**
@@ -164,6 +164,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @param object Object type according RtagEditor instance.
      */
     public void update(Object object) {
+        this.literalObject = object;
         set(getTag(object));
     }
 
@@ -271,7 +272,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      */
     public boolean add(Object value, Object... path) {
         try {
-            return rtag.add(tag, value, path);
+            return rtag.add(getTag(), value, path);
         } catch (Throwable t) {
             t.printStackTrace();
             return false;
@@ -348,14 +349,14 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
     /**
      * Set value to specified path inside current tag.<br>
      * See {@link Rtag#set(Object, Object, Object...)} for more information.
-     * 
+     *
      * @param value Value to set.
      * @param path  Final value path to set.
      * @return      True if the value is set.
      */
     public boolean set(Object value, Object... path) {
         try {
-            return rtag.set(tag, value, path);
+            return rtag.set(getTag(), value, path);
         } catch (Throwable t) {
             t.printStackTrace();
             return false;
@@ -421,7 +422,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @return        true if the value was merged.
      */
     public boolean merge(Object value, boolean replace) {
-        return TagCompound.merge(tag, rtag.newTag(value), replace);
+        return TagCompound.merge(getTag(), rtag.newTag(value), replace);
     }
 
     /**
@@ -433,7 +434,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @return        true if the value was merged.
      */
     public boolean merge(Object value, boolean replace, Object... path) {
-        return rtag.merge(tag, value, replace, path);
+        return rtag.merge(getTag(), value, replace, path);
     }
 
     /**
@@ -444,7 +445,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @return        true if the value was merged.
      */
     public boolean deepMerge(Object value, boolean replace) {
-        return TagCompound.merge(tag, rtag.newTag(value), replace, true);
+        return TagCompound.merge(getTag(), rtag.newTag(value), replace, true);
     }
 
     /**
@@ -456,7 +457,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @return        true if the value was merged.
      */
     public boolean deepMerge(Object value, boolean replace, Object... path) {
-        return rtag.deepMerge(tag, value, replace, path);
+        return rtag.deepMerge(getTag(), value, replace, path);
     }
 
     /**
@@ -467,7 +468,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @return      true if the value was moved.
      */
     public boolean move(Object[] from, Object[] to) {
-        return rtag.move(tag, from, to);
+        return rtag.move(getTag(), from, to);
     }
 
     /**
@@ -479,7 +480,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @return      true if the value was moved.
      */
     public boolean move(Object[] from, Object[] to, boolean clear) {
-        return rtag.move(tag, from, to, clear);
+        return rtag.move(getTag(), from, to, clear);
     }
 
     /**
@@ -491,7 +492,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      */
     public boolean remove(Object... path) {
         try {
-            return rtag.set(tag, null, path);
+            return rtag.set(getTag(), null, path);
         } catch (Throwable t) {
             t.printStackTrace();
             return false;
@@ -558,7 +559,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @return A Map with objects converted by Rtag parent.
      */
     public Map<String, Object> get() {
-        return OptionalType.cast(rtag.getTagValue(tag));
+        return OptionalType.cast(rtag.getTagValue(this.tag));
     }
 
     /**
@@ -572,7 +573,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      */
     public <V> V get(Object... path) {
         try {
-            return rtag.get(tag, path);
+            return rtag.get(this.tag, path);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;
@@ -588,7 +589,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
     public OptionalType getOptional(Object... path) {
         Object value;
         try {
-            value = rtag.getTagValue(rtag.getExact(tag, path));
+            value = rtag.getTagValue(rtag.getExact(this.tag, path));
         } catch (Throwable t) {
             t.printStackTrace();
             value = null;
@@ -606,7 +607,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      */
     public Object getExact(Object... path) {
         try {
-            return rtag.getExact(tag, path);
+            return rtag.getExact(this.tag, path);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;

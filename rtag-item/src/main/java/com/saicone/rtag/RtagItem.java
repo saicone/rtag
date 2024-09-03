@@ -8,6 +8,7 @@ import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.EnchantmentTag;
+import com.saicone.rtag.util.OptionalType;
 import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -38,7 +39,9 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     );
 
     private final Object components;
-    private DataComponent.Builder<Optional<?>> patch;
+
+    private transient DataComponent.Builder<Optional<?>> patch;
+    private transient boolean edited = false;
 
     /**
      * Create an RtagItem using ItemStack.
@@ -125,13 +128,37 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
     @Override
     public Object getLiteralObject(ItemStack item) {
-        return ItemObject.asNMSCopy(item);
+        return ItemObject.getHandle(ItemObject.getCraftStack(item));
+    }
+
+    /**
+     * Get current item tag or null.
+     *
+     * @return A NBTTagCompound.
+     */
+    public Object getLiteralTag() {
+        return this.tag;
+    }
+
+    /**
+     * Get current item tag to edit.<br>
+     * If this instance has not been edited, it will copy the current tag
+     * or create a new one if the current tag is null.
+     *
+     * @return A NBTTagCompound.
+     */
+    @Override
+    public Object getTag() {
+        if (!this.edited) {
+            this.tag = this.tag == null ? TagCompound.newTag() : TagCompound.clone(this.tag);
+            this.edited = true;
+        }
+        return this.tag;
     }
 
     @Override
     public Object getTag(Object item) {
-        final Object tag = ItemObject.getCustomDataTag(item);
-        return tag != null ? tag : TagCompound.newTag();
+        return ItemObject.getCustomDataTag(item);
     }
 
     /**
@@ -153,60 +180,45 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
     /**
      * Load changes into item instance.
+     *
+     * @return The current item instance.
      */
+    @Override
     public ItemStack load() {
-        if (getTag() != null) {
-            ItemObject.setCustomDataTag(getLiteralObject(), getTag());
-        }
-        if (patch != null) {
-            ItemObject.apply(getLiteralObject(), patch.build());
-        }
-        ItemObject.loadHandle(getTypeObject(), getLiteralObject());
+        ItemObject.loadHandle(getTypeObject(), loadInto(getLiteralObject()));
         return getTypeObject();
     }
 
     /**
-     * Load changes into new ItemStack instance and return them.
+     * Load changes into new ItemStack instance and return it.
      *
      * @return Copy of the original item with changes loaded.
      */
     public ItemStack loadCopy() {
-        final Object literal;
-        if (getTag() != null && !ItemObject.hasCustomData(getLiteralObject())) {
-            literal = ItemObject.copy(getLiteralObject());
-            ItemObject.setCustomDataTag(literal, getTag());
-            if (patch != null) {
-                ItemObject.apply(getLiteralObject(), patch.build());
-            }
-        } else if (patch != null) {
-            literal = ItemObject.copy(getLiteralObject());
-            ItemObject.apply(getLiteralObject(), patch.build());
-        } else {
-            literal = getLiteralObject();
-        }
-        return ItemObject.asBukkitCopy(literal);
+        return ItemObject.asBukkitCopy(loadInto(ItemObject.copy(getLiteralObject())));
     }
 
     /**
-     * Change item tag into new one.<br>
-     * Value must be Map&lt;String, Object&gt; or NBTTagCompound.
+     * Load changes into provided Minecraft ItemStack and return it.
      *
-     * @param value Object to replace current tag.
-     * @return      True if tag has replaced.
+     * @param item The item to load changes into
+     * @return     The provided item with changes loaded.
+     * @param <T>  Item type.
      */
+    public <T> T loadInto(T item) {
+        if (this.edited) {
+            ItemObject.setCustomDataTag(item, this.tag);
+        }
+        if (patch != null) {
+            ItemObject.apply(item, patch.build());
+        }
+        return item;
+    }
+
     @Override
-    public boolean set(Object value) {
-        if (value == null) {
-            this.tag = null;
-        } else if (!super.set(value)) {
-            return false;
-        }
-        try {
-            ItemObject.setCustomDataTag(getLiteralObject(), getTag());
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-        return true;
+    public void update(Object object) {
+        this.edited = false;
+        super.update(object);
     }
 
     /**
@@ -222,6 +234,26 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
             return patch.get(componentType).isPresent();
         }
         return DataComponent.Map.has(components, componentType);
+    }
+
+    /**
+     * Change item tag into new one.<br>
+     * Value must be Map&lt;String, Object&gt; or NBTTagCompound.
+     *
+     * @param value Object to replace current tag.
+     * @return      True if tag has replaced.
+     */
+    @Override
+    public boolean set(Object value) {
+        if (value == null) {
+            this.edited = true;
+            this.tag = null;
+            return true;
+        } else if (super.set(value)) {
+            this.edited = true;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -256,6 +288,26 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @ApiStatus.Experimental
     public void removeComponent(Object type) {
         getPatch().remove(ComponentType.of(type));
+    }
+
+    @Override
+    public Map<String, Object> get() {
+        return this.tag == null ? Map.of() : super.get();
+    }
+
+    @Override
+    public <V> V get(Object... path) {
+        return this.tag == null ? null : super.get(path);
+    }
+
+    @Override
+    public OptionalType getOptional(Object... path) {
+        return this.tag == null ? OptionalType.EMPTY : super.getOptional(path);
+    }
+
+    @Override
+    public Object getExact(Object... path) {
+        return this.tag == null ? null : super.getExact(path);
     }
 
     /**
