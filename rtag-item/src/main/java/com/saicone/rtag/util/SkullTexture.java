@@ -48,6 +48,7 @@ public class SkullTexture {
 
     private static final ItemStack PLAYER_HEAD;
 
+    private static final MethodHandle newResolvableProfile;
     private static final MethodHandle getProfile;
     private static final MethodHandle setProfile;
     private static final MethodHandle getValue;
@@ -55,23 +56,34 @@ public class SkullTexture {
     private static final Cache<String, String> TEXTURE_CACHE = CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.HOURS).build();
 
     static {
-        if (ServerInstance.MAJOR_VERSION >= 13) {
+        if (ServerInstance.Release.FLAT) {
             PLAYER_HEAD = new ItemStack(Material.PLAYER_HEAD);
         } else {
             PLAYER_HEAD = new ItemStack(Material.getMaterial("SKULL_ITEM"), 1, (short) 3);
         }
+        MethodHandle new$ResolvableProfile = null;
         MethodHandle get$profile = null;
         MethodHandle set$profile = null;
         MethodHandle get$value = null;
         try {
             EasyLookup.addOBCClass("entity.CraftPlayer");
             EasyLookup.addOBCClass("inventory.CraftMetaSkull");
+            if (ServerInstance.Release.COMPONENT) {
+                EasyLookup.addNMSClass("world.item.component.ResolvableProfile");
+            }
 
             get$profile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
             // Unreflect reason:
             // Private method/field
             if (ServerInstance.MAJOR_VERSION >= 15) {
-                set$profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
+                for (Method method : EasyLookup.classOf("CraftMetaSkull").getDeclaredMethods()) {
+                    if (method.getName().equals("setProfile") && method.getParameters().length == 1) {
+                        if (method.getParameters()[0].getType().getSimpleName().equals("ResolvableProfile")) {
+                            new$ResolvableProfile = EasyLookup.constructor("ResolvableProfile", GameProfile.class);
+                        }
+                        set$profile = EasyLookup.unreflectMethod(method);
+                    }
+                }
             } else {
                 set$profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
             }
@@ -88,6 +100,7 @@ public class SkullTexture {
         } catch (NoSuchFieldException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
         }
+        newResolvableProfile = new$ResolvableProfile;
         getProfile = get$profile;
         setProfile = set$profile;
         getValue = get$value;
@@ -140,7 +153,11 @@ public class SkullTexture {
             throw new IllegalArgumentException("The provided item isn't a player head");
         }
         try {
-            setProfile.invoke(meta, profile);
+            if (newResolvableProfile != null) {
+                setProfile.invoke(meta, newResolvableProfile.invoke(profile));
+            } else {
+                setProfile.invoke(meta, profile);
+            }
         } catch (Throwable t) {
             t.printStackTrace();
         }
