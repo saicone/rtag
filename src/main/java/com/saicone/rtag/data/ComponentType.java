@@ -14,6 +14,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -168,6 +169,15 @@ public class ComponentType {
      */
     public static Object of(String name) {
         return TYPES.get(key(name));
+    }
+
+    /**
+     * Get all DataComponentType objects associated with its ID.
+     *
+     * @return an unmodifiable view of all types.
+     */
+    public static Map<String, Object> all() {
+        return Collections.unmodifiableMap(TYPES);
     }
 
     /**
