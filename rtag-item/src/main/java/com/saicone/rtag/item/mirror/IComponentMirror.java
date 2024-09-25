@@ -502,16 +502,20 @@ public class IComponentMirror implements ItemMirror {
 
         @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
-            final Map<String, Object> levels = new HashMap<>();
+            final Map<String, Integer> levels = new HashMap<>();
             for (Object enchantment : value) {
                 String key = (String) TagBase.getValue(TagCompound.get(enchantment, "id"));
+                Number level = (Number) TagBase.getValue(TagCompound.get(enchantment, "lvl"));
+                if (key == null) {
+                    continue;
+                }
                 if (key.equals("minecraft:sweeping")) {
                     key = "minecraft:sweeping_edge";
                 }
-                levels.put(
-                        key,
-                        ((Number) TagBase.getValue(TagCompound.get(enchantment, "lvl"))).intValue()
-                );
+                if (level == null) {
+                    level = 1;
+                }
+                levels.put(key, level.intValue());
             }
             TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, levels, id, "levels");
@@ -769,6 +773,9 @@ public class IComponentMirror implements ItemMirror {
             for (Object decoration : value) {
                 final Map<String, Object> map = TagCompound.getValue(decoration);
                 final String key = (String) TagBase.getValue(map.remove("id"));
+                if (key == null) {
+                    continue;
+                }
                 move(map, "type", "type", type -> Type.VALUES[Byte.valueOf((byte) type).intValue()].name().toLowerCase());
                 move(map, "rot", "rotation", rot -> Double.valueOf((double) rot).floatValue());
                 decorations.put(key, decoration);
@@ -1030,7 +1037,12 @@ public class IComponentMirror implements ItemMirror {
     public static class Fireworks extends FireworkExplosion {
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
-            final List<Object> explosions = TagList.getValue(value.get("explosions"));
+            final List<Object> explosions;
+            if (value.containsKey("explosions")) {
+                explosions = TagList.getValue(value.get("explosions"));
+            } else {
+                explosions = new ArrayList<>();
+            }
             for (Object explosion : explosions) {
                 upgradeExplosion(TagCompound.getValue(explosion), true);
             }
@@ -1265,7 +1277,13 @@ public class IComponentMirror implements ItemMirror {
                 final Object item = value.get(i);
                 final Map<String, Object> itemValue = TagCompound.getValue(item);
                 final Map<String, Object> slot = new HashMap<>();
-                slot.put("slot", TagBase.newTag(Byte.valueOf((byte) TagBase.getValue(itemValue.get("Slot"))).intValue()));
+                final Number itemSlot = (Number) TagBase.getValue(itemValue.get("Slot"));
+                if (itemSlot == null) {
+                    value.remove(i);
+                    i++;
+                    continue;
+                }
+                slot.put("slot", TagBase.newTag(itemSlot.intValue()));
                 itemValue.remove("Slot");
                 slot.put("item", item);
                 value.set(i, TagCompound.newTag(slot));
