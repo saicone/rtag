@@ -15,13 +15,18 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 
+/**
+ * Class to item-related data.
+ *
+ * @author Rubenicos
+ */
 public class ItemData {
 
     private static final String ROOT_PATH = "==root";
 
     // Paths
-    private static final Map<String, Object> TAG_PATHS = new LinkedHashMap<>();
     private static final Map<String, Object> COMPONENT_PATHS = new LinkedHashMap<>();
+    private static final Map<String, Object> TAG_PATHS = new LinkedHashMap<>();
     // Detectors
     private static final TreeMap<Float, Function<Map<String, Object>, Boolean>> COMPONENT_DETECTORS = new TreeMap<>(Comparator.reverseOrder());
     private static final TreeMap<Float, Function<Map<String, Object>, Boolean>> TAG_DETECTORS = new TreeMap<>(Comparator.reverseOrder());
@@ -39,7 +44,8 @@ public class ItemData {
      * Convert old tag path into new component path.<br>
      * This method skips first key of tag path, it assumes the given path has "tag" at first element
      *
-     * @return        a new component path representation of tag path.
+     * @param path the tag path to convert.
+     * @return     a new component path representation of tag path.
      * @throws IndexOutOfBoundsException if starting position of source or destination path is out of range.
      */
     public static Object[] getComponentPath(Object... path) throws IndexOutOfBoundsException {
@@ -105,7 +111,8 @@ public class ItemData {
      * Convert new component path into old tag path.<br>
      * This method skips first key of component path, it assumes the given path has "components" at first element
      *
-     * @return an old tag path representation of component path.
+     * @param path the component path to convert.
+     * @return     an old tag path representation of component path.
      * @throws IndexOutOfBoundsException if starting position of source or destination path is out of range.
      */
     public static Object[] getTagPath(Object... path) throws IndexOutOfBoundsException {
@@ -176,6 +183,9 @@ public class ItemData {
      * @return         A valid version number or null.
      */
     public static Float getItemVersion(Object compound) {
+        if (compound == null) {
+            return null;
+        }
         final Map<String, Object> value = TagCompound.getValue(compound);
         Object providedVersion = TagBase.getValue(value.get("DataVersion"));
         if (providedVersion == null) {
@@ -491,6 +501,15 @@ public class ItemData {
         TAG_DETECTORS.put(13.01f, tag -> {
             if (tag.containsKey("Damage") || tag.containsKey("Enchantments")) {
                 return true;
+            }
+            if (tag.containsKey("StoredEnchantments")) {
+                final Object storedEnchantments = tag.get("StoredEnchantments");
+                for (Object entry : TagList.getValue(storedEnchantments)) {
+                    final Object id = TagBase.getValue(TagCompound.get(entry, "id"));
+                    if (id instanceof String) {
+                        return true;
+                    }
+                }
             }
             if (tag.containsKey("display")) {
                 final Object name = TagCompound.get(tag.get("display"), "Name");
