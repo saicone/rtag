@@ -224,13 +224,13 @@ public class ItemData {
         // Detect by item components
         final Object components = value.get("components");
         if (components != null || TagBase.getValue(value.get("Count")) instanceof Integer) {
-            final Float version = detectVersion(components, COMPONENT_DETECTORS);
+            final Float version = detectComponentVersion(components);
             return version == null ? 20.04f : version;
         }
 
         // Detect by old tag value
-        final Float version = detectVersion(value.get("tag"), TAG_DETECTORS);
-        if (version == null) {
+        final Float version = detectTagVersion(value.get("tag"));
+        if (version == null || version < 9.01f) {
             // Detect by old entity tag
             String entity = Rtag.INSTANCE.get(compound, "EntityTag", "id");
             if (entity != null) {
@@ -248,16 +248,80 @@ public class ItemData {
         return version;
     }
 
-    private static Float detectVersion(Object compound, TreeMap<Float, Function<Map<String, Object>, Boolean>> detectors) {
-        if (compound != null) {
-            final Map<String, Object> map = TagCompound.getValue(compound);
-            for (var entry : detectors.entrySet()) {
-                if (entry.getValue().apply(map)) {
-                    return entry.getKey();
-                }
+    private static Float detectComponentVersion(Object compound) {
+        if (compound == null) {
+            return null;
+        }
+        Float result = null;
+        final Map<String, Object> components = TagCompound.getValue(compound);
+        if (components.containsKey("minecraft:bundle_contents")) {
+            result = detectListVersion(components.get("minecraft:bundle_contents"), null);
+        }
+        if (components.containsKey("minecraft:container")) {
+            result = maxVersion(result, detectListVersion(components.get("minecraft:container"), "item"));
+        }
+        return maxVersion(result, detectMapVersion(components, COMPONENT_DETECTORS));
+    }
+
+    private static Float detectTagVersion(Object compound) {
+        if (compound == null) {
+            return null;
+        }
+        Float result = null;
+        final Map<String, Object> tag = TagCompound.getValue(compound);
+        if (tag.containsKey("Items")) {
+            result = detectListVersion(tag.get("Items"), null);
+            // Bundles exists since 1.17
+            if (result == null || result < 17.01f) {
+                result = 17.01f;
+            }
+        }
+        final Object blockEntityTag = tag.get("BlockEntityTag");
+        if (TagCompound.isTagCompound(blockEntityTag)) {
+            final Object items = TagCompound.get(blockEntityTag, "Items");
+            result = maxVersion(result, detectListVersion(items, null));
+            // BlockEntityTag was added on 1.9
+            if (result == null || result < 9.01f) {
+                result = 9.01f;
+            }
+        }
+        return maxVersion(result, detectMapVersion(tag, TAG_DETECTORS));
+    }
+
+    private static Float detectListVersion(Object iterable, String key) {
+        if (!TagList.isTagList(iterable)) {
+            return null;
+        }
+        Float result = null;
+        for (Object compound : TagList.getValue(iterable)) {
+            final Float version;
+            if (key == null) {
+                version = getItemVersion(compound);
+            } else {
+                version = getItemVersion(TagCompound.get(compound, key));
+            }
+            result = maxVersion(result, version);
+        }
+        return result;
+    }
+
+    private static Float detectMapVersion(Map<String, Object> map, TreeMap<Float, Function<Map<String, Object>, Boolean>> detectors) {
+        for (var entry : detectors.entrySet()) {
+            if (entry.getValue().apply(map)) {
+                return entry.getKey();
             }
         }
         return null;
+    }
+
+    private static Float maxVersion(Float version1, Float version2) {
+        if (version1 == null) {
+            return version2;
+        }
+        if (version2 == null) {
+            return version1;
+        }
+        return Math.max(version1, version2);
     }
 
     private static Float findMaterialVersion(String id, float minimumVersion) {
@@ -475,7 +539,6 @@ public class ItemData {
                         || tag.containsKey("effects")
         );
         TAG_DETECTORS.put(19.03f, tag -> hasHideFlag(tag, 128));
-        TAG_DETECTORS.put(17.01f, tag -> tag.containsKey("Items"));
         TAG_DETECTORS.put(16.02f, tag -> hasHideFlag(tag, 64));
         TAG_DETECTORS.put(16.01f, tag ->
                 tag.containsKey("SkullOwner")
