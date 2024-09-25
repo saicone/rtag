@@ -1,8 +1,8 @@
 package com.saicone.rtag.item.mirror;
 
 import com.saicone.rtag.Rtag;
+import com.saicone.rtag.item.ItemData;
 import com.saicone.rtag.item.ItemMirror;
-import com.saicone.rtag.item.ItemObject;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
@@ -97,7 +97,7 @@ public class IComponentMirror implements ItemMirror {
             // Move tag paths into component paths
             for (Object[] path : paths) {
                 if (path.length < 2) continue;
-                final Object[] componentPath = ItemObject.getComponentPath(path);
+                final Object[] componentPath = ItemData.getComponentPath(path);
                 if (componentPath.length > 1) {
                     if (componentPath[1].equals("minecraft:written_book_contents") && id.equalsIgnoreCase("minecraft:writable_book")) {
                         componentPath[1] = "writable_book_contents";
@@ -235,7 +235,7 @@ public class IComponentMirror implements ItemMirror {
             // Move component paths into tag paths
             for (Object[] path : extractPaths(compound)) {
                 if (path.length < 2) continue;
-                final Object[] tagPath = ItemObject.getTagPath(path);
+                final Object[] tagPath = ItemData.getTagPath(path);
                 if (tagPath.length > 1) {
                     Rtag.INSTANCE.move(compound, path, tagPath, true);
                 }
