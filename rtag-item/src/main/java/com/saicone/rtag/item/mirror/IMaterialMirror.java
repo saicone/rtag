@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class IMaterialMirror implements ItemMirror {
 
+    private static final String SAVED_ID = "savedID";
+
     private final Cache<String, String> cache;
     private final Object defaultMaterial;
 
@@ -80,26 +82,36 @@ public class IMaterialMirror implements ItemMirror {
     }
 
     /**
-     * Resolve an ItemStack in case of contains "savedID" inside tag.
+     * Resolve an ItemStack if it contains "savedID" inside custom data component.
      *
-     * @param compound Item NBTTagCompound.
-     * @param id       ID of the item.
-     * @param damage   Damage amount.
-     * @param tag      Item tag.
-     * @param from     Version specified in compound.
-     * @param to       Version to convert.
+     * @param compound   Item NBTTagCompound.
+     * @param id         ID of the item.
+     * @param damage     Damage amount.
+     * @param components Item components.
+     * @param from       Version specified in compound.
+     * @param to         Version to convert.
      */
-    public void resolveSaved(Object compound, String id, int damage, Object tag, float from, float to) {
+    public void resolveSaved(Object compound, String id, int damage, Object components, float from, float to) {
         // Check if item contains previously saved ID
-        final String savedID = (String) TagBase.getValue(TagCompound.get(tag, "savedID"));
+        final String savedID = getSavedId(components, from, to);
         if (savedID != null) {
             // Check if saved ID is supported by the current version
             String material = translate(savedID, from, to);
+            if (material.equals("null")) {
+                final String[] split = savedID.split(":", 3);
+                if (split.length > 2) {
+                    material = translate(savedID.substring(0, savedID.lastIndexOf(':')), from, to);
+                    if (!material.equals("null") && from >= 13f && to >= 13f) {
+                        material = material + ":" + split[2];
+                    }
+                }
+            }
             if (!material.equals("null")) {
-                resolveItem(compound, material, tag, from, to);
+                resolveItem(compound, material, components, from, to);
+                setSavedId(compound, null, from, to);
             }
         } else {
-            resolveMaterial(compound, id, damage, tag, from, to);
+            resolveMaterial(compound, id, damage, components, from, to);
         }
     }
 
@@ -107,21 +119,21 @@ public class IMaterialMirror implements ItemMirror {
      * Resolve material of the item, this method checks if the ID needs
      * to be converted.
      *
-     * @param compound Item NBTTagCompound.
-     * @param id       ID of the item.
-     * @param damage   Damage amount.
-     * @param tag      Item tag.
-     * @param from     Version specified in compound.
-     * @param to       Version to convert.
+     * @param compound   Item NBTTagCompound.
+     * @param id         ID of the item.
+     * @param damage     Damage amount.
+     * @param components Item components.
+     * @param from       Version specified in compound.
+     * @param to         Version to convert.
      */
-    public void resolveMaterial(Object compound, String id, int damage, Object tag, float from, float to) {
+    public void resolveMaterial(Object compound, String id, int damage, Object components, float from, float to) {
         final String material;
         // Check if item is an egg with separated tag for entity type (1.9 - 1.12.2)
         final boolean isEgg = (from < 13f && from >= 9f) && id.equalsIgnoreCase("minecraft:spawn_egg");
         if (isEgg) {
             material = id + "=" + getEggEntity(compound, from);
         } else {
-            material = id + (damage > 0 ? ":" + damage : "");
+            material = id + (from < 13f && damage > 0 ? ":" + damage : "");
         }
 
         // Try to translate material
@@ -134,11 +146,10 @@ public class IMaterialMirror implements ItemMirror {
             // Check if the material cannot be translated and save ID for future conversion
             if (newMaterial.equals("null")) {
                 TagCompound.set(compound, "id", defaultMaterial);
-                // Use Rtag, is more easy
-                Rtag.INSTANCE.set(compound, material, "tag", "savedID");
-                setDamage(compound, tag, 0, from, to);
+                setSavedId(compound, material, from, to);
+                setDamage(compound, components, 0, from, to);
             } else {
-                resolveItem(compound, newMaterial, tag, from, to);
+                resolveItem(compound, newMaterial, components, from, to);
             }
         }
     }
@@ -146,22 +157,26 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Resolver current item compound with new material to set.
      *
-     * @param compound Item NBTTagCompound.
-     * @param material Material to set.
-     * @param tag      Item tag.
-     * @param from     Version specified in compound.
-     * @param to       Version to convert.
+     * @param compound   Item NBTTagCompound.
+     * @param material   Material to set.
+     * @param components Item components.
+     * @param from       Version specified in compound.
+     * @param to         Version to convert.
      */
-    public void resolveItem(Object compound, String material, Object tag, float from, float to) {
-        final String[] split;
-        if (material.startsWith("spawn_egg=")) {
-            split = material.split("=", 2);
+    public void resolveItem(Object compound, String material, Object components, float from, float to) {
+        final String id;
+        if (material.startsWith("minecraft:spawn_egg=")) {
+            final String[] split = material.split("=", 2);
+            id = split[0];
             Rtag.INSTANCE.set(compound, split[1], "EntityTag", "id");
         } else {
-            split = material.split(":", 2);
-            setDamage(compound, tag, split.length > 1 ? Integer.parseInt(split[1]) : 0, from, to);
+            final String[] split = material.split(":", 3);
+            id = split[0] + ":" + split[1];
+            try {
+                setDamage(compound, components, split.length > 2 ? Integer.parseInt(split[2]) : 0, from, to);
+            } catch (NumberFormatException ignored) { }
         }
-        TagCompound.set(compound, "id", TagBase.newTag("minecraft:" + split[0]));
+        TagCompound.set(compound, "id", TagBase.newTag(id));
     }
 
     /**
@@ -169,41 +184,54 @@ public class IMaterialMirror implements ItemMirror {
      * method removes old damage tag if the conversion
      * is across legacy-flat.
      *
-     * @param compound Item NBTTagCompound.
-     * @param tag      Item tag.
-     * @param damage   Damage amount to set.
-     * @param from     Version specified in compound
-     * @param to       Version to convert.
+     * @param compound   Item NBTTagCompound.
+     * @param components Item components.
+     * @param damage     Damage amount to set.
+     * @param from       Version specified in compound
+     * @param to         Version to convert.
      */
-    public void setDamage(Object compound, Object tag, int damage, float from, float to) {
-        if (to >= 13f) {
+    public void setDamage(Object compound, Object components, int damage, float from, float to) {
+        if (from >= 20.04f && to >= 20.04f) {
+            TagCompound.set(components, "minecraft:damage", TagBase.newTag(damage));
+        } else if (to >= 13f) {
             if (from < 13f) {
                 TagCompound.remove(compound, "Damage");
             }
             Rtag.INSTANCE.set(compound, damage, "tag", "Damage");
         } else {
-            if (tag != null && from >= 13f) {
-                TagCompound.remove(tag, "Damage");
+            if (components != null && from >= 13f) {
+                TagCompound.remove(components, "Damage");
             }
             TagCompound.set(compound, "Damage", TagBase.newTag((short) damage));
+        }
+    }
+
+    private static void setSavedId(Object compound, String savedID, float from, float to) {
+        // Use Rtag, is more easy
+        if (from >= 20.04f && to >= 20.04f) {
+            Rtag.INSTANCE.set(compound, savedID, "components", "minecraft:custom_data", SAVED_ID);
+        } else {
+            Rtag.INSTANCE.set(compound, savedID, "tag", SAVED_ID);
         }
     }
 
     /**
      * Get current item damage depending on item version.
      *
-     * @param compound Item NBTTagCompound.
-     * @param tag      Item tag.
-     * @param version  Version of the item.
-     * @return         A integer representing item damage.
+     * @param compound   Item NBTTagCompound.
+     * @param components Item components.
+     * @param version    Version of the item.
+     * @return           A integer representing item damage.
      */
-    public int getDamage(Object compound, Object tag, float version) {
-        Object damage = null;
-        // On legacy versions "Damage" is outside tag
-        if (version < 13f) {
+    public int getDamage(Object compound, Object components, float version) {
+        Object damage;
+        if (version >= 20.04f) {
+            damage = components == null ? null : TagCompound.get(components, "minecraft:damage");
+        } else if (version >= 13f) {
+            damage = components == null ? null : TagCompound.get(components, "Damage");
+        } else {
+            // On legacy versions "Damage" is outside tag
             damage = TagCompound.get(compound, "Damage");
-        } else if (tag != null) {
-            damage = TagCompound.get(tag, "Damage");
         }
         if ((damage = TagBase.getValue(damage)) != null) {
             // Avoid any rare error
@@ -217,6 +245,16 @@ public class IMaterialMirror implements ItemMirror {
             }
         }
         return 0;
+    }
+
+    private static String getSavedId(Object components, float from, float to) {
+        final Object savedId;
+        if (from >= 20.04f && to >= 20.04f) {
+            savedId = Rtag.INSTANCE.getExact(components, "minecraft:custom_data", SAVED_ID);
+        } else {
+            savedId = TagCompound.get(components, SAVED_ID);
+        }
+        return (String) TagBase.getValue(savedId);
     }
 
     /**
@@ -274,7 +312,7 @@ public class IMaterialMirror implements ItemMirror {
                         if (entry == null) {
                             cache.put(key, "null");
                         } else {
-                            cache.put(key, ItemMaterialTag.changeNameCase(entry.getValue(), false));
+                            cache.put(key, "minecraft:" + ItemMaterialTag.changeNameCase(entry.getValue(), false));
                         }
                         return;
                     }
