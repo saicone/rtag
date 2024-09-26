@@ -187,6 +187,9 @@ public class ItemData {
             return null;
         }
         final Map<String, Object> value = TagCompound.getValue(compound);
+        if (value.isEmpty()) {
+            return null;
+        }
         Object providedVersion = TagBase.getValue(value.get("DataVersion"));
         if (providedVersion == null) {
             providedVersion = TagBase.getValue(value.get("v"));
@@ -203,6 +206,9 @@ public class ItemData {
 
         // Get full item id
         String id = (String) TagBase.getValue(value.get("id"));
+        if (id == null) {
+            return null;
+        }
         if (id.startsWith("minecraft:")) {
             id = id.substring(10);
         }

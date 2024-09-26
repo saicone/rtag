@@ -73,11 +73,7 @@ public class TStream<T> {
      */
     @SuppressWarnings("unchecked")
     public T build(Object compound) {
-        try {
-            return (T) compound;
-        } catch (ClassCastException e) {
-            return null;
-        }
+        return (T) compound;
     }
 
     /**
@@ -125,11 +121,15 @@ public class TStream<T> {
      * Create new object from NBTTagCompound.
      *
      * @param compound NBTTagCompound instance.
-     * @return         A new object with NBTTagCompound parameters.
+     * @return         A new object with NBTTagCompound parameters, null otherwise.
      */
     public T fromCompound(Object compound) {
         if (TagCompound.isTagCompound(compound)) {
-            return build(compound);
+            try {
+                return build(compound);
+            } catch (Throwable t) {
+                return null;
+            }
         }
 
         if (TagList.isTagList(compound)) {
