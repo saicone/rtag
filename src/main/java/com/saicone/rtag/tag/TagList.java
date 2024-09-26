@@ -137,7 +137,11 @@ public class TagList {
             } else {
                 Object tag = newTag();
                 setTypeField.invoke(tag, type);
-                setListField.invoke(tag, list);
+                try {
+                    setListField.invoke(tag, list);
+                } catch (ClassCastException e) {
+                    getValue(tag).addAll(list);
+                }
                 return tag;
             }
         } catch (Throwable t) {

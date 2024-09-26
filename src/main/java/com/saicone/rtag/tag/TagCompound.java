@@ -170,6 +170,8 @@ public class TagCompound {
             final Object tag = newTag();
             try {
                 setMapField.invoke(tag, map);
+            } catch (ClassCastException e) {
+                getValue(tag).putAll(map);
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
