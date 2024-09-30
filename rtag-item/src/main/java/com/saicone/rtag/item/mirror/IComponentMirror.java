@@ -45,8 +45,8 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:attribute_modifiers", new AttributeModifiers());
         TRANSFORMATIONS.put("minecraft:charged_projectiles", new ChargedProjectiles());
         TRANSFORMATIONS.put("minecraft:map_decorations", new MapDecorations());
-        TRANSFORMATIONS.put("minecraft:writable_book_contents", new BookContents());
-        TRANSFORMATIONS.put("minecraft:written_book_contents", new BookContents());
+        TRANSFORMATIONS.put("minecraft:writable_book_content", new BookContents());
+        TRANSFORMATIONS.put("minecraft:written_book_content", new BookContents());
         TRANSFORMATIONS.put("minecraft:trim", new TooltipDowngrade(7));
         TRANSFORMATIONS.put("minecraft:hide_additional_tooltip", new Transformation() {
             @Override
@@ -99,8 +99,8 @@ public class IComponentMirror implements ItemMirror {
                 if (path.length < 2) continue;
                 final Object[] componentPath = ItemData.getComponentPath(path);
                 if (componentPath.length > 1) {
-                    if (componentPath[1].equals("minecraft:written_book_contents") && id.equalsIgnoreCase("minecraft:writable_book")) {
-                        componentPath[1] = "writable_book_contents";
+                    if (componentPath[1].equals("minecraft:written_book_content") && id.equalsIgnoreCase("minecraft:writable_book")) {
+                        componentPath[1] = "writable_book_content";
                     }
                 }
                 if (path[0].equals("tag")) {

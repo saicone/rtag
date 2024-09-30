@@ -392,11 +392,11 @@ public class ItemData {
                 "custom_color", "CustomPotionColor",
                 "custom_effects", "custom_potion_effects"
         ));
-//        initPath("minecraft:writable_book_contents", Map.of(
+//        initPath("minecraft:writable_book_content", Map.of(
 //                "filtered_pages", "filtered_pages",
 //                "pages", "pages"
 //        ));
-        loadPath("minecraft:written_book_contents", Map.of(
+        loadPath("minecraft:written_book_content", Map.of(
                 "filtered_pages", "filtered_pages",
                 "filtered_title", "filtered_title",
                 "pages", "pages",
