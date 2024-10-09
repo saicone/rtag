@@ -63,6 +63,7 @@ public class ItemTagStream extends TStream<ItemStack> {
             }
             if (minVersion < 16f) {
                 mirrors.add(new ISkullOwnerMirror());
+                mirrors.add(new IAttributeMirror());
             }
             mirrors.add(new IMaterialMirror());
             if (minVersion < 14f) {
