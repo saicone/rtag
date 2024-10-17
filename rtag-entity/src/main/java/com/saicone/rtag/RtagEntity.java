@@ -5,6 +5,7 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.OptionalType;
+import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.entity.Entity;
 
 import java.util.function.Consumer;
@@ -16,6 +17,10 @@ import java.util.function.Function;
  * @author Rubenicos
  */
 public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
+
+    private static final String ATTRIBUTES = ServerInstance.MAJOR_VERSION >= 21 ? "attributes" : "Attributes";
+    private static final String ATTRIBUTE_ID = ServerInstance.MAJOR_VERSION >= 21 ? "id" : "Name";
+    private static final String ATTRIBUTE_BASE = ServerInstance.MAJOR_VERSION >= 21 ? "base" : "Base";
 
     /**
      * Create an RtagEntity using Entity.
@@ -128,7 +133,7 @@ public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
      * @return      true if the base value was changed.
      */
     public boolean setAttributeBase(String name, double value) {
-        return setAttributeValue(name, "Base", value);
+        return setAttributeValue(name, ATTRIBUTE_BASE, value);
     }
 
     /**
@@ -170,10 +175,10 @@ public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
         if (name == null) {
             return null;
         }
-        final Object attributes = TagCompound.get(getTag(), "Attributes");
+        final Object attributes = TagCompound.get(getTag(), ATTRIBUTES);
         if (attributes != null) {
             for (Object attribute : TagList.getValue(attributes)) {
-                if (name.equals(TagBase.getValue(TagCompound.get(attribute, "Name")))) {
+                if (name.equals(TagBase.getValue(TagCompound.get(attribute, ATTRIBUTE_ID)))) {
                     return attribute;
                 }
             }
@@ -188,7 +193,7 @@ public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
      * @return     the base value of the attribute if was found, 0 otherwise.
      */
     public double getAttributeBase(String name) {
-        return OptionalType.of(getAttributeValue(name, "Base")).or(0);
+        return OptionalType.of(getAttributeValue(name, ATTRIBUTE_BASE)).or(0);
     }
 
     /**
