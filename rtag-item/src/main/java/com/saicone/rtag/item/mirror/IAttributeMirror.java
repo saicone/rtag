@@ -4,10 +4,12 @@ import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * IAttributeMirror class to convert attribute names across versions.
@@ -16,6 +18,7 @@ import java.util.Map;
  */
 public class IAttributeMirror implements ItemMirror {
 
+    private static final String PREFIX = "minecraft:";
     private static final Map<String, String> NEW_NAMES;
     private static final Map<String, String> OLD_NAMES;
 
@@ -68,12 +71,15 @@ public class IAttributeMirror implements ItemMirror {
             final Map<String, Object> map = TagCompound.getValue(modifier);
             final Object name = map.remove("AttributeName");
             if (name != null) {
-                String nameValue = (String) TagBase.getValue(name);
-                if (names.containsKey(nameValue)) {
-                    nameValue = names.get(nameValue);
-                }
-                map.put("type", TagBase.newTag(nameValue));
+                map.put("type", TagBase.newTag(rename((String) TagBase.getValue(name), nameValue -> names.getOrDefault(nameValue, nameValue))));
             }
         }
+    }
+
+    @NotNull
+    public static String rename(@NotNull String type, @NotNull Function<String, String> function) {
+        final boolean starts = type.startsWith(PREFIX);
+        final String renamed = function.apply(starts ? type.substring(PREFIX.length()) : type);
+        return starts ? PREFIX + renamed : renamed;
     }
 }

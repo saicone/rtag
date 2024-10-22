@@ -18,6 +18,7 @@ import java.util.function.Function;
  */
 public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
 
+    private static final String PREFIX = "minecraft:";
     private static final String ATTRIBUTES = ServerInstance.MAJOR_VERSION >= 21 ? "attributes" : "Attributes";
     private static final String ATTRIBUTE_ID = ServerInstance.MAJOR_VERSION >= 21 ? "id" : "Name";
     private static final String ATTRIBUTE_BASE = ServerInstance.MAJOR_VERSION >= 21 ? "base" : "Base";
@@ -177,8 +178,13 @@ public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
         }
         final Object attributes = TagCompound.get(getTag(), ATTRIBUTES);
         if (attributes != null) {
+            final String type = name.startsWith(PREFIX) ? name : PREFIX + name;
             for (Object attribute : TagList.getValue(attributes)) {
-                if (name.equals(TagBase.getValue(TagCompound.get(attribute, ATTRIBUTE_ID)))) {
+                String id = (String) TagBase.getValue(TagCompound.get(attribute, ATTRIBUTE_ID));
+                if (!id.startsWith(PREFIX)) {
+                    id = PREFIX + id;
+                }
+                if (type.equals(id)) {
                     return attribute;
                 }
             }
