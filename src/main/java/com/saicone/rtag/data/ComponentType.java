@@ -90,13 +90,11 @@ public class ComponentType {
                     resource$key = "getPath";
                     holder$value = "value";
                     codec = "codec";
+                } else if (ServerInstance.VERSION >= 21.02f) {
+                    registry$components = "ao";
+                    registry$map = "e";
                 } else if (ServerInstance.MAJOR_VERSION >= 21) {
-                    if (ServerInstance.VERSION >= 21.02f) {
-                        registry$components = "ao";
-                        registry$map = "e";
-                    } else {
-                        registry$components = "aq";
-                    }
+                    registry$components = "aq";
                 }
 
                 class$Error = EasyLookup.addClass("com.mojang.serialization.DataResult$Error");
