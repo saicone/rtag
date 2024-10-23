@@ -52,16 +52,23 @@ public class IBundleMirror implements ItemMirror {
 
     @Override
     public void upgrade(Object compound, String id, Object components, float from, float to) {
-        if (id.equals("minecraft:bundle")) {
+        if (matches(id, from)) {
             processTag(components, from, to);
         }
     }
 
     @Override
     public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (id.equals("minecraft:bundle")) {
+        if (matches(id, from)) {
             processTag(components, from, to);
         }
+    }
+
+    private boolean matches(String id, float from) {
+        if (from >= 21.02f) {
+            return id.endsWith("_bundle");
+        }
+        return id.equals("minecraft:bundle");
     }
 
     /**

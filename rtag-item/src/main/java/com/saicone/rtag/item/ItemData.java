@@ -453,7 +453,7 @@ public class ItemData {
         loadPath("minecraft:food", "tag", "components", "minecraft:food");
         loadPath("minecraft:max_stack_size", "tag", "components", "minecraft:max_stack_size");
         loadPath("minecraft:max_damage", "tag", "components", "minecraft:max_damage");
-        loadPath("minecraft:fire_resistant", "tag", "components", "minecraft:fire_resistant");
+        loadPath("minecraft:fire_resistant", "tag", "components", "minecraft:fire_resistant"); // Renamed on 24w37a
         loadPath("minecraft:rarity", "tag", "components", "minecraft:rarity");
         loadPath("minecraft:tool", "tag", "components", "minecraft:tool");
         loadPath("minecraft:hide_tooltip", "tag", "components", "minecraft:hide_tooltip");
@@ -462,6 +462,21 @@ public class ItemData {
         loadPath("minecraft:ominous_bottle_amplifier", "tag", "components", "minecraft:ominous_bottle_amplifier");
         // - 24w21a
         loadPath("minecraft:jukebox_playable", "tag", "components", "minecraft:jukebox_playable");
+        // - 24w33a
+        loadPath("minecraft:repairable", "tag", "components", "minecraft:repairable");
+        loadPath("minecraft:enchantable", "tag", "components", "minecraft:enchantable");
+        // - 24w34a
+        loadPath("minecraft:consumable", "tag", "components", "minecraft:consumable");
+        loadPath("minecraft:use_cooldown", "tag", "components", "minecraft:use_cooldown");
+        loadPath("minecraft:use_remainder", "tag", "components", "minecraft:use_remainder");
+        // - 24w36a
+        loadPath("minecraft:item_model", "tag", "components", "minecraft:item_model");
+        loadPath("minecraft:equippable", "tag", "components", "minecraft:equippable");
+        loadPath("minecraft:glider", "tag", "components", "minecraft:glider");
+        loadPath("minecraft:tooltip_style", "tag", "components", "minecraft:tooltip_style");
+        // - 24w37a
+        loadPath("minecraft:death_protection", "tag", "components", "minecraft:death_protection");
+        loadPath("minecraft:damage_resistant", "tag", "components", "minecraft:damage_resistant");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }

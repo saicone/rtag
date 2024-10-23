@@ -10,6 +10,7 @@ import com.saicone.rtag.util.OptionalType;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -63,7 +64,11 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:banner_patterns", new BannerPatterns());
         TRANSFORMATIONS.put("minecraft:container", new Container());
         TRANSFORMATIONS.put("minecraft:bees", new Bees());
-
+        TRANSFORMATIONS.put("minecraft:food", new Food());
+        TRANSFORMATIONS.put("minecraft:consumable", new Food());
+        TRANSFORMATIONS.put("minecraft:use_remainder", new Food());
+        TRANSFORMATIONS.put("minecraft:fire_resistant", new DamageResistant());
+        TRANSFORMATIONS.put("minecraft:damage_resistant", new DamageResistant());
     }
 
     @Override
@@ -633,6 +638,18 @@ public class IComponentMirror implements ItemMirror {
      * AttributeModifiers component transformation.
      */
     public static class AttributeModifiers extends TooltipDowngrade {
+
+        private static final Set<String> PLAYER = Set.of(
+                "block_interaction_range",
+                "entity_interaction_range",
+                "block_break_speed",
+                "mining_efficiency",
+                "sneaking_speed",
+                "submerged_mining_speed",
+                "sweeping_damage_ratio"
+        );
+        private static final String ZOMBIE = "spawn_reinforcements";
+
         /**
          * Construct an AttributeModifiers transformation with default options.
          */
@@ -643,27 +660,36 @@ public class IComponentMirror implements ItemMirror {
         @Override
         public void upgrade(Object components, String id, Object component, float from, float to) {
             if (to >= 21f && from < 21f) {
-                final Object modifiers = TagCompound.get(component, "modifiers");
-                if (modifiers != null) {
-                    for (Object modifier : TagList.getValue(modifiers)) {
-                        final Map<String, Object> map = TagCompound.getValue(modifier);
-                        final Object name = map.remove("name");
-                        if (name != null) {
-                            final String nameValue = (String) TagBase.getValue(name);
-                            if (nameValue.indexOf(':') > 0) {
-                                map.put("id", name);
-                                map.remove("uuid");
-                                continue;
-                            }
-                        }
-                        final Object uuid = map.remove("uuid");
-                        if (uuid != null) {
-                            map.put("id", TagBase.newTag("minecraft:" + TagBase.getValue(uuid)));
-                        } else {
-                            map.put("id", TagBase.newTag("minecraft:" + UUID.randomUUID()));
+                modifiers(component, map -> {
+                    final Object name = map.remove("name");
+                    if (name != null) {
+                        final String nameValue = (String) TagBase.getValue(name);
+                        if (nameValue.indexOf(':') > 0) {
+                            map.put("id", name);
+                            map.remove("uuid");
+                            return;
                         }
                     }
-                }
+                    final Object uuid = map.remove("uuid");
+                    if (uuid != null) {
+                        map.put("id", TagBase.newTag("minecraft:" + TagBase.getValue(uuid)));
+                    } else {
+                        map.put("id", TagBase.newTag("minecraft:" + UUID.randomUUID()));
+                    }
+                });
+            }
+            if (to >= 21.02f && from < 21.02f) {
+                modifiers(component, map -> {
+                    final Object type = map.remove("type");
+                    if (type != null) {
+                        map.put("type", TagBase.newTag(IAttributeMirror.rename(((String) TagBase.getValue(type)).toLowerCase(), typeValue -> {
+                            if (typeValue.startsWith("generic.") || typeValue.startsWith("player.") || typeValue.startsWith("zombie.")) {
+                                return typeValue.substring(typeValue.indexOf('.') + 1);
+                            }
+                            return typeValue;
+                        })));
+                    }
+                });
             }
         }
 
@@ -671,13 +697,24 @@ public class IComponentMirror implements ItemMirror {
         public boolean upgradeList(Object components, String id, List<Object> value) {
             for (Object modifier : value) {
                 final Map<String, Object> map = TagCompound.getValue(modifier);
-                move(map, "AttributeName", "type");
+                move(map, "AttributeName", "type", type -> IAttributeMirror.rename((String) type, s -> {
+                    switch (s) {
+                        case "generic.block_interaction_range":
+                            return "player.block_interaction_range";
+                        case "generic.entity_interaction_range":
+                            return "player.entity_interaction_range";
+                        case "horse.jump_strength":
+                            return "generic.jump_strength";
+                        default:
+                            return s;
+                    }
+                }));
                 move(map, "Slot", "slot");
                 move(map, "UUID", "uuid");
                 move(map, "Name", "name");
                 move(map, "Amount", "amount");
-                move(map, "Operation", "operation", type -> {
-                    switch ((int) type) {
+                move(map, "Operation", "operation", operation -> {
+                    switch ((int) operation) {
                         case 0:
                             return "add_value";
                         case 1:
@@ -695,52 +732,84 @@ public class IComponentMirror implements ItemMirror {
 
         @Override
         public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (to < 21f && from >= 21f) {
-                final Object modifiers = TagCompound.get(component, "modifiers");
-                if (modifiers != null) {
-                    for (Object modifier : TagList.getValue(modifiers)) {
-                        final Map<String, Object> map = TagCompound.getValue(modifier);
-                        final Object key = map.remove("id");
-                        if (key != null) {
-                            map.put("name", key);
-                        } else {
-                            map.put("name", TagBase.newTag(UUID.randomUUID()));
-                        }
-                        map.put("uuid", TagBase.newTag(UUID.randomUUID()));
+            if (to < 21.02f && from >= 21.02f) {
+                modifiers(component, map -> {
+                    final Object type = map.remove("type");
+                    if (type != null) {
+                        map.put("type", TagBase.newTag(IAttributeMirror.rename(((String) TagBase.getValue(type)).toLowerCase(), typeValue -> {
+                            if (!typeValue.contains(".")) {
+                                if (PLAYER.contains(typeValue)) {
+                                    return "player." + typeValue;
+                                } else if (ZOMBIE.equals(typeValue)) {
+                                    return "zombie." + typeValue;
+                                } else {
+                                    return "generic." + typeValue;
+                                }
+                            }
+                            return typeValue;
+                        })));
                     }
-                }
+                });
+            }
+            if (to < 21f && from >= 21f) {
+                modifiers(component, map -> {
+                    final Object key = map.remove("id");
+                    if (key != null) {
+                        map.put("name", key);
+                    } else {
+                        map.put("name", TagBase.newTag(UUID.randomUUID()));
+                    }
+                    map.put("uuid", TagBase.newTag(UUID.randomUUID()));
+                });
             }
         }
 
         @Override
         public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
             downgradeTooltip(components, value);
-            final Object modifiers = value.get("modifiers");
+            final Object modifiers = modifiers(value, map -> {
+                move(map, "type", "AttributeName", type -> IAttributeMirror.rename((String) type, s -> {
+                    switch (s) {
+                        case "player.block_interaction_range":
+                            return "generic.block_interaction_range";
+                        case "player.entity_interaction_range":
+                            return "generic.entity_interaction_range";
+                        case "generic.jump_strength":
+                            return "horse.jump_strength";
+                        default:
+                            return s;
+                    }
+                }));
+                move(map, "slot", "Slot");
+                move(map, "uuid", "UUID");
+                move(map, "name", "Name");
+                move(map, "amount", "Amount");
+                move(map, "operation", "Operation", operation -> {
+                    switch ((String) operation) {
+                        case "add_value":
+                            return 0;
+                        case "add_multiplied_base":
+                            return 1;
+                        case "add_multiplied_total":
+                            return 2;
+                        default:
+                            return null;
+                    }
+                });
+            });
+            return modifiers != null && Rtag.INSTANCE.set(components, modifiers, id);
+        }
+
+        @SuppressWarnings("unchecked")
+        private static Object modifiers(Object value, Consumer<Map<String, Object>> consumer) {
+            final Object modifiers = value instanceof Map ? ((Map<String, Object>) value).get("modifiers") : TagCompound.get(value, "modifiers");
             if (modifiers != null) {
                 for (Object modifier : TagList.getValue(modifiers)) {
                     final Map<String, Object> map = TagCompound.getValue(modifier);
-                    move(map, "type", "AttributeName");
-                    move(map, "slot", "Slot");
-                    move(map, "uuid", "UUID");
-                    move(map, "name", "Name");
-                    move(map, "amount", "Amount");
-                    move(map, "operation", "Operation", type -> {
-                        switch ((String) type) {
-                            case "add_value":
-                                return 0;
-                            case "add_multiplied_base":
-                                return 1;
-                            case "add_multiplied_total":
-                                return 2;
-                            default:
-                                return null;
-                        }
-                    });
+                    consumer.accept(map);
                 }
-                return Rtag.INSTANCE.set(components, modifiers, id);
-            } else {
-                return false;
             }
+            return modifiers;
         }
     }
 
@@ -1328,6 +1397,91 @@ public class IComponentMirror implements ItemMirror {
                 move(map, "min_ticks_in_hive", "MinOccupationTicks");
             }
             return true;
+        }
+    }
+
+    /**
+     * Consumable component transformation.
+     */
+    public static class Food implements Transformation {
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.02f && from < 21.02f && id.equals("minecraft:food")) {
+                final Map<String, Object> food = TagCompound.getValue(component);
+
+                final Object eatSeconds = food.remove("eat_seconds");
+                if (eatSeconds != null) {
+                    Rtag.INSTANCE.set(components, eatSeconds, "minecraft:consumable", "consume_seconds");
+                }
+
+                final Object usingConvertsTo = food.remove("using_converts_to");
+                if (usingConvertsTo != null) {
+                    TagCompound.set(components, "minecraft:use_remainder", usingConvertsTo);
+                }
+
+                final Object effects = food.remove("effects");
+                if (effects != null) {
+                    for (Object effect : TagList.getValue(effects)) {
+                        TagCompound.set(effect, "type", TagBase.newTag("apply_effects"));
+                        Rtag.INSTANCE.add(effect, TagCompound.remove(effect, "effect"), "effects");
+                    }
+                    Rtag.INSTANCE.set(components, effects, "minecraft:consumable", "on_consume_effects");
+                }
+            }
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.02f && to < 21.02f) {
+                if (id.equals("minecraft:consumable")) {
+                    final Map<String, Object> consumable = TagCompound.getValue(component);
+
+                    final Object consumeSeconds = consumable.remove("consume_seconds");
+                    if (consumeSeconds != null) {
+                        Rtag.INSTANCE.set(components, consumeSeconds, "minecraft:food", "eat_seconds");
+                    }
+
+                    final Object onConsumeEffects = consumable.get("on_consume_effects");
+                    if (onConsumeEffects != null) {
+                        final Iterator<Object> iterator = TagList.getValue(onConsumeEffects).iterator();
+                        while (iterator.hasNext()) {
+                            final Map<String, Object> effect = TagCompound.getValue(iterator.next());
+                            if (TagBase.getValue(effect.get("type")).equals("apply_effects")) {
+                                iterator.remove();
+                                final Object probability = effect.get("probability");
+                                for (Object value : TagList.getValue(effect.get("effects"))) {
+                                    Rtag.INSTANCE.add(components, Map.of(probability, Map.of("effect", value)), "minecraft:food", "apply_effects");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (id.equals("minecraft:use_remainder")) {
+                    TagCompound.remove(components, id);
+                    Rtag.INSTANCE.set(components, component, "minecraft:food", "using_converts_to");
+                }
+            }
+        }
+    }
+
+    public static class DamageResistant implements Transformation {
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.02f && from < 21.02f && id.equals("minecraft:fire_resistant")) {
+                TagCompound.remove(components, "minecraft:fire_resistant");
+                Rtag.INSTANCE.set(components, "#minecraft:is_fire", "minecraft:damage_resistant", "types");
+            }
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.02f && to < 21.02f && id.equals("minecraft:damage_resistant")) {
+                if ("#minecraft:is_fire".equals(TagBase.getValue(TagCompound.get(component, "types")))) {
+                    TagCompound.remove(components, "minecraft:damage_resistant");
+                    TagCompound.set(components, "minecraft:fire_resistant", TagCompound.newTag());
+                }
+            }
         }
     }
 

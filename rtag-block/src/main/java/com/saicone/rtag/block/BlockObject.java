@@ -66,6 +66,9 @@ public class BlockObject {
                 if (ServerInstance.Release.COMPONENT) {
                     save = "d";
                     load = "c";
+                    if (ServerInstance.VERSION >= 21.02f) {
+                        getRegistry = "K_";
+                    }
                 } else if (ServerInstance.VERSION >= 19.03) {
                     save = "o";
                 } else {

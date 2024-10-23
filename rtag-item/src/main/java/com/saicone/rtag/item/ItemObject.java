@@ -110,6 +110,10 @@ public class ItemObject {
                     apply = "a";
                     if (ServerInstance.MAJOR_VERSION >= 21) {
                         registry$item = "g";
+                        if (ServerInstance.VERSION >= 21.02f) {
+                            copy = "v";
+                            setItem = "o";
+                        }
                     }
                 } else {
                     apply = "load";
