@@ -8,6 +8,7 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.ItemMaterialTag;
 
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +25,60 @@ import java.util.concurrent.TimeUnit;
 public class IMaterialMirror implements ItemMirror {
 
     private static final String SAVED_ID = "savedID";
+    private static final Set<String> DAMAGEABLE = Set.of(
+            "minecraft:bow",
+            "minecraft:carrot_on_a_stick",
+            "minecraft:chainmail_boots",
+            "minecraft:chainmail_chestplate",
+            "minecraft:chainmail_helmet",
+            "minecraft:chainmail_leggings",
+            "minecraft:diamond_axe",
+            "minecraft:diamond_boots",
+            "minecraft:diamond_chestplate",
+            "minecraft:diamond_helmet",
+            "minecraft:diamond_hoe",
+            "minecraft:diamond_leggings",
+            "minecraft:diamond_pickaxe",
+            "minecraft:diamond_shovel",
+            "minecraft:diamond_sword",
+            "minecraft:elytra",
+            "minecraft:fishing_rod",
+            "minecraft:flint_and_steel",
+            "minecraft:golden_axe",
+            "minecraft:golden_boots",
+            "minecraft:golden_chestplate",
+            "minecraft:golden_helmet",
+            "minecraft:golden_hoe",
+            "minecraft:golden_leggings",
+            "minecraft:golden_pickaxe",
+            "minecraft:golden_shovel",
+            "minecraft:golden_sword",
+            "minecraft:iron_axe",
+            "minecraft:iron_boots",
+            "minecraft:iron_chestplate",
+            "minecraft:iron_helmet",
+            "minecraft:iron_hoe",
+            "minecraft:iron_leggings",
+            "minecraft:iron_pickaxe",
+            "minecraft:iron_shovel",
+            "minecraft:iron_sword",
+            "minecraft:leather_boots",
+            "minecraft:leather_chestplate",
+            "minecraft:leather_helmet",
+            "minecraft:leather_leggings",
+            "minecraft:shears",
+            "minecraft:shield",
+            "minecraft:stone_axe",
+            "minecraft:stone_hoe",
+            "minecraft:stone_pickaxe",
+            "minecraft:stone_shovel",
+            "minecraft:stone_sword",
+            "minecraft:wooden_axe",
+            "minecraft:wooden_hoe",
+            "minecraft:wooden_pickaxe",
+            "minecraft:wooden_shovel",
+            "minecraft:wooden_sword"
+    );
 
     private final Cache<String, String> cache;
     private final Object defaultMaterial;
@@ -130,10 +185,11 @@ public class IMaterialMirror implements ItemMirror {
         final String material;
         // Check if item is an egg with separated tag for entity type (1.9 - 1.12.2)
         final boolean isEgg = (from < 13f && from >= 9f) && id.equalsIgnoreCase("minecraft:spawn_egg");
+        final boolean saveDamage = from >= 13f || DAMAGEABLE.contains(id.toLowerCase());
         if (isEgg) {
             material = id + "=" + getEggEntity(compound, from);
         } else {
-            material = id + (from < 13f && damage > 0 ? ":" + damage : "");
+            material = id + (!saveDamage && damage > 0 ? ":" + damage : "");
         }
 
         // Try to translate material
@@ -148,9 +204,13 @@ public class IMaterialMirror implements ItemMirror {
                 TagCompound.set(compound, "id", defaultMaterial);
                 setSavedId(compound, material, from, to);
                 setDamage(compound, components, 0, from, to);
+                return;
             } else {
                 resolveItem(compound, newMaterial, components, from, to);
             }
+        }
+        if (saveDamage && damage > 0) {
+            setDamage(compound, components, damage, from, to);
         }
     }
 
