@@ -510,12 +510,17 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @param model Model id, null of you want to remove it.
      * @return      true if the model was set or removed.
      */
+    @Deprecated
     public boolean setCustomModelData(Integer model) {
         if (ServerInstance.Release.COMPONENT) {
             if (model == null) {
                 removeComponent("minecraft:custom_model_data");
             } else {
-                setComponent("minecraft:custom_model_data", model);
+                if (ServerInstance.VERSION >= 21.03f) {
+                    setComponent("minecraft:custom_model_data", Map.of("floats", List.of(model.floatValue())));
+                } else {
+                    setComponent("minecraft:custom_model_data", model);
+                }
             }
             return true;
         }
@@ -673,9 +678,22 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      *
      * @return Model id, null if the item doesn't have model.
      */
+    @Deprecated
     public Integer getCustomModelData() {
         if (ServerInstance.Release.COMPONENT) {
-            return (Integer) ComponentType.encodeJava("minecraft:custom_model_data", getComponent("minecraft:custom_model_data")).orElse(null);
+            return ComponentType.encodeJava("minecraft:custom_model_data", getComponent("minecraft:custom_model_data")).map(model -> {
+                if (model instanceof Map) {
+                    final Object floats = ((Map<?, ?>) model).get("floats");
+                    if (floats instanceof List && !((List<?>) floats).isEmpty()) {
+                        final Object f = ((List<?>) floats).get(0);
+                        if (f instanceof Float) {
+                            return ((Float) f).intValue();
+                        }
+                    }
+                    return null;
+                }
+                return (Integer) model;
+            }).orElse(null);
         }
         return get("CustomModelData");
     }

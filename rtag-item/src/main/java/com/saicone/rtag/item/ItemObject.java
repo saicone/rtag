@@ -123,7 +123,9 @@ public class ItemObject {
                     if (ServerInstance.MAJOR_VERSION >= 18) {
                         save = "b";
                         setTag = "c";
-                        if (ServerInstance.Release.COMPONENT) {
+                        if (ServerInstance.VERSION >= 21.03f) {
+                            getTag = "g";
+                        } else if (ServerInstance.Release.COMPONENT) {
                             getTag = ServerInstance.DATA_VERSION >= 3839 ? "f" : "e";
                         } else if (ServerInstance.MAJOR_VERSION >= 20) {
                             getTag = "v";
@@ -155,7 +157,7 @@ public class ItemObject {
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
                 method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
-                method$getTag = EasyLookup.unreflectGetter("CustomData", getTag);
+                method$getTag = EasyLookup.getter("CustomData", getTag, "NBTTagCompound");
                 method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
                 method$setCount = EasyLookup.method(MC_ITEM, setCount, void.class, int.class);
             } else {

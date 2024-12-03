@@ -367,6 +367,8 @@ public class DataComponent {
                     map = "patch";
                     set = "set";
                     remove = "remove";
+                } else if (ServerInstance.VERSION >= 21.03f) {
+                    remove = "e";
                 }
 
                 try {

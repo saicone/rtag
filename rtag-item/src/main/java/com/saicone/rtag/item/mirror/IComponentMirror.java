@@ -69,6 +69,8 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:use_remainder", new Food());
         TRANSFORMATIONS.put("minecraft:fire_resistant", new DamageResistant());
         TRANSFORMATIONS.put("minecraft:damage_resistant", new DamageResistant());
+        TRANSFORMATIONS.put("minecraft:custom_model_data", new CustomModelData());
+        TRANSFORMATIONS.put("minecraft:equippable", new Equippable());
     }
 
     @Override
@@ -1481,6 +1483,53 @@ public class IComponentMirror implements ItemMirror {
                     TagCompound.remove(components, "minecraft:damage_resistant");
                     TagCompound.set(components, "minecraft:fire_resistant", TagCompound.newTag());
                 }
+            }
+        }
+    }
+
+    public static class CustomModelData implements Transformation {
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.03f && from < 21.03f) {
+                TagCompound.remove(components, id);
+                if (component instanceof Number) {
+                    TagCompound.set(components, id, TagCompound.newTag(Map.of("floats", TagList.newTag(List.of(((Number) component).floatValue())))));
+                }
+            }
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.03f && to < 21.03f) {
+                TagCompound.remove(components, id);
+                final Object floats = TagCompound.get(component, "floats");
+                if (floats != null) {
+                    Float modelData = null;
+                    for (Object element : TagList.getValue(floats)) {
+                        if (element == null) continue;
+                        modelData = (Float) TagBase.getValue(element);
+                        break;
+                    }
+                    if (modelData != null) {
+                        TagCompound.set(components, id, TagBase.newTag(modelData.intValue()));
+                    }
+                }
+            }
+        }
+    }
+
+    public static class Equippable implements Transformation {
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.03f && from < 21.03f) {
+                move(TagCompound.getValue(component), "model", "asset_id");
+            }
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.03f && to < 21.03f) {
+                move(TagCompound.getValue(component), "asset_id", "model");
             }
         }
     }
