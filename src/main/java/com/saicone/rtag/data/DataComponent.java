@@ -56,9 +56,9 @@ public class DataComponent {
      */
     public static Optional<Object> getOptional(Object component, Object type) throws IllegalArgumentException {
         if (COMPONENT_HOLDER.isInstance(component)) {
-            return Optional.of(Holder.get(component, type));
+            return Optional.ofNullable(Holder.get(component, type));
         } else if (COMPONENT_MAP.isInstance(component)) {
-            return Optional.of(Map.get(component, type));
+            return Optional.ofNullable(Map.get(component, type));
         } else if (COMPONENT_PATCH.isInstance(component)) {
             return Patch.get(component, type);
         } else {
