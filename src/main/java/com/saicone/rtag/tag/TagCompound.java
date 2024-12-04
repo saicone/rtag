@@ -66,7 +66,9 @@ public class TagCompound {
                 map = "x";
                 if (ServerInstance.MAJOR_VERSION >= 18) {
                     parse = "a";
-                    if (ServerInstance.VERSION >= 19.03) {
+                    if (ServerInstance.Release.COMPONENT) {
+                        clone = "i";
+                    } else if (ServerInstance.VERSION >= 19.03) {
                         clone = "h";
                     } else {
                         clone = "g";
