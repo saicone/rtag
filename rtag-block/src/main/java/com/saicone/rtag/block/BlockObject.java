@@ -1,5 +1,6 @@
 package com.saicone.rtag.block;
 
+import com.saicone.rtag.Rtag;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ServerInstance;
@@ -163,7 +164,8 @@ public class BlockObject {
     public static Object save(Object tile) {
         try {
             if (ServerInstance.Release.COMPONENT) {
-                final Object registry = getRegistry.invoke(getWorld.invoke(tile));
+                final Object world = getWorld.invoke(tile);
+                final Object registry = world != null ? getRegistry.invoke(world) : Rtag.getMinecraftRegistry();
                 return save.invoke(tile, registry);
             } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 return save.invoke(tile);
@@ -188,7 +190,8 @@ public class BlockObject {
     public static void load(Object tile, Object tag) {
         try {
             if (ServerInstance.Release.COMPONENT) {
-                final Object registry = getRegistry.invoke(getWorld.invoke(tile));
+                final Object world = getWorld.invoke(tile);
+                final Object registry = world != null ? getRegistry.invoke(world) : Rtag.getMinecraftRegistry();
                 load.invoke(tile, tag, registry);
             } else if (ServerInstance.MAJOR_VERSION == 16) {
                 Object blockData = getType.invoke(getWorld.invoke(tile), getPosition.invoke(tile));
