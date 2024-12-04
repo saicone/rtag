@@ -226,9 +226,13 @@ public class EasyLookup {
      * @return      Added class.
      */
     public static Class<?> addClassId(String id, Class<?> clazz) {
-        if (!classes.containsKey(id)) {
-            classes.put(id, clazz);
+        if (DEBUG) {
+            final Class<?> value = classes.get(id);
+            if (value != null && !value.equals(clazz)) {
+                System.out.println("Replacing class ID: '" + id + "' [old = " + value.getName() + ", new = " + clazz.getName() + "]");
+            }
         }
+        classes.put(id, clazz);
         return clazz;
     }
 
