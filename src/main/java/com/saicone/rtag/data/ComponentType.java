@@ -35,7 +35,7 @@ public class ComponentType {
     private static final Map<String, Codec<Object>> CODECS = new HashMap<>();
 
     /**
-     * DynamicOpsNBT public instance from Minecraft code.
+     * NbtOps public instance from Minecraft code.
      */
     @ApiStatus.Experimental
     public static final DynamicOps<Object> NBT_OPS;

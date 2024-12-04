@@ -112,7 +112,11 @@ public class ItemObject {
                         registry$item = "g";
                         if (ServerInstance.VERSION >= 21.02f) {
                             copy = "v";
-                            setItem = "o";
+                            if (ServerInstance.VERSION >= 21.03f) {
+                                setItem = "p";
+                            } else {
+                                setItem = "o";
+                            }
                         }
                     }
                 } else {
