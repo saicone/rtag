@@ -50,8 +50,8 @@ public class ChatComponent {
         MethodHandle method$fromJson = null;
         MethodHandle method$toJson = null;
         try {
-            Class<?> clazz = EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
-            EasyLookup.addClassId("ChatSerializer", clazz.getDeclaredClasses()[0]);
+            EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
+            EasyLookup.addNMSClassId("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer", "network.chat.Component$Serializer");
             EasyLookup.addOBCClass("util.CraftChatMessage");
 
             // Old names
