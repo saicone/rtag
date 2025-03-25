@@ -79,6 +79,7 @@ public class ServerInstance {
         VERSION_MAP.put(3953, new Integer[] {21, 1, 12101});
         VERSION_MAP.put(4080, new Integer[] {21, 2, 12102});
         VERSION_MAP.put(4189, new Integer[] {21, 3, 12103});
+        VERSION_MAP.put(4324, new Integer[] {21, 4, 12104});
 
         final String serverPackage = Bukkit.getServer().getClass().getPackage().getName();
         if (serverPackage.startsWith("org.bukkit.craftbukkit.v1_")) {

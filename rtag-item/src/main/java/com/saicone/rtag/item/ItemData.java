@@ -444,12 +444,12 @@ public class ItemData {
         loadPath("minecraft:custom_data", "tag");
 
         // --- Not exist in old versions
-        // - 24w09a
+        // 1.20.5 - 24w09a
         loadPath("minecraft:creative_slot_lock", "tag", "components", "minecraft:creative_slot_lock");
         loadPath("minecraft:intangible_projectile", "tag", "components", "minecraft:intangible_projectile");
         loadPath("minecraft:enchantment_glint_override", "tag", "components", "minecraft:enchantment_glint_override");
         loadPath("minecraft:map_post_processing", "tag", "components", "minecraft:map_post_processing");
-        // - 24w12a
+        // 1.20.5 - 24w12a
         loadPath("minecraft:food", "tag", "components", "minecraft:food");
         loadPath("minecraft:max_stack_size", "tag", "components", "minecraft:max_stack_size");
         loadPath("minecraft:max_damage", "tag", "components", "minecraft:max_damage");
@@ -457,26 +457,35 @@ public class ItemData {
         loadPath("minecraft:rarity", "tag", "components", "minecraft:rarity");
         loadPath("minecraft:tool", "tag", "components", "minecraft:tool");
         loadPath("minecraft:hide_tooltip", "tag", "components", "minecraft:hide_tooltip");
-        // - 24w13a
+        // 1.20.5 - 24w13a
         loadPath("minecraft:item_name", "tag", "components", "minecraft:item_name");
         loadPath("minecraft:ominous_bottle_amplifier", "tag", "components", "minecraft:ominous_bottle_amplifier");
-        // - 24w21a
+        // 1.21.1 - 24w21a
         loadPath("minecraft:jukebox_playable", "tag", "components", "minecraft:jukebox_playable");
-        // - 24w33a
+        // 1.21.2 - 24w33a
         loadPath("minecraft:repairable", "tag", "components", "minecraft:repairable");
         loadPath("minecraft:enchantable", "tag", "components", "minecraft:enchantable");
-        // - 24w34a
+        // 1.21.2 - 24w34a
         loadPath("minecraft:consumable", "tag", "components", "minecraft:consumable");
         loadPath("minecraft:use_cooldown", "tag", "components", "minecraft:use_cooldown");
         loadPath("minecraft:use_remainder", "tag", "components", "minecraft:use_remainder");
-        // - 24w36a
+        // 1.21.2 - 24w36a
         loadPath("minecraft:item_model", "tag", "components", "minecraft:item_model");
         loadPath("minecraft:equippable", "tag", "components", "minecraft:equippable");
         loadPath("minecraft:glider", "tag", "components", "minecraft:glider");
         loadPath("minecraft:tooltip_style", "tag", "components", "minecraft:tooltip_style");
-        // - 24w37a
+        // 1.21.2 - 24w37a
         loadPath("minecraft:death_protection", "tag", "components", "minecraft:death_protection");
         loadPath("minecraft:damage_resistant", "tag", "components", "minecraft:damage_resistant");
+        // 1.21.5 - 25w02a
+        loadPath("minecraft:weapon", "tag", "components", "minecraft:weapon");
+        loadPath("minecraft:potion_duration_scale", "tag", "components", "minecraft:potion_duration_scale");
+        // 1.21.5 - 25w04a
+        loadPath("minecraft:blocks_attacks", "tag", "components", "minecraft:blocks_attacks");
+        loadPath("minecraft:break_sound", "tag", "components", "minecraft:break_sound");
+        loadPath("minecraft:provides_banner_patterns", "tag", "components", "minecraft:provides_banner_patterns");
+        loadPath("minecraft:provides_trim_material", "tag", "components", "minecraft:provides_trim_material");
+        loadPath("minecraft:tooltip_display", "tag", "components", "minecraft:tooltip_display");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
@@ -532,6 +541,15 @@ public class ItemData {
     }
 
     private static void loadComponentDetectors() {
+        COMPONENT_DETECTORS.put(21.04f, components ->
+                components.containsKey("minecraft:weapon")
+                        || components.containsKey("minecraft:potion_duration_scale")
+                        || components.containsKey("minecraft:blocks_attacks")
+                        || components.containsKey("minecraft:break_sound")
+                        || components.containsKey("minecraft:provides_banner_patterns")
+                        || components.containsKey("minecraft:provides_trim_material")
+                        || components.containsKey("minecraft:tooltip_display")
+        );
         COMPONENT_DETECTORS.put(21.02f, components ->
                 components.containsKey("minecraft:repairable")
                         || components.containsKey("minecraft:enchantable")

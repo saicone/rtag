@@ -6,6 +6,7 @@ import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.OptionalType;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -22,7 +23,7 @@ import java.util.function.Function;
 @ApiStatus.Experimental
 public class IComponentMirror implements ItemMirror {
 
-    private static final Map<String, Transformation> TRANSFORMATIONS = new HashMap<>();
+    private static final Map<String, Transformation> TRANSFORMATIONS = new LinkedHashMap<>();
     private static final List<String> HIDE_FLAGS = List.of(
             "minecraft:enchantments",
             "minecraft:attribute_modifiers",
@@ -35,8 +36,13 @@ public class IComponentMirror implements ItemMirror {
     );
     private static final Byte TRUE = 1;
     private static final Byte FALSE = 0;
+    private static final Object TAG_TRUE = TagBase.newTag(true);
+    private static final Object TAG_FALSE = TagBase.newTag(false);
 
     static {
+        // Run first on upgrade
+        TRANSFORMATIONS.put("minecraft:hide_additional_tooltip", new TooltipDisplay());
+
         TRANSFORMATIONS.put("minecraft:unbreakable", new Unbreakable());
         TRANSFORMATIONS.put("minecraft:enchantments", new Enchantments(0));
         TRANSFORMATIONS.put("minecraft:stored_enchantments", new Enchantments(5));
@@ -48,15 +54,7 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:map_decorations", new MapDecorations());
         TRANSFORMATIONS.put("minecraft:writable_book_content", new BookContents());
         TRANSFORMATIONS.put("minecraft:written_book_content", new BookContents());
-        TRANSFORMATIONS.put("minecraft:trim", new TooltipDowngrade(7));
-        TRANSFORMATIONS.put("minecraft:hide_additional_tooltip", new Transformation() {
-            @Override
-            public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
-                setFlag(components, 5);
-                // Delete component on finish
-                return false;
-            }
-        });
+        TRANSFORMATIONS.put("minecraft:trim", new Trim());
         TRANSFORMATIONS.put("minecraft:firework_explosion", new FireworkExplosion());
         TRANSFORMATIONS.put("minecraft:fireworks", new Fireworks());
         TRANSFORMATIONS.put("minecraft:profile", new Profile());
@@ -71,11 +69,30 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:damage_resistant", new DamageResistant());
         TRANSFORMATIONS.put("minecraft:custom_model_data", new CustomModelData());
         TRANSFORMATIONS.put("minecraft:equippable", new Equippable());
+        TRANSFORMATIONS.put("minecraft:hide_tooltip", new TooltipDisplay());
+        TRANSFORMATIONS.put("minecraft:jukebox_playable", new JukeboxPlayable());
+        TRANSFORMATIONS.put("minecraft:custom_name", new TextComponentTransformation());
+        TRANSFORMATIONS.put("minecraft:instrument", new TextComponentTransformation("description"));
+        TRANSFORMATIONS.put("minecraft:item_name", new TextComponentTransformation());
+        TRANSFORMATIONS.put("minecraft:lore", new Lore());
+
+        // Run last on downgrade
+        TRANSFORMATIONS.put("minecraft:tooltip_display", new TooltipDisplay());
     }
 
     @Override
     public float getDeprecationVersion() {
         return 20.04f;
+    }
+
+    private Map<String, Transformation> getTransformations(Collection<String> keys) {
+        final Map<String, Transformation> transformations = new LinkedHashMap<>();
+        for (Map.Entry<String, Transformation> entry : TRANSFORMATIONS.entrySet()) {
+            if (keys.contains(entry.getKey())) {
+                transformations.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return transformations;
     }
 
     @Override
@@ -150,10 +167,9 @@ public class IComponentMirror implements ItemMirror {
 
         // Apply components transformations
         final Map<String, Object> value = TagCompound.getValue(components);
-        for (String key : new ArrayList<>(value.keySet())) {
-            final Transformation transformation = TRANSFORMATIONS.get(key);
-            if (transformation == null) continue;
-
+        for (Map.Entry<String, Transformation> entry : getTransformations(value.keySet()).entrySet()) {
+            final String key = entry.getKey();
+            final Transformation transformation = entry.getValue();
             transformation.upgrade(components, key, value.get(key), from, to);
         }
     }
@@ -193,10 +209,9 @@ public class IComponentMirror implements ItemMirror {
         if (components != null) {
             // Apply components transformations
             final Map<String, Object> value = TagCompound.getValue(components);
-            for (String key : new ArrayList<>(value.keySet())) {
-                final Transformation transformation = TRANSFORMATIONS.get(key);
-                if (transformation == null) continue;
-
+            for (Map.Entry<String, Transformation> entry : getTransformations(value.keySet()).entrySet()) {
+                final String key = entry.getKey();
+                final Transformation transformation = entry.getValue();
                 transformation.downgrade(components, key, value.get(key), from, to);
             }
         }
@@ -431,10 +446,96 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    public static class TextComponentTransformation implements Transformation {
+
+        private final Object[] path;
+
+        public TextComponentTransformation(Object... path) {
+            this.path = path;
+        }
+
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                if (path.length > 0) {
+                    final Object jsonComponent = Rtag.INSTANCE.get(component, path);
+                    if (jsonComponent != null) {
+                        Rtag.INSTANCE.set(component, upgradeText(jsonComponent), path);
+                    }
+                } else {
+                    Rtag.INSTANCE.set(components, upgradeText(component), id);
+                }
+            }
+        }
+
+        public Object upgradeText(Object jsonComponent) {
+            final Object textComponent = ChatComponent.fromJson((String) TagBase.getValue(jsonComponent));
+            return ChatComponent.toTagOrNull(textComponent);
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.04f && to < 21.04f) {
+                if (path.length > 0) {
+                    final Object tagComponent = Rtag.INSTANCE.get(component, path);
+                    if (tagComponent != null) {
+                        Rtag.INSTANCE.set(component, downgradeText(tagComponent), path);
+                    }
+                } else {
+                    Rtag.INSTANCE.set(components, downgradeText(component), id);
+                }
+            }
+        }
+
+        public Object downgradeText(Object tagComponent) {
+            final Object textComponent = ChatComponent.fromTag(tagComponent);
+            return TagBase.newTag(ChatComponent.toJsonOrNull(textComponent));
+        }
+    }
+
     /**
-     * Tooltip transformation, to convert any show in tooltip option into old hide flag format.
+     * Tooltip transformation, to convert tooltips across versions.
      */
-    public static class TooltipDowngrade implements Transformation {
+    public interface TooltipTransformation extends Transformation {
+        /**
+         * Upgrade tooltip hide option.
+         *
+         * @param components The component map from item.
+         * @param id         Component ID inside map.
+         * @param component  The component itself.
+         */
+        default void upgradeTooltip(Object components, String id, Object component) {
+            if (TAG_FALSE.equals(TagCompound.remove(component, "show_in_tooltip"))) {
+                hideComponents(components, List.of(id));
+            }
+        }
+
+        /**
+         * Hide components on tooltip display component.
+         *
+         * @param components The component map from item.
+         * @param paths      The components to hide.
+         */
+        default void hideComponents(Object components, List<String> paths) {
+            final Object tag = Rtag.INSTANCE.getExact(components, "minecraft:tooltip_display", "hidden_components");
+            if (tag == null) {
+                Rtag.INSTANCE.set(components, paths, "minecraft:tooltip_display", "hidden_components");
+            } else {
+                final List<Object> hiddenComponents = TagList.getValue(tag);
+                for (String s : paths) {
+                    final Object path = TagBase.newTag(s);
+                    if (!hiddenComponents.contains(path)) {
+                        hiddenComponents.add(path);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Tooltip downgrade, to convert any show in tooltip option into old hide flag format.
+     */
+    public static class TooltipDowngrade implements TooltipTransformation {
         private final int ordinal;
 
         /**
@@ -459,7 +560,7 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java map
          */
         public void downgradeTooltip(Object components, Map<String, Object> value) {
-            if (FALSE.equals(TagBase.getValue(value.get("show_in_tooltip")))) {
+            if (TAG_FALSE.equals(value.get("show_in_tooltip"))) {
                 setFlag(components, ordinal);
             }
             value.remove("show_in_tooltip");
@@ -475,6 +576,14 @@ public class IComponentMirror implements ItemMirror {
          */
         public Unbreakable() {
             super(2);
+        }
+
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                upgradeTooltip(components, id, component);
+                Rtag.INSTANCE.set(components, TagCompound.newTag(), id);
+            }
         }
 
         @Override
@@ -508,6 +617,14 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                upgradeTooltip(components, id, component);
+                Rtag.INSTANCE.set(components, TagCompound.get(component, "levels"), id);
+            }
+        }
+
+        @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
             final Map<String, Integer> levels = new HashMap<>();
             for (Object enchantment : value) {
@@ -526,6 +643,13 @@ public class IComponentMirror implements ItemMirror {
             }
             TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, levels, id, "levels");
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.04f && to < 21.04f) {
+                TagCompound.set(components, id, TagCompound.newTag(Map.of("levels", component)));
+            }
         }
 
         @Override
@@ -566,6 +690,14 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                upgradeTooltip(components, id, component);
+                Rtag.INSTANCE.set(components, TagCompound.get(component, "predicates"), id);
+            }
+        }
+
+        @Override
         public boolean upgradeList(Object components, String id, List<Object> value) {
             final List<Object> predicates;
             // Load saved predicates
@@ -584,6 +716,13 @@ public class IComponentMirror implements ItemMirror {
             final Map<String, Object> component = new HashMap<>();
             component.put("predicates", TagList.newTag(predicates));
             return Rtag.INSTANCE.set(components, TagCompound.newTag(component), id);
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.04f && to < 21.04f) {
+                TagCompound.set(components, id, TagCompound.newTag(Map.of("predicates", component)));
+            }
         }
 
         @Override
@@ -620,9 +759,24 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                upgradeTooltip(components, id, component);
+                Rtag.INSTANCE.set(components, TagCompound.get(component, "rgb"), id);
+            }
+        }
+
+        @Override
         public boolean upgradeObject(Object components, String id, Object value) {
             TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, value, id, "rgb");
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.04f && to < 21.04f) {
+                TagCompound.set(components, id, TagCompound.newTag(Map.of("rgb", component)));
+            }
         }
 
         @Override
@@ -693,6 +847,10 @@ public class IComponentMirror implements ItemMirror {
                     }
                 });
             }
+            if (to >= 21.04f && from < 21.04f) {
+                upgradeTooltip(components, id, component);
+                Rtag.INSTANCE.set(components, TagCompound.get(component, "modifiers"), id);
+            }
         }
 
         @Override
@@ -734,6 +892,10 @@ public class IComponentMirror implements ItemMirror {
 
         @Override
         public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (to < 21.04f && from >= 21.04f) {
+                component = TagCompound.newTag(Map.of("modifiers", component));
+                TagCompound.set(components, id, component);
+            }
             if (to < 21.02f && from >= 21.02f) {
                 modifiers(component, map -> {
                     final Object type = map.remove("type");
@@ -933,7 +1095,17 @@ public class IComponentMirror implements ItemMirror {
      * BookContents component transformation.<br>
      * This transformation allow to convert any regular book component format.
      */
-    public static class BookContents implements Transformation {
+    public static class BookContents extends TextComponentTransformation implements Transformation {
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f && id.equals("minecraft:written_book_content")) {
+                final Object pages = TagCompound.get(component, "pages");
+                if (pages != null) {
+                    TagList.getValue(pages).replaceAll(this::upgradeText);
+                }
+            }
+        }
+
         @Override
         public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
             if (value.containsKey("pages")) {
@@ -973,6 +1145,16 @@ public class IComponentMirror implements ItemMirror {
             }
 
             return true;
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.04f && to < 21.04f && id.equals("minecraft:written_book_content")) {
+                final Object pages = TagCompound.get(component, "pages");
+                if (pages != null) {
+                    TagList.getValue(pages).replaceAll(this::downgradeText);
+                }
+            }
         }
 
         @Override
@@ -1467,6 +1649,9 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * DamageResistant component transformation.
+     */
     public static class DamageResistant implements Transformation {
         @Override
         public void upgrade(Object components, String id, Object component, float from, float to) {
@@ -1487,6 +1672,9 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * CustomModelData component transformation.
+     */
     public static class CustomModelData implements Transformation {
         @Override
         public void upgrade(Object components, String id, Object component, float from, float to) {
@@ -1518,10 +1706,13 @@ public class IComponentMirror implements ItemMirror {
         }
     }
 
+    /**
+     * Equippable component transformation.
+     */
     public static class Equippable implements Transformation {
         @Override
         public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.03f && from < 21.03f) {
+            if (to >= 21.034f && from < 21.03f) {
                 move(TagCompound.getValue(component), "model", "asset_id");
             }
         }
@@ -1530,6 +1721,129 @@ public class IComponentMirror implements ItemMirror {
         public void downgrade(Object components, String id, Object component, float from, float to) {
             if (from >= 21.03f && to < 21.03f) {
                 move(TagCompound.getValue(component), "asset_id", "model");
+            }
+        }
+    }
+
+    /**
+     * Trim component transformation.
+     */
+    public static class Trim extends TooltipDowngrade {
+        /**
+         * Construct a Trim transformation with default options.
+         */
+        public Trim() {
+            super(7);
+        }
+
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                upgradeTooltip(components, id, component);
+            }
+        }
+    }
+
+    /**
+     * JukeboxPlayable component transformation.
+     */
+    public static class JukeboxPlayable implements TooltipTransformation {
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                upgradeTooltip(components, id, component);
+            }
+        }
+    }
+
+    /**
+     * TooltipDisplay component transformation.
+     */
+    public static class TooltipDisplay implements TooltipTransformation {
+        private static final List<String> HIDDEN_COMPONENTS = List.of(
+                "minecraft:banner_patterns",
+                "minecraft:bees",
+                "minecraft:block_entity_data",
+                "minecraft:block_state",
+                "minecraft:bundle_contents",
+                "minecraft:charged_projectiles",
+                "minecraft:container",
+                "minecraft:container_loot",
+                "minecraft:firework_explosion",
+                "minecraft:fireworks",
+                "minecraft:instrument",
+                "minecraft:map_id",
+                "minecraft:painting/variant",
+                "minecraft:pot_decorations",
+                "minecraft:potion_contents",
+                "minecraft:tropical_fish/pattern",
+                "minecraft:written_book_content"
+        );
+        private static final Set<String> HIDE_FLAGS = Set.of(
+                "minecraft:enchantments",
+                "minecraft:attribute_modifiers",
+                "minecraft:unbreakable",
+                "minecraft:can_break",
+                "minecraft:can_place_on",
+                "minecraft:stored_enchantments",
+                "minecraft:dyed_color",
+                "minecraft:trim"
+        );
+
+        @Override
+        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+            setFlag(components, 5);
+            // Delete component on finish
+            return false;
+        }
+
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                if (id.equals("minecraft:hide_additional_tooltip")) {
+                    hideComponents(components, HIDDEN_COMPONENTS);
+                    TagCompound.remove(components, id);
+                } else if (id.equals("minecraft:hide_tooltip")) {
+                    Rtag.INSTANCE.set(components, true, "minecraft:tooltip_display", "hide_tooltip");
+                    TagCompound.remove(components, id);
+                }
+            }
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.04f && to < 21.04f && id.equals("minecraft:tooltip_display")) {
+                if (TAG_TRUE.equals(TagCompound.get(component, "hide_tooltip"))) {
+                    TagCompound.set(components, "minecraft:hide_tooltip", TagCompound.newTag());
+                }
+                final Object hiddenComponents = TagCompound.get(component, "hidden_components");
+                if (hiddenComponents != null) {
+                    for (Object tag : TagList.getValue(hiddenComponents)) {
+                        final String hidden = (String) TagBase.getValue(tag);
+                        if (HIDE_FLAGS.contains(hidden)) {
+                            Rtag.INSTANCE.set(components, false, hidden, "show_in_tooltip");
+                        } else if (HIDDEN_COMPONENTS.contains(hidden)) {
+                            TagCompound.set(components, "minecraft:hide_additional_tooltip", TagCompound.newTag());
+                        }
+                    }
+                }
+                TagCompound.remove(components, id);
+            }
+        }
+    }
+
+    public static class Lore extends TextComponentTransformation {
+        @Override
+        public void upgrade(Object components, String id, Object component, float from, float to) {
+            if (to >= 21.04f && from < 21.04f) {
+                TagList.getValue(component).replaceAll(this::upgradeText);
+            }
+        }
+
+        @Override
+        public void downgrade(Object components, String id, Object component, float from, float to) {
+            if (from >= 21.04f && to < 21.04f) {
+                TagList.getValue(component).replaceAll(this::downgradeText);
             }
         }
     }

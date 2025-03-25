@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JavaOps;
 import com.mojang.serialization.JsonOps;
 import com.saicone.rtag.Rtag;
 import com.saicone.rtag.tag.TagBase;
@@ -42,9 +43,8 @@ public class ComponentType {
     /**
      * JavaOps public instance from DataFixerUpper library.
      */
-    // Get by reflection due newer DataFixerUpper versions require Java 17
     @ApiStatus.Experimental
-    public static final DynamicOps<Object> JAVA_OPS;
+    public static final DynamicOps<Object> JAVA_OPS = JavaOps.INSTANCE;
 
     private static final MethodHandle CREATE;
     // Use reflection due newer DataFixerUpper is compiled different
@@ -61,7 +61,6 @@ public class ComponentType {
         Class<?> class$Error = null;
         // Instances
         DynamicOps<Object> nbtOps = null;
-        DynamicOps<Object> javaOps = null;
         // Methods
         MethodHandle method$create = null;
         MethodHandle method$result = null;
@@ -100,7 +99,6 @@ public class ComponentType {
                 class$Error = EasyLookup.addClass("com.mojang.serialization.DataResult$Error");
 
                 nbtOps = (DynamicOps<Object>) EasyLookup.classById("DynamicOpsNBT").getDeclaredField(nbtOps$instance).get(null);
-                javaOps = (DynamicOps<Object>) Class.forName("com.mojang.serialization.JavaOps").getDeclaredField("INSTANCE").get(null);
 
                 method$create = EasyLookup.staticMethod("RegistryOps", registry$create, "RegistryOps", DynamicOps.class, "HolderLookup.Provider");
 
@@ -133,7 +131,6 @@ public class ComponentType {
         }
         ERROR_TYPE = class$Error;
         NBT_OPS = nbtOps;
-        JAVA_OPS = javaOps;
         CREATE = method$create;
         RESULT = method$result;
         CODEC = method$codec;
@@ -247,6 +244,21 @@ public class ComponentType {
         return TYPES.containsKey(key(name));
     }
 
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
+    @Deprecated
+    @SuppressWarnings("unchecked")
+    public static <T> DynamicOps<T> createGlobalContext(DynamicOps<T> dynamicOps) {
+        if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
+            return dynamicOps;
+        } else {
+            try {
+                return (DynamicOps<T>) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
+            } catch (Throwable e) {
+                throw new RuntimeException("Cannot create serialization context", e);
+            }
+        }
+    }
+
     /**
      * Parse provided object into new component declared type.<br>
      * This method allows any NBT, JsonElement and regular Java object to parse.
@@ -281,13 +293,7 @@ public class ComponentType {
             return Optional.empty();
         }
         try {
-            final DynamicOps<T> registryOps;
-            if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
-                registryOps = dynamicOps;
-            } else {
-                registryOps = (DynamicOps<T>) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
-            }
-            final DataResult<Object> dataResult = codec.parse(registryOps, object);
+            final DataResult<Object> dataResult = codec.parse(createGlobalContext(dynamicOps), object);
             if (ERROR_TYPE.isInstance(dataResult)) {
                 throw new IllegalArgumentException("" + dataResult);
             }
@@ -349,13 +355,7 @@ public class ComponentType {
             return Optional.empty();
         }
         try {
-            final DynamicOps<T> registryOps;
-            if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
-                registryOps = dynamicOps;
-            } else {
-                registryOps = (DynamicOps<T>) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
-            }
-            final DataResult<T> dataResult = codec.encodeStart(registryOps, component);
+            final DataResult<T> dataResult = codec.encodeStart(createGlobalContext(dynamicOps), component);
             if (ERROR_TYPE.isInstance(dataResult)) {
                 throw new IllegalArgumentException("" + dataResult);
             }
