@@ -81,26 +81,15 @@ public class EasyLookup {
             }
             addNMSClass("world.item.ItemStack");
             addNMSClass("world.entity.Entity");
-            addNMSClass("world.level.block.entity.TileEntity", "BlockEntity");
-            addNMSClass("world.level.block.state.IBlockData", "BlockState");
-            addNMSClass("core.BlockPosition", "BlockPos");
-            addNMSClass("world.level.World", "Level");
-            addNMSClass("server.level.WorldServer", "ServerLevel");
-            if (ServerInstance.MAJOR_VERSION >= 16) {
-                addNMSClass("core.IRegistryCustom", "RegistryAccess");
-                addNMSClass("world.level.IWorldReader", "LevelReader");
-                if (ServerInstance.Release.COMPONENT) {
-                    addNMSClassId("HolderLookup.Provider", "core.HolderLookup$a", "core.HolderLookup$Provider");
-                } else if (ServerInstance.VERSION >= 19.02f) {
-                    addNMSClassId("HolderLookup.Provider", "core.HolderLookup$b", "core.HolderLookup$Provider");
-                }
+            if (ServerInstance.Release.COMPONENT) {
+                addNMSClassId("HolderLookup.Provider", "core.HolderLookup$a", "core.HolderLookup$Provider");
+            } else if (ServerInstance.VERSION >= 19.02f) {
+                addNMSClassId("HolderLookup.Provider", "core.HolderLookup$b", "core.HolderLookup$Provider");
             }
             // Bukkit Server
             addOBCClass("CraftServer");
             addOBCClass("inventory.CraftItemStack");
             addOBCClass("entity.CraftEntity");
-            addOBCClass("block.CraftBlockState");
-            addOBCClass("CraftWorld");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

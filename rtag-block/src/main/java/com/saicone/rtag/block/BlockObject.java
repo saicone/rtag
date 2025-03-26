@@ -16,6 +16,26 @@ import java.lang.invoke.MethodHandle;
  */
 public class BlockObject {
 
+    // Import reflected classes
+    static {
+        try {
+            EasyLookup.addNMSClass("core.BlockPosition", "BlockPos");
+            EasyLookup.addNMSClass("server.level.WorldServer", "ServerLevel");
+            EasyLookup.addNMSClass("world.level.World", "Level");
+            EasyLookup.addNMSClass("world.level.block.entity.TileEntity", "BlockEntity");
+            EasyLookup.addNMSClass("world.level.block.state.IBlockData", "BlockState");
+            if (ServerInstance.MAJOR_VERSION >= 16) {
+                EasyLookup.addNMSClass("core.IRegistryCustom", "RegistryAccess");
+                EasyLookup.addNMSClass("world.level.IWorldReader", "LevelReader");
+            }
+
+            EasyLookup.addOBCClass("CraftWorld");
+            EasyLookup.addOBCClass("block.CraftBlockState");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static final Class<?> BLOCK_STATE = EasyLookup.classById("CraftBlockState");
     private static final Class<?> TILE_ENTITY = EasyLookup.classById("TileEntity");
 
@@ -51,34 +71,40 @@ public class BlockObject {
             String load = "a";
             String getWorld = "i";
             String getRegistry = "H_";
+
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 getTileEntity = "getBlockEntity";
                 save = "saveWithoutMetadata";
-                if (ServerInstance.Release.COMPONENT) {
-                    load = "loadWithComponents";
-                } else {
-                    load = "load";
-                }
+                load = "load";
                 getWorld = "getLevel";
                 getRegistry = "registryAccess";
-            } else if (ServerInstance.MAJOR_VERSION >= 18) {
-                getTileEntity = "c_";
+                if (ServerInstance.Release.COMPONENT) {
+                    load = "loadWithComponents";
+                }
+            } else {
+                if (ServerInstance.MAJOR_VERSION >= 9) {
+                    save = "save";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 12) {
+                    load = "load";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 18) {
+                    getTileEntity = "c_";
+                    save = "m";
+                }
+                if (ServerInstance.VERSION >= 19.03) { // 1.19.4
+                    save = "o";
+                }
                 if (ServerInstance.Release.COMPONENT) {
                     save = "d";
                     load = "c";
-                    if (ServerInstance.VERSION >= 21.02f) {
-                        getRegistry = "K_";
-                    }
-                } else if (ServerInstance.VERSION >= 19.03) {
-                    save = "o";
-                } else {
-                    save = "m";
                 }
-            } else if (ServerInstance.MAJOR_VERSION >= 9) {
-                save = "save";
-                if (ServerInstance.MAJOR_VERSION >= 12) {
-                    load = "load";
+                if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                    getRegistry = "K_";
+                }
+                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    getRegistry = "J_";
                 }
             }
 
