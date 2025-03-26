@@ -37,8 +37,8 @@ public class TagCompound {
     private static final MethodHandle newCompound;
     private static final MethodHandle setMapField;
     private static final MethodHandle getMapField;
-    private static final MethodHandle parse;
     private static final MethodHandle clone;
+    private static final MethodHandle parse;
 
     static {
         // Constructors
@@ -49,33 +49,44 @@ public class TagCompound {
         // Setters
         MethodHandle set$map = null;
         // Methods
-        MethodHandle method$parse = null;
         MethodHandle method$clone = null;
+        MethodHandle method$parse = null;
         try {
             EasyLookup.addNMSClass("nbt.MojangsonParser", "TagParser");
+
             // Old names
             String map = "map";
-            String parse = "parse";
             String clone = "clone";
+            String parse = "parse";
+
             // New names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 map = "tags";
-                parse = "parseTag";
                 clone = "copy";
-            } else if (ServerInstance.Release.UNIVERSAL) {
-                map = "x";
-                if (ServerInstance.MAJOR_VERSION >= 18) {
-                    parse = "a";
-                    if (ServerInstance.Release.COMPONENT) {
-                        clone = "i";
-                    } else if (ServerInstance.VERSION >= 19.03) {
-                        clone = "h";
-                    } else {
-                        clone = "g";
-                    }
+                parse = "parseTag";
+                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    parse = "parseCompoundFully";
                 }
-            } else if (ServerInstance.MAJOR_VERSION >= 10) {
-                clone = "g";
+            } else {
+                if (ServerInstance.MAJOR_VERSION >= 10) {
+                    clone = "g";
+                }
+                if (ServerInstance.Release.UNIVERSAL) {
+                    map = "x";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 18) {
+                    clone = "g";
+                    parse = "a";
+                }
+                if (ServerInstance.VERSION >= 19.03) { // 1.19.4
+                    clone = "h";
+                }
+                if (ServerInstance.Release.COMPONENT) {
+                    clone = "i";
+                }
+                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    clone = "l";
+                }
             }
 
             new$EmptyCompound = EasyLookup.constructor(NBT_COMPOUND);
@@ -88,9 +99,10 @@ public class TagCompound {
             get$map = EasyLookup.getter(NBT_COMPOUND, map, Map.class);
             set$map = EasyLookup.setter(NBT_COMPOUND, map, Map.class);
 
-            method$parse = EasyLookup.staticMethod("MojangsonParser", parse, NBT_COMPOUND, String.class);
             // (1.8 -  1.9) return NBTBase
             method$clone = EasyLookup.method(NBT_COMPOUND, clone, NBT_COMPOUND);
+
+            method$parse = EasyLookup.staticMethod("MojangsonParser", parse, NBT_COMPOUND, String.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -98,8 +110,8 @@ public class TagCompound {
         newCompound = new$Compound;
         setMapField = set$map;
         getMapField = get$map;
-        parse = method$parse;
         clone = method$clone;
+        parse = method$parse;
     }
 
     TagCompound() {

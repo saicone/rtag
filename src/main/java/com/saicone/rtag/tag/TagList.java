@@ -46,16 +46,24 @@ public class TagList {
             // New names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 clone = "copy";
-            } else if (ServerInstance.Release.UNIVERSAL) {
-                list = "c";
-                type = "w";
-                if (ServerInstance.VERSION >= 19.03) {
-                    clone = "e";
-                } else if (ServerInstance.MAJOR_VERSION >= 18) {
+            } else {
+                if (ServerInstance.MAJOR_VERSION >= 10 && ServerInstance.MAJOR_VERSION <= 13) {
                     clone = "d";
                 }
-            } else if (ServerInstance.MAJOR_VERSION >= 10 && ServerInstance.MAJOR_VERSION <= 13) {
-                clone = "d";
+                if (ServerInstance.Release.UNIVERSAL) {
+                    type = "w";
+                    list = "c";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 18) {
+                    clone = "d";
+                }
+                if (ServerInstance.VERSION >= 19.03) { // 1.19.4
+                    clone = "e";
+                }
+                if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+                    list = "v";
+                    clone = "g";
+                }
             }
 
             new$EmptyList = EasyLookup.constructor(NBT_LIST);

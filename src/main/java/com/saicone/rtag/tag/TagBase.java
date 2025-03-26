@@ -88,6 +88,9 @@ public class TagBase {
             String asByte = data;
             String asDouble = data;
             String asFloat = data;
+            String asInt = data;
+            String asLong = data;
+            String asShort = data;
             String asLongArray = "b";
             String asString = data;
 
@@ -95,20 +98,42 @@ public class TagBase {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 getTypeId = "getId";
                 asLongArray = "data";
-            } else if (ServerInstance.Release.UNIVERSAL) {
-                if (ServerInstance.VERSION >= 19.02) { // v1_19_R2
-                    getTypeId = "b";
-                } else if (ServerInstance.MAJOR_VERSION >= 18) {
+                if (ServerInstance.VERSION >= 21.04) {
+                    asByte = "value";
+                    asDouble = "value";
+                    asFloat = "value";
+                    asInt = "value";
+                    asLong = "value";
+                    asShort = "value";
+                    asString = "value";
+                }
+            } else {
+                if (ServerInstance.MAJOR_VERSION == 13 || ServerInstance.MAJOR_VERSION == 14) {
+                    asLongArray = "f";
+                }
+                if (ServerInstance.Release.UNIVERSAL) {
+                    data = "c";
+                    asByte = "x";
+                    asDouble = "w";
+                    asFloat = "w";
+                    asLongArray = "c";
+                    asString = "A";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 18) {
                     getTypeId = "a";
                 }
-                data = "c";
-                asByte = "x";
-                asDouble = "w";
-                asFloat = "w";
-                asLongArray = "c";
-                asString = "A";
-            } else if (ServerInstance.MAJOR_VERSION == 13 || ServerInstance.MAJOR_VERSION == 14) {
-                asLongArray = "f";
+                if (ServerInstance.VERSION >= 19.02) { // 1.19.3
+                    getTypeId = "b";
+                }
+                if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+                    asByte = "v";
+                    asDouble = "c";
+                    asFloat = "c";
+                    asInt = "b";
+                    asLong = "b";
+                    asShort = "b";
+                    asString = "b";
+                }
             }
 
             method$getTypeId = EasyLookup.method(NBT_BASE, getTypeId, byte.class);
@@ -129,13 +154,13 @@ public class TagBase {
             get$Float = EasyLookup.getter("NBTTagFloat", asFloat, float.class);
 
             new$Int = EasyLookup.unreflectConstructor("NBTTagInt", int.class);
-            get$Int = EasyLookup.getter("NBTTagInt", data, int.class);
+            get$Int = EasyLookup.getter("NBTTagInt", asInt, int.class);
 
             new$IntArray = EasyLookup.unreflectConstructor("NBTTagIntArray", "int[]");
             get$IntArray = EasyLookup.getter("NBTTagIntArray", data, "int[]");
 
             new$Long = EasyLookup.unreflectConstructor("NBTTagLong", long.class);
-            get$Long = EasyLookup.getter("NBTTagLong", data, long.class);
+            get$Long = EasyLookup.getter("NBTTagLong", asLong, long.class);
 
             if (ServerInstance.MAJOR_VERSION >= 12) {
                 new$LongArray = EasyLookup.unreflectConstructor("NBTTagLongArray", "long[]");
@@ -143,7 +168,7 @@ public class TagBase {
             }
 
             new$Short = EasyLookup.unreflectConstructor("NBTTagShort", short.class);
-            get$Short = EasyLookup.getter("NBTTagShort", data, short.class);
+            get$Short = EasyLookup.getter("NBTTagShort", asShort, short.class);
 
             new$String = EasyLookup.unreflectConstructor("NBTTagString", String.class);
             get$String = EasyLookup.getter("NBTTagString", asString, String.class);

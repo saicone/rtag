@@ -676,7 +676,7 @@ public class ChatComponent {
      * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
     public static Object toTagOrNull(Object component) {
-        return component == null ? null : toTagOrNull(component);
+        return component == null ? null : toTag(component);
     }
 
     // Taken from https://github.com/saicone/nbt
