@@ -9,6 +9,7 @@ import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.OptionalType;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -85,14 +86,37 @@ public class IComponentMirror implements ItemMirror {
         return 20.04f;
     }
 
-    private Map<String, Transformation> getTransformations(Collection<String> keys) {
-        final Map<String, Transformation> transformations = new LinkedHashMap<>();
-        for (Map.Entry<String, Transformation> entry : TRANSFORMATIONS.entrySet()) {
-            if (keys.contains(entry.getKey())) {
-                transformations.put(entry.getKey(), entry.getValue());
+    private Iterable<Map.Entry<String, Transformation>> getTransformations(Collection<String> keys) {
+        return new Iterable<>() {
+            @Override
+            public @NotNull Iterator<Map.Entry<String, Transformation>> iterator() {
+                return new Iterator<>() {
+                    private final Iterator<Map.Entry<String, Transformation>> iterator = TRANSFORMATIONS.entrySet().iterator();
+                    private Map.Entry<String, Transformation> next;
+
+                    @Override
+                    public boolean hasNext() {
+                        while (iterator.hasNext()) {
+                            next = iterator.next();
+                            if (keys.contains(next.getKey())) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public Map.Entry<String, Transformation> next() {
+                        if (this.next == null) {
+                            throw new NoSuchElementException();
+                        }
+                        final Map.Entry<String, Transformation> next = this.next;
+                        this.next = null;
+                        return next;
+                    }
+                };
             }
-        }
-        return transformations;
+        };
     }
 
     @Override
@@ -167,7 +191,7 @@ public class IComponentMirror implements ItemMirror {
 
         // Apply components transformations
         final Map<String, Object> value = TagCompound.getValue(components);
-        for (Map.Entry<String, Transformation> entry : getTransformations(value.keySet()).entrySet()) {
+        for (Map.Entry<String, Transformation> entry : getTransformations(value.keySet())) {
             final String key = entry.getKey();
             final Transformation transformation = entry.getValue();
             transformation.upgrade(components, key, value.get(key), from, to);
@@ -209,7 +233,7 @@ public class IComponentMirror implements ItemMirror {
         if (components != null) {
             // Apply components transformations
             final Map<String, Object> value = TagCompound.getValue(components);
-            for (Map.Entry<String, Transformation> entry : getTransformations(value.keySet()).entrySet()) {
+            for (Map.Entry<String, Transformation> entry : getTransformations(value.keySet())) {
                 final String key = entry.getKey();
                 final Transformation transformation = entry.getValue();
                 transformation.downgrade(components, key, value.get(key), from, to);
