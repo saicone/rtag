@@ -353,7 +353,24 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean hasHideFlags(int... hideFlags) {
-        // Since 1.20.5, items cannot hold hide flags
+        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+            final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
+            if (tooltipDisplay == null) {
+                return hideFlags.length < 1;
+            }
+            final Collection<String> hiddenComponents = (Collection<String>) tooltipDisplay.getOrDefault("hidden_components", List.of());
+            for (int ordinal : hideFlags) {
+                if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) return false;
+                if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
+                    if (!Boolean.TRUE.equals(tooltipDisplay.get("hide_tooltip"))) return false;
+                    continue;
+                }
+                if (!hiddenComponents.contains(HIDE_FLAGS.get(ordinal))) {
+                    return false;
+                }
+            }
+            return true;
+        }
         if (ServerInstance.Release.COMPONENT) {
             for (int ordinal : hideFlags) {
                 if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) return false;
@@ -434,7 +451,45 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean addHideFlags(int... hideFlags) {
-        // Since 1.20.5, items cannot hold hide flags
+        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+            final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
+
+            boolean hideTooltip;
+            final Collection<String> hiddenComponents;
+            if (tooltipDisplay == null) {
+                hideTooltip = false;
+                hiddenComponents = new ArrayList<>();
+            } else {
+                hideTooltip = (boolean) tooltipDisplay.getOrDefault("hide_tooltip", false);
+                hiddenComponents = (Collection<String>) tooltipDisplay.getOrDefault("hidden_components", new ArrayList<>());
+            }
+
+            boolean result = false;
+            for (int ordinal : hideFlags) {
+                if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) continue;
+                if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
+                    if (!hideTooltip) {
+                        hideTooltip = true;
+                        result = true;
+                    }
+                    continue;
+                }
+                final String name = HIDE_FLAGS.get(ordinal);
+                if (!hiddenComponents.contains(name)) {
+                    hiddenComponents.add(name);
+                    result = true;
+                }
+            }
+            if (result) {
+                setComponent("minecraft:tooltip_display", Map.of(
+                        "hide_tooltip", hideTooltip,
+                        "hidden_components", hiddenComponents
+                ));
+                return true;
+            } else {
+                return false;
+            }
+        }
         if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
             for (int ordinal : hideFlags) {
@@ -537,8 +592,27 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
+    @SuppressWarnings("unchecked")
     public boolean setHideFlags(int... hideFlags) {
-        // Since 1.20.5, items cannot hold hide flags
+        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+            final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
+            boolean hideTooltip = tooltipDisplay != null && (boolean) tooltipDisplay.getOrDefault("hide_tooltip", false);
+            final List<String> hiddenComponents = new ArrayList<>();
+
+            for (int ordinal : hideFlags) {
+                if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) continue;
+                if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
+                    hideTooltip = true;
+                    continue;
+                }
+                hiddenComponents.add(HIDE_FLAGS.get(ordinal));
+            }
+            setComponent("minecraft:tooltip_display", Map.of(
+                    "hide_tooltip", hideTooltip,
+                    "hidden_components", hiddenComponents
+            ));
+            return true;
+        }
         if (ServerInstance.Release.COMPONENT) {
             boolean result = addHideFlags(hideFlags);
             final Set<Integer> toRemove = new HashSet<>(Set.of(0, 1, 2, 3, 4, 5, 6, 7));
@@ -586,7 +660,44 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean removeHideFlags(int... hideFlags) {
-        // Since 1.20.5, items cannot hold hide flags
+        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+            final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
+
+            boolean hideTooltip;
+            final Collection<String> hiddenComponents;
+            if (tooltipDisplay == null) {
+                hideTooltip = false;
+                hiddenComponents = new ArrayList<>();
+            } else {
+                hideTooltip = (boolean) tooltipDisplay.getOrDefault("hide_tooltip", false);
+                hiddenComponents = (Collection<String>) tooltipDisplay.getOrDefault("hidden_components", new ArrayList<>());
+            }
+
+            boolean result = false;
+            for (int ordinal : hideFlags) {
+                if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) continue;
+                if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
+                    if (hideTooltip) {
+                        hideTooltip = false;
+                        result = true;
+                    }
+                    continue;
+                }
+                final String name = HIDE_FLAGS.get(ordinal);
+                if (hiddenComponents.remove(name)) {
+                    result = true;
+                }
+            }
+            if (result) {
+                setComponent("minecraft:tooltip_display", Map.of(
+                        "hide_tooltip", hideTooltip,
+                        "hidden_components", hiddenComponents
+                ));
+                return true;
+            } else {
+                return false;
+            }
+        }
         if (ServerInstance.Release.COMPONENT) {
             boolean result = false;
             for (int ordinal : hideFlags) {
@@ -707,8 +818,29 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
+    @SuppressWarnings("unchecked")
     public Set<Integer> getHideFlags() {
-        // Since 1.20.5, items cannot hold hide flags
+        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+            final Set<Integer> hideFlags = new HashSet<>();
+
+            final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
+            if (tooltipDisplay == null) {
+                return hideFlags;
+            }
+
+            if ((boolean) tooltipDisplay.getOrDefault("hide_tooltip", false) && getItem().getType() != Material.ENCHANTED_BOOK) {
+                hideFlags.add(5);
+            }
+            final Collection<String> hiddenComponents = (Collection<String>) tooltipDisplay.getOrDefault("hidden_components", new ArrayList<>());
+            for (String component : hiddenComponents) {
+                final int ordinal = HIDE_FLAGS.indexOf(component);
+                if (ordinal >= 0) {
+                    hideFlags.add(ordinal);
+                }
+            }
+
+            return hideFlags;
+        }
         if (ServerInstance.Release.COMPONENT) {
             final Set<Integer> hideFlags = new HashSet<>();
             if (getItem().hasItemMeta()) {
