@@ -47,8 +47,6 @@ public class ComponentType {
     public static final DynamicOps<Object> JAVA_OPS = JavaOps.INSTANCE;
 
     private static final MethodHandle CREATE;
-    // Use reflection due newer DataFixerUpper is compiled different
-    private static final MethodHandle RESULT;
     private static final MethodHandle CODEC;
 
     // Maybe move this into other place
@@ -63,7 +61,6 @@ public class ComponentType {
         DynamicOps<Object> nbtOps = null;
         // Methods
         MethodHandle method$create = null;
-        MethodHandle method$result = null;
         MethodHandle method$codec = null;
         if (ServerInstance.Release.COMPONENT) {
             try {
@@ -89,11 +86,17 @@ public class ComponentType {
                     resource$key = "getPath";
                     holder$value = "value";
                     codec = "codec";
-                } else if (ServerInstance.VERSION >= 21.02f) {
-                    registry$components = "ao";
-                    registry$map = "e";
-                } else if (ServerInstance.MAJOR_VERSION >= 21) {
-                    registry$components = "aq";
+                } else {
+                    if (ServerInstance.MAJOR_VERSION >= 21) {
+                        registry$components = "aq";
+                    }
+                    if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                        registry$components = "ao";
+                        registry$map = "e";
+                    }
+                    if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                        registry$components = "am";
+                    }
                 }
 
                 class$Error = EasyLookup.addClass("com.mojang.serialization.DataResult$Error");
@@ -108,7 +111,6 @@ public class ComponentType {
                 final Method valueMethod = EasyLookup.classById("Holder").getDeclaredMethod(holder$value);
                 final Method codecMethod = EasyLookup.classById("DataComponentType").getDeclaredMethod(codec);
 
-                method$result = EasyLookup.unreflectMethod(DataResult.class.getDeclaredMethod("result"));
                 method$codec = EasyLookup.unreflectMethod(codecMethod);
 
                 for (var entry : componentsMap.entrySet()) {
@@ -132,7 +134,6 @@ public class ComponentType {
         ERROR_TYPE = class$Error;
         NBT_OPS = nbtOps;
         CREATE = method$create;
-        RESULT = method$result;
         CODEC = method$codec;
 
         try {
@@ -297,7 +298,7 @@ public class ComponentType {
             if (ERROR_TYPE.isInstance(dataResult)) {
                 throw new IllegalArgumentException("" + dataResult);
             }
-            return (Optional<Object>) RESULT.invoke(dataResult);
+            return dataResult.result();
         } catch (Throwable t) {
             throw new RuntimeException("Cannot parse component" + (type instanceof String ? " '" + type + "'" : ""), t);
         }
@@ -359,7 +360,7 @@ public class ComponentType {
             if (ERROR_TYPE.isInstance(dataResult)) {
                 throw new IllegalArgumentException("" + dataResult);
             }
-            return (Optional<T>) RESULT.invoke(dataResult);
+            return dataResult.result();
         } catch (Throwable t) {
             throw new RuntimeException("Cannot encode component" + (type instanceof String ? " '" + type + "'" : ""), t);
         }

@@ -33,6 +33,7 @@ public class ItemObject {
     private static final MethodHandle save;
     private static final MethodHandle apply;
     private static final MethodHandle copy;
+    private static final MethodHandle isEmpty;
     private static final MethodHandle getItem; // Remove in 2.0.0
     private static final MethodHandle getTag;
     private static final MethodHandle setItem; // Remove in 2.0.0
@@ -65,6 +66,7 @@ public class ItemObject {
         MethodHandle method$save = null;
         MethodHandle method$apply = null;
         MethodHandle method$copy = null;
+        MethodHandle method$isEmpty = null;
         MethodHandle method$getItem = null;
         MethodHandle method$getTag = null;
         MethodHandle method$setItem = null;
@@ -82,6 +84,7 @@ public class ItemObject {
             String save = "save";
             String apply = "c";
             String copy = "s";
+            String isEmpty = "isEmpty";
             String getItem = "a";
             String getTag = "getTag";
             String setItem = "q";
@@ -92,6 +95,8 @@ public class ItemObject {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 registry$item = "ITEM";
                 key$parse = "parse";
+                createStack = "of";
+                apply = "load";
                 getItem = "get";
                 setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
@@ -101,44 +106,54 @@ public class ItemObject {
                     copy = "copy";
                     getTag = "tag";
                     setCount = "setCount";
-                } else {
-                    createStack = "of";
-                    apply = "load";
                 }
-            } else if (ServerInstance.MAJOR_VERSION >= 11) {
-                if (ServerInstance.Release.COMPONENT) {
-                    apply = "a";
-                    if (ServerInstance.MAJOR_VERSION >= 21) {
-                        registry$item = "g";
-                        if (ServerInstance.VERSION >= 21.02f) {
-                            copy = "v";
-                            if (ServerInstance.VERSION >= 21.03f) {
-                                setItem = "p";
-                            } else {
-                                setItem = "o";
-                            }
-                        }
-                    }
-                } else {
+                if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                    getItem = "getValue";
+                }
+            } else {
+                if (ServerInstance.MAJOR_VERSION >= 11) {
                     apply = "load";
                 }
                 if (ServerInstance.MAJOR_VERSION >= 13) {
                     createStack = "a";
-                    if (ServerInstance.MAJOR_VERSION >= 18) {
-                        save = "b";
-                        setTag = "c";
-                        if (ServerInstance.VERSION >= 21.03f) {
-                            getTag = "g";
-                        } else if (ServerInstance.Release.COMPONENT) {
-                            getTag = ServerInstance.DATA_VERSION >= 3839 ? "f" : "e";
-                        } else if (ServerInstance.MAJOR_VERSION >= 20) {
-                            getTag = "v";
-                        } else if (ServerInstance.MAJOR_VERSION >= 19) {
-                            getTag = "u";
-                        } else {
-                            getTag = ServerInstance.RELEASE_VERSION >= 2 ? "t" : "s";
-                        }
-                    }
+                }
+                if (ServerInstance.MAJOR_VERSION >= 18) {
+                    save = "b";
+                    isEmpty = "b";
+                    getTag = "s";
+                    setTag = "c";
+                }
+                if (ServerInstance.VERSION >= 18.02) { // 1.18.2
+                    getTag = "t";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 19) {
+                    getTag = "u";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 20) {
+                    getTag = "v";
+                }
+                if (ServerInstance.Release.COMPONENT) {
+                    apply = "a";
+                    isEmpty = "e";
+                    getTag = "e";
+                }
+                if (ServerInstance.DATA_VERSION >= 3839) { // 1.20.6
+                    getTag = "f";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 21) {
+                    registry$item = "g";
+                }
+                if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                    copy = "v";
+                    isEmpty = "f";
+                    setItem = "o";
+                }
+                if (ServerInstance.VERSION >= 21.03f) { // 1.21.3
+                    getTag = "g";
+                    setItem = "p";
+                }
+                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    setItem = "s";
                 }
             }
 
@@ -157,7 +172,7 @@ public class ItemObject {
                     new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
                 }
 
-                method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider");
+                method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider", "NBTBase");
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
                 method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
@@ -177,6 +192,11 @@ public class ItemObject {
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "NBTTagCompound");
                 method$getTag = EasyLookup.method(MC_ITEM, getTag, "NBTTagCompound");
                 method$setTag = EasyLookup.method(MC_ITEM, setTag, void.class, "NBTTagCompound");
+            }
+            if (ServerInstance.MAJOR_VERSION >= 11) {
+                method$isEmpty = EasyLookup.method(MC_ITEM, isEmpty, boolean.class);
+            } else {
+                method$isEmpty = EasyLookup.getter(MC_ITEM, "count", int.class);
             }
 
             new$CraftItemStack = EasyLookup.constructor(CRAFT_ITEM, ItemStack.class);
@@ -205,6 +225,7 @@ public class ItemObject {
         save = method$save;
         apply = method$apply;
         copy = method$copy;
+        isEmpty = method$isEmpty;
         getItem = method$getItem;
         getTag = method$getTag;
         setItem = method$setItem;
@@ -277,6 +298,25 @@ public class ItemObject {
     }
 
     /**
+     * Check if the provided Minecraft ItemStack is empty.<br>
+     * On versions before 1.11 this method only check item count.
+     *
+     * @param item the item to check.
+     * @return     true if item is empty, false otherwise.
+     */
+    public static boolean isEmpty(Object item) {
+        try {
+            if (ServerInstance.MAJOR_VERSION >= 11) {
+                return (boolean) isEmpty.invoke(item);
+            } else {
+                return (int) isEmpty.invoke(item) <= 0;
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot check if ItemStack is empty", t);
+        }
+    }
+
+    /**
      * Check if the provided Minecraft ItemStack has custom data.<br>
      * On versions older than 1.20.5 this check item tag.
      *
@@ -307,7 +347,10 @@ public class ItemObject {
         }
         try {
             if (ServerInstance.Release.COMPONENT) {
-                return save.invoke(item, Rtag.getMinecraftRegistry());
+                if ((boolean) isEmpty.invoke(item)) {
+                    return TagCompound.newTag();
+                }
+                return save.invoke(item, Rtag.getMinecraftRegistry(), TagCompound.newTag());
             } else {
                 return save.invoke(item, TagCompound.newTag());
             }

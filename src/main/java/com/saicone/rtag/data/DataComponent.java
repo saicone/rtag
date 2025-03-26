@@ -91,6 +91,10 @@ public class DataComponent {
                     getComponents = "getComponents";
                     get = "get";
                     has = "has";
+                } else {
+                    if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                        has = "c";
+                    }
                 }
 
                 try {
@@ -215,11 +219,16 @@ public class DataComponent {
                     // Private field
                     get$builder$map = EasyLookup.unreflectSetter("DataComponentMap.Builder", builder$map);
 
-                    method$get = EasyLookup.method(COMPONENT_MAP, get, Object.class, "DataComponentType");
+                    if (ServerInstance.VERSION >= 21.04f) {
+                        EasyLookup.addNMSClass("core.component.DataComponentGetter");
+                        method$get = EasyLookup.method("DataComponentGetter", get, Object.class, "DataComponentType");
+                    } else {
+                        method$get = EasyLookup.method(COMPONENT_MAP, get, Object.class, "DataComponentType");
+                    }
                     method$keySet = EasyLookup.method(COMPONENT_MAP, keySet, Set.class);
                     method$builder = EasyLookup.staticMethod(COMPONENT_MAP, builder, "DataComponentMap.Builder");
                     method$builder$build = EasyLookup.method("DataComponentMap.Builder", builder$build, COMPONENT_MAP);
-                } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
+                } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
                     e.printStackTrace();
                 }
             }
@@ -367,8 +376,10 @@ public class DataComponent {
                     map = "patch";
                     set = "set";
                     remove = "remove";
-                } else if (ServerInstance.VERSION >= 21.03f) {
-                    remove = "e";
+                } else {
+                    if (ServerInstance.VERSION >= 21.03f) { // 1.21.3
+                        remove = "e";
+                    }
                 }
 
                 try {
@@ -499,6 +510,10 @@ public class DataComponent {
                     builder = "builder";
                     builder$map = "map";
                     builder$build = "build";
+                } else {
+                    if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                        map = "e";
+                    }
                 }
 
                 try {
