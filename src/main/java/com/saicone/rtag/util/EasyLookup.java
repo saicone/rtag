@@ -80,7 +80,6 @@ public class EasyLookup {
                 addNMSClass("core.component.DataComponentType");
             }
             addNMSClass("world.item.ItemStack");
-            addNMSClass("world.entity.Entity");
             if (ServerInstance.Release.COMPONENT) {
                 addNMSClassId("HolderLookup.Provider", "core.HolderLookup$a", "core.HolderLookup$Provider");
             } else if (ServerInstance.VERSION >= 19.02f) {
@@ -89,7 +88,6 @@ public class EasyLookup {
             // Bukkit Server
             addOBCClass("CraftServer");
             addOBCClass("inventory.CraftItemStack");
-            addOBCClass("entity.CraftEntity");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

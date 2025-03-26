@@ -15,6 +15,17 @@ import java.lang.invoke.MethodHandle;
  */
 public class EntityObject {
 
+    // Import reflected classes
+    static {
+        try {
+            EasyLookup.addNMSClass("world.entity.Entity");
+
+            EasyLookup.addOBCClass("entity.CraftEntity");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static final Class<?> MC_ENTITY = EasyLookup.classById("Entity");
     private static final Class<?> CRAFT_ENTITY = EasyLookup.classById("CraftEntity");
 
@@ -37,13 +48,20 @@ public class EntityObject {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 save = "saveWithoutId";
                 load = "load";
-            } else if (ServerInstance.MAJOR_VERSION >= 18) {
-                save = "f";
-                load = "g";
-            } else if (ServerInstance.MAJOR_VERSION >= 12) {
-                save = "save";
+            } else {
+                if (ServerInstance.MAJOR_VERSION >= 12) {
+                    save = "save";
+                }
                 if (ServerInstance.MAJOR_VERSION >= 16) {
                     load = "load";
+                }
+                if (ServerInstance.MAJOR_VERSION >= 18) {
+                    save = "f";
+                    load = "g";
+                }
+                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    save = "h";
+                    load = "i";
                 }
             }
 
