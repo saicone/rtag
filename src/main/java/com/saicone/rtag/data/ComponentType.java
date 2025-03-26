@@ -28,9 +28,26 @@ import java.util.Optional;
 @ApiStatus.Experimental
 public class ComponentType {
 
+    // Import reflected classes
+    static {
+        try {
+            if (ServerInstance.MAJOR_VERSION >= 13) {
+                EasyLookup.addNMSClass("nbt.DynamicOpsNBT", "NbtOps");
+            }
+            if (ServerInstance.VERSION >= 18.02f) {
+                EasyLookup.addNMSClass("resources.RegistryOps");
+            }
+            if (ServerInstance.Release.COMPONENT) {
+                EasyLookup.addNMSClass("core.Holder");
+                EasyLookup.addNMSClass("core.RegistryMaterials", "MappedRegistry");
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static final Class<?> COMPONENT_TYPE = EasyLookup.classById("DataComponentType");
     private static final Class<?> REGISTRY_OPS_TYPE = EasyLookup.classById("RegistryOps");
-    private static final Class<?> ERROR_TYPE;
 
     private static final Map<String, Object> TYPES = new HashMap<>();
     private static final Map<String, Codec<Object>> CODECS = new HashMap<>();
@@ -55,8 +72,6 @@ public class ComponentType {
     private static DynamicOps<Object> REGISTRY_JAVA_OPS;
 
     static {
-        // Classes
-        Class<?> class$Error = null;
         // Instances
         DynamicOps<Object> nbtOps = null;
         // Methods
@@ -64,10 +79,6 @@ public class ComponentType {
         MethodHandle method$codec = null;
         if (ServerInstance.Release.COMPONENT) {
             try {
-                // Maybe move registry handling into separated utility class
-                EasyLookup.addNMSClass("core.RegistryMaterials", "MappedRegistry");
-                EasyLookup.addNMSClass("core.Holder");
-
                 // Old names
                 String nbtOps$instance = "a";
                 String registry$create = "a";
@@ -99,8 +110,6 @@ public class ComponentType {
                     }
                 }
 
-                class$Error = EasyLookup.addClass("com.mojang.serialization.DataResult$Error");
-
                 nbtOps = (DynamicOps<Object>) EasyLookup.classById("DynamicOpsNBT").getDeclaredField(nbtOps$instance).get(null);
 
                 method$create = EasyLookup.staticMethod("RegistryOps", registry$create, "RegistryOps", DynamicOps.class, "HolderLookup.Provider");
@@ -127,19 +136,18 @@ public class ComponentType {
                         CODECS.put(key(key), valueCodec);
                     }
                 }
-            } catch (NoSuchFieldException | ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+            } catch (NoSuchFieldException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
                 e.printStackTrace();
             }
         }
-        ERROR_TYPE = class$Error;
         NBT_OPS = nbtOps;
         CREATE = method$create;
         CODEC = method$codec;
 
         try {
-            REGISTRY_NBT_OPS = (DynamicOps<Object>) CREATE.invoke(NBT_OPS, Rtag.getMinecraftRegistry());
-            REGISTRY_JSON_OPS = (DynamicOps<JsonElement>) CREATE.invoke(JsonOps.INSTANCE, Rtag.getMinecraftRegistry());
-            REGISTRY_JAVA_OPS = (DynamicOps<Object>) CREATE.invoke(JAVA_OPS, Rtag.getMinecraftRegistry());
+            REGISTRY_NBT_OPS = createGlobalContext(NBT_OPS);
+            REGISTRY_JSON_OPS = createGlobalContext(JsonOps.INSTANCE);
+            REGISTRY_JAVA_OPS = createGlobalContext(JAVA_OPS);
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -287,7 +295,6 @@ public class ComponentType {
      * @return           an optional object with the result of conversion.
      * @param <T>        the declared type.
      */
-    @SuppressWarnings("unchecked")
     public static <T> Optional<Object> parse(Object type, DynamicOps<T> dynamicOps, T object) {
         final Codec<Object> codec = codec(type);
         if (codec == null) {
@@ -295,7 +302,7 @@ public class ComponentType {
         }
         try {
             final DataResult<Object> dataResult = codec.parse(createGlobalContext(dynamicOps), object);
-            if (ERROR_TYPE.isInstance(dataResult)) {
+            if (dataResult.isError()) {
                 throw new IllegalArgumentException("" + dataResult);
             }
             return dataResult.result();
@@ -357,7 +364,7 @@ public class ComponentType {
         }
         try {
             final DataResult<T> dataResult = codec.encodeStart(createGlobalContext(dynamicOps), component);
-            if (ERROR_TYPE.isInstance(dataResult)) {
+            if (dataResult.isError()) {
                 throw new IllegalArgumentException("" + dataResult);
             }
             return dataResult.result();

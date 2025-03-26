@@ -20,6 +20,7 @@ public class EntityObject {
         try {
             EasyLookup.addNMSClass("world.entity.Entity");
 
+            EasyLookup.addOBCClass("CraftServer");
             EasyLookup.addOBCClass("entity.CraftEntity");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

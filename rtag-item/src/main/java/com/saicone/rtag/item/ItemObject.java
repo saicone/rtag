@@ -21,6 +21,21 @@ import java.util.Optional;
  */
 public class ItemObject {
 
+    // Import reflected classes
+    static {
+        try {
+            EasyLookup.addNMSClass("world.item.ItemStack");
+            if (ServerInstance.Release.COMPONENT) {
+                EasyLookup.addNMSClass("core.RegistryBlocks", "DefaultedRegistry");
+                EasyLookup.addNMSClass("world.item.component.CustomData");
+            }
+
+            EasyLookup.addOBCClass("inventory.CraftItemStack");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static final Class<?> MC_ITEM = EasyLookup.classById("ItemStack");
     private static final Class<?> CRAFT_ITEM = EasyLookup.classById("CraftItemStack");
     private static final Object CUSTOM_DATA;
@@ -158,12 +173,9 @@ public class ItemObject {
             }
 
             if (ServerInstance.Release.COMPONENT) {
-                EasyLookup.addNMSClass("core.RegistryBlocks", "DefaultedRegistry");
-
                 const$customData = ComponentType.of("minecraft:custom_data");
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
 
-                EasyLookup.addNMSClass("world.item.component.CustomData");
                 new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, Optional.class, "HolderLookup.Provider", "NBTBase");
                 new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
                 if (ServerInstance.MAJOR_VERSION >= 21) {
@@ -212,7 +224,7 @@ public class ItemObject {
             method$asCraftMirror = EasyLookup.staticMethod(CRAFT_ITEM, "asCraftMirror", CRAFT_ITEM, "ItemStack");
             // Bukkit -> Minecraft
             method$asNMSCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asNMSCopy", "ItemStack", ItemStack.class);
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
 

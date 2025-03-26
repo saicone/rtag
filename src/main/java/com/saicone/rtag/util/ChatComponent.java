@@ -35,6 +35,20 @@ import java.util.StringJoiner;
 @SuppressWarnings("deprecation")
 public class ChatComponent {
 
+    // Import reflected classes
+    static {
+        try {
+            EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
+            EasyLookup.addNMSClassId("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer", "network.chat.Component$Serializer");
+            EasyLookup.addOBCClass("util.CraftChatMessage");
+            if (ServerInstance.Release.COMPONENT) {
+                EasyLookup.addNMSClass("network.chat.ComponentSerialization");
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Default color palette for pretty nbt.
      */
@@ -75,13 +89,6 @@ public class ChatComponent {
         // ComponentSerialization
         MethodHandle component$codec = null;
         try {
-            EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
-            EasyLookup.addNMSClassId("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer", "network.chat.Component$Serializer");
-            EasyLookup.addOBCClass("util.CraftChatMessage");
-            if (ServerInstance.Release.COMPONENT) {
-                EasyLookup.addNMSClass("network.chat.ComponentSerialization");
-            }
-
             // Old names
             String fromJson = "a";
             String toJson = "a";
@@ -111,7 +118,7 @@ public class ChatComponent {
                 method$fromJson = EasyLookup.unreflectMethod("ChatSerializer", fromJson, String.class);
                 method$toJson = EasyLookup.staticMethod("ChatSerializer", toJson, String.class, "IChatBaseComponent");
             }
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
         CHAT_BASE_COMPONENT = EasyLookup.classById("IChatBaseComponent");

@@ -48,6 +48,7 @@ public class EasyLookup {
             addNMSClass("nbt.NBTTagByteArray", "ByteArrayTag");
             addNMSClass("nbt.NBTTagCompound", "CompoundTag");
             addNMSClass("nbt.NBTTagDouble", "DoubleTag");
+            addNMSClass("nbt.NBTTagEnd", "EndTag");
             addNMSClass("nbt.NBTTagFloat", "FloatTag");
             addNMSClass("nbt.NBTTagInt", "IntTag");
             addNMSClass("nbt.NBTTagIntArray", "IntArrayTag");
@@ -58,15 +59,9 @@ public class EasyLookup {
             }
             addNMSClass("nbt.NBTTagShort", "ShortTag");
             addNMSClass("nbt.NBTTagString", "StringTag");
-            if (ServerInstance.MAJOR_VERSION >= 13) {
-                addNMSClass("nbt.DynamicOpsNBT", "NbtOps");
-                if (ServerInstance.VERSION >= 18.02f) {
-                    EasyLookup.addNMSClass("resources.RegistryOps");
-                    if (ServerInstance.VERSION >= 19.02f) {
-                        EasyLookup.addNMSClass("core.registries.BuiltInRegistries");
-                        EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation");
-                    }
-                }
+            if (ServerInstance.VERSION >= 19.02f) {
+                EasyLookup.addNMSClass("core.registries.BuiltInRegistries");
+                EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation");
             }
             if (ServerInstance.Release.COMPONENT) {
                 addNMSClass("core.component.DataComponentHolder");
@@ -79,15 +74,11 @@ public class EasyLookup {
                 addNMSClass("core.component.TypedDataComponent");
                 addNMSClass("core.component.DataComponentType");
             }
-            addNMSClass("world.item.ItemStack");
             if (ServerInstance.Release.COMPONENT) {
                 addNMSClassId("HolderLookup.Provider", "core.HolderLookup$a", "core.HolderLookup$Provider");
             } else if (ServerInstance.VERSION >= 19.02f) {
                 addNMSClassId("HolderLookup.Provider", "core.HolderLookup$b", "core.HolderLookup$Provider");
             }
-            // Bukkit Server
-            addOBCClass("CraftServer");
-            addOBCClass("inventory.CraftItemStack");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

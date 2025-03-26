@@ -15,6 +15,19 @@ import java.util.zip.GZIPOutputStream;
  */
 public class TStreamTools {
 
+    // Import reflected classes
+    static {
+        try {
+            EasyLookup.addNMSClass("nbt.NBTCompressedStreamTools", "NbtIo");
+            EasyLookup.addNMSClass("nbt.NBTReadLimiter", "NbtAccounter");
+            if (ServerInstance.MAJOR_VERSION >= 18) {
+                EasyLookup.addNMSClass("util.FastBufferedInputStream");
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static final Object READ_LIMITER;
 
     private static final boolean USE_FAST_STREAM = ServerInstance.MAJOR_VERSION >= 18;
@@ -32,9 +45,6 @@ public class TStreamTools {
         // Getters
         MethodHandle get$unlimited = null;
         try {
-            EasyLookup.addNMSClass("nbt.NBTCompressedStreamTools", "NbtIo");
-            EasyLookup.addNMSClass("nbt.NBTReadLimiter", "NbtAccounter");
-
             // Old names
             String read = "a";
             String write = "a";
@@ -50,7 +60,6 @@ public class TStreamTools {
             }
 
             if (USE_FAST_STREAM) {
-                EasyLookup.addNMSClass("util.FastBufferedInputStream");
                 new$FastInputStream = EasyLookup.constructor("FastBufferedInputStream", InputStream.class);
             }
 
@@ -73,7 +82,7 @@ public class TStreamTools {
             } else {
                 get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", unlimited, "NBTReadLimiter");
             }
-        } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
+        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
 

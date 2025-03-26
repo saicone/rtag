@@ -21,6 +21,15 @@ import java.util.Map;
  */
 public class TagCompound {
 
+    // Import reflected classes
+    static {
+        try {
+            EasyLookup.addNMSClass("nbt.MojangsonParser", "TagParser");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Tag stream instance to save and get compounds.
      *
@@ -52,8 +61,6 @@ public class TagCompound {
         MethodHandle method$clone = null;
         MethodHandle method$parse = null;
         try {
-            EasyLookup.addNMSClass("nbt.MojangsonParser", "TagParser");
-
             // Old names
             String map = "map";
             String clone = "clone";
@@ -103,7 +110,7 @@ public class TagCompound {
             method$clone = EasyLookup.method(NBT_COMPOUND, clone, NBT_COMPOUND);
 
             method$parse = EasyLookup.staticMethod("MojangsonParser", parse, NBT_COMPOUND, String.class);
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException | ClassNotFoundException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
         newEmpty = new$EmptyCompound;
