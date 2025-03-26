@@ -163,24 +163,20 @@ public class TStream<T> {
      * @param consumer The consumer that accept non-null objects.
      */
     public void fromList(Object list, Consumer<T> consumer) {
-        switch (TagList.getType(list)) {
-            case 7: // List<NBTTagByteArray>
-                for (Object o : TagList.getValue(list)) {
+        for (Object o : TagList.getValue(list)) {
+            switch (TagBase.getTypeId(o)) {
+                case 7: // NBTTagByteArray
                     fromBytes((byte[]) TagBase.getValue(o), consumer);
-                }
-                break;
-            case 9: // List<NBTTagList>
-                for (Object o : TagList.getValue(list)) {
+                    break;
+                case 9: // NBTTagList
                     fromList(o, consumer);
-                }
-                break;
-            case 10: // List<NBTTagCompound>
-                for (Object o : TagList.getValue(list)) {
+                    break;
+                case 10: // NBTTagCompound
                     fromCompound(o, consumer);
-                }
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

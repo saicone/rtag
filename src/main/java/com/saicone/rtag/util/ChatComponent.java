@@ -875,8 +875,10 @@ public class ChatComponent {
         }
 
         final StringJoiner joiner;
-        final byte listId;
-        if (indent.isEmpty() || (list.size() <= 8 && (listId = TagList.getType(tag)) >= 1 && listId <= 6)) {
+        if (indent.isEmpty() || (list.size() <= 8 && TagList.getValue(tag).stream().anyMatch(value -> {
+            final int id = TagBase.getTypeId(value);
+            return id >= 1 && id <= 6;
+        }))) {
             joiner = new StringJoiner(
                     palette[0] + ", ",
                     palette[0] + '[',

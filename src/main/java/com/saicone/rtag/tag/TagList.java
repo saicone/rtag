@@ -23,8 +23,8 @@ public class TagList {
     private static final MethodHandle clone;
     private static final MethodHandle getTypeField;
     private static final MethodHandle setTypeField;
-    private static final MethodHandle setListField;
     private static final MethodHandle getListField;
+    private static final MethodHandle setListField;
 
     static {
         // Constructors
@@ -59,15 +59,19 @@ public class TagList {
             }
 
             new$EmptyList = EasyLookup.constructor(NBT_LIST);
-            if (ServerInstance.MAJOR_VERSION >= 15) {
-                // Private constructor
+            // Private constructor
+            if (ServerInstance.VERSION >= 21.04) {
+                new$List = EasyLookup.constructor(NBT_LIST, List.class);
+            } else if (ServerInstance.MAJOR_VERSION >= 15) {
                 new$List = EasyLookup.constructor(NBT_LIST, List.class, byte.class);
             }
             // (1.8 -  1.9) return NBTBase
             method$clone = EasyLookup.method(NBT_LIST, clone, NBT_LIST);
             // Private fields
-            get$type = EasyLookup.getter(NBT_LIST, type, byte.class);
-            set$type = EasyLookup.setter(NBT_LIST, type, byte.class);
+            if (ServerInstance.VERSION < 21.04) {
+                get$type = EasyLookup.getter(NBT_LIST, type, byte.class);
+                set$type = EasyLookup.setter(NBT_LIST, type, byte.class);
+            }
             get$list = EasyLookup.getter(NBT_LIST, list, List.class);
             set$list = EasyLookup.setter(NBT_LIST, list, List.class);
         } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
@@ -76,10 +80,10 @@ public class TagList {
         newEmpty = new$EmptyList;
         newList = new$List;
         clone = method$clone;
-        setTypeField = set$type;
         getTypeField = get$type;
-        setListField = set$list;
+        setTypeField = set$type;
         getListField = get$list;
+        setListField = set$list;
     }
 
     TagList() {
@@ -130,8 +134,12 @@ public class TagList {
      * @param <T>  List type parameter.
      */
     public static <T> Object newUncheckedTag(List<T> list) {
-        final byte type = TagBase.getTypeId(list.get(0));
         try {
+            // List are heterogeneous since 1.21.5
+            if (ServerInstance.VERSION >= 21.04) {
+                return newList.invoke(list);
+            }
+            final byte type = TagBase.getTypeId(list.get(0));
             if (ServerInstance.MAJOR_VERSION >= 15) {
                 return newList.invoke(list, type);
             } else {
@@ -250,14 +258,27 @@ public class TagList {
     }
 
     /**
-     * Get current tag type that reprsent tag list.
+     * Get current tag type that represent tag list.
      *
      * @param tag NBTTagList instance.
      * @return    A NBTBase object type.
      *
      * @see TagBase#getTypeId(Object)
      */
+    @Deprecated
     public static byte getType(Object tag) {
+        // List are heterogeneous since 1.21.5
+        if (ServerInstance.VERSION >= 21.04) {
+            for (Object o : getValue(tag)) {
+                return TagBase.getTypeId(o);
+            }
+            return 0;
+        } else {
+            return getType0(tag);
+        }
+    }
+
+    private static byte getType0(Object tag) {
         try {
             return (byte) getTypeField.invoke(tag);
         } catch (Throwable t) {
@@ -293,11 +314,14 @@ public class TagList {
      * @param tag     NBTBase tag to add.
      */
     public static void add(Object listTag, Object tag) {
-        final byte listType = getType(listTag);
-        if (listType == 0) {
-            setType(listTag, TagBase.getTypeId(tag));
-        } else if (!TagBase.isTypeOf(tag, listType)) {
-            return;
+        // List are heterogeneous since 1.21.5
+        if (ServerInstance.VERSION < 21.04) {
+            final byte listType = getType0(listTag);
+            if (listType == 0) {
+                setType0(listTag, TagBase.getTypeId(tag));
+            } else if (!TagBase.isTypeOf(tag, listType)) {
+                return;
+            }
         }
         getValue(listTag).add(tag);
     }
@@ -309,11 +333,14 @@ public class TagList {
      * @param tags    NBTBase tags to add.
      */
     public static void add(Object listTag, Object... tags) {
-        final byte listType = getType(listTag);
-        if (listType == 0) {
-            setType(listTag, TagBase.getTypeId(tags[0]));
-        } else if (!TagBase.isTypeOf(tags[0], getType(listTag))) {
-            return;
+        // List are heterogeneous since 1.21.5
+        if (ServerInstance.VERSION < 21.04) {
+            final byte listType = getType0(listTag);
+            if (listType == 0) {
+                setType0(listTag, TagBase.getTypeId(tags[0]));
+            } else if (!TagBase.isTypeOf(tags[0], getType0(listTag))) {
+                return;
+            }
         }
         final List<Object> list = getValue(listTag);
         for (Object tag : tags) {
@@ -351,7 +378,16 @@ public class TagList {
      *
      * @see TagBase#getTypeId(Object)
      */
+    @Deprecated
     public static void setType(Object tag, byte type) {
+        // List are heterogeneous since 1.21.5
+        if (ServerInstance.VERSION >= 21.04) {
+            return;
+        }
+        setType0(tag, type);
+    }
+
+    private static void setType0(Object tag, byte type) {
         try {
             setTypeField.invoke(tag, type);
         } catch (Throwable t) {
@@ -369,9 +405,11 @@ public class TagList {
         if (list.isEmpty()) {
             clear(tag);
         } else {
-            final byte type = TagBase.getTypeId(list.get(0));
             try {
-                setTypeField.invoke(tag, type);
+                if (ServerInstance.VERSION < 21.04) {
+                    final byte type = TagBase.getTypeId(list.get(0));
+                    setTypeField.invoke(tag, type);
+                }
                 setListField.invoke(tag, list);
             } catch (Throwable t) {
                 throw new RuntimeException(t);
