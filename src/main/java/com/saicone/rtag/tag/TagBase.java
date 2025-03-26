@@ -116,6 +116,9 @@ public class TagBase {
                     asByte = "x";
                     asDouble = "w";
                     asFloat = "w";
+                    asInt = "c";
+                    asLong = "c";
+                    asShort = "c";
                     asLongArray = "c";
                     asString = "A";
                 }

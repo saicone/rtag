@@ -78,6 +78,9 @@ public class TagCompound {
                 if (ServerInstance.MAJOR_VERSION >= 10) {
                     clone = "g";
                 }
+                if (ServerInstance.MAJOR_VERSION >= 13) {
+                    clone = "clone";
+                }
                 if (ServerInstance.Release.UNIVERSAL) {
                     map = "x";
                 }

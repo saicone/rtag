@@ -56,12 +56,12 @@ public class ComponentType {
      * NbtOps public instance from Minecraft code.
      */
     @ApiStatus.Experimental
-    public static final DynamicOps<Object> NBT_OPS;
+    public static final Object NBT_OPS;
     /**
      * JavaOps public instance from DataFixerUpper library.
      */
     @ApiStatus.Experimental
-    public static final DynamicOps<Object> JAVA_OPS = JavaOps.INSTANCE;
+    public static final Object JAVA_OPS = JavaOps.INSTANCE;
 
     private static final MethodHandle CREATE;
     private static final MethodHandle CODEC;
@@ -253,15 +253,21 @@ public class ComponentType {
         return TYPES.containsKey(key(name));
     }
 
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
-    @Deprecated
+    /**
+     * Create a serialization context using a globalized registry.
+     *
+     * @param dynamicOps the DynamicOps instance to wrap.
+     * @return           a serialization context.
+     * @param <T>        the expected type of object.
+     */
+    @ApiStatus.Internal
     @SuppressWarnings("unchecked")
-    public static <T> DynamicOps<T> createGlobalContext(DynamicOps<T> dynamicOps) {
+    public static <T> T createGlobalContext(Object dynamicOps) {
         if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
-            return dynamicOps;
+            return (T) dynamicOps;
         } else {
             try {
-                return (DynamicOps<T>) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
+                return (T) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
             } catch (Throwable e) {
                 throw new RuntimeException("Cannot create serialization context", e);
             }

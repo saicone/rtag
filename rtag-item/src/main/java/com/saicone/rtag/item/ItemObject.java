@@ -116,7 +116,6 @@ public class ItemObject {
                 setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
                     createStack = "parse";
-                    save = "saveOptional";
                     apply = "applyComponentsAndValidate";
                     copy = "copy";
                     getTag = "tag";

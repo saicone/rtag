@@ -11,6 +11,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.data.ComponentType;
@@ -77,7 +78,7 @@ public class ChatComponent {
     private static final MethodHandle fromJson;
     private static final MethodHandle toJson;
     // since 1.20.5
-    private static final Codec<Object> COMPONENT_CODEC;
+    private static final Object COMPONENT_CODEC;
 
     static {
         // CraftChatMessage util class
@@ -127,10 +128,10 @@ public class ChatComponent {
         fromJson = method$fromJson;
         toJson = method$toJson;
 
-        Codec<Object> componentCodec = null;
+        Object componentCodec = null;
         if (component$codec != null) {
             try {
-                componentCodec = (Codec<Object>) component$codec.invoke();
+                componentCodec = component$codec.invoke();
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -194,7 +195,7 @@ public class ChatComponent {
                 if (ServerInstance.VERSION >= 21.04f) {
                     updateJson(element);
                 }
-                return COMPONENT_CODEC.parse(ComponentType.createGlobalContext(JsonOps.INSTANCE), element).getOrThrow(JsonParseException::new);
+                return Serialization.parseJson(element);
             } else {
                 return fromJson.invoke(json);
             }
@@ -388,7 +389,7 @@ public class ChatComponent {
             currentTag = tag;
         }
         if (ServerInstance.Release.COMPONENT) {
-            return COMPONENT_CODEC.parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), currentTag).getOrThrow();
+            return Serialization.parseNbt(currentTag);
         } else {
             return fromJson(GSON.toJson(tagToJson(currentTag)));
         }
@@ -587,7 +588,7 @@ public class ChatComponent {
         }
         try {
             if (ServerInstance.Release.COMPONENT) {
-                final JsonElement element = COMPONENT_CODEC.encodeStart(ComponentType.createGlobalContext(JsonOps.INSTANCE), component).getOrThrow(JsonParseException::new);
+                final JsonElement element = Serialization.encodeJson(component);
                 return GSON.toJson(element);
             } else {
                 return (String) toJson.invoke(component);
@@ -665,7 +666,7 @@ public class ChatComponent {
         }
         if (ServerInstance.Release.COMPONENT) {
             try {
-                return COMPONENT_CODEC.encodeStart(ComponentType.createGlobalContext(ComponentType.NBT_OPS), component).getOrThrow(IllegalArgumentException::new);
+                return Serialization.encodeNbt(component);
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
@@ -687,7 +688,7 @@ public class ChatComponent {
     }
 
     // Taken from https://github.com/saicone/nbt
-    public static Object tagFromJson(JsonElement element) {
+    private static Object tagFromJson(JsonElement element) {
         if (element.isJsonPrimitive()) {
             final JsonPrimitive primitive = element.getAsJsonPrimitive();
             if (primitive.isBoolean()) {
@@ -929,5 +930,25 @@ public class ChatComponent {
             joiner.add(palette[1] + entry.getKey() + palette[0] + ": " + pretty(entry.getValue(), count + 1, indent, palette));
         }
         return joiner.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static final class Serialization {
+
+        private static Object parseJson(JsonElement element) {
+            return ((Codec<Object>) COMPONENT_CODEC).parse(ComponentType.createGlobalContext(JsonOps.INSTANCE), element).getOrThrow(JsonParseException::new);
+        }
+
+        private static Object parseNbt(Object tag) {
+            return ((Codec<Object>) COMPONENT_CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), tag).getOrThrow();
+        }
+
+        private static JsonElement encodeJson(Object component) {
+            return ((Codec<Object>) COMPONENT_CODEC).encodeStart((DynamicOps<JsonElement>) ComponentType.createGlobalContext(JsonOps.INSTANCE), component).getOrThrow(JsonParseException::new);
+        }
+
+        private static Object encodeNbt(Object component) {
+            return ((Codec<Object>) COMPONENT_CODEC).encodeStart(ComponentType.createGlobalContext(ComponentType.NBT_OPS), component).getOrThrow(IllegalArgumentException::new);
+        }
     }
 }
