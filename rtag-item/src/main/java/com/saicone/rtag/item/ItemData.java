@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Class to item-related data.
@@ -28,8 +28,26 @@ public class ItemData {
     private static final Map<String, Object> COMPONENT_PATHS = new LinkedHashMap<>();
     private static final Map<String, Object> TAG_PATHS = new LinkedHashMap<>();
     // Detectors
-    private static final TreeMap<Float, Function<Map<String, Object>, Boolean>> COMPONENT_DETECTORS = new TreeMap<>(Comparator.reverseOrder());
-    private static final TreeMap<Float, Function<Map<String, Object>, Boolean>> TAG_DETECTORS = new TreeMap<>(Comparator.reverseOrder());
+    private static final TreeMap<Float, Predicate<Map<String, Object>>> COMPONENT_DETECTORS = new TreeMap<>(Comparator.reverseOrder()) {
+        @Override
+        public Predicate<Map<String, Object>> put(Float key, Predicate<Map<String, Object>> value) {
+            if (containsKey(key)) {
+                final Predicate<Map<String, Object>> predicate = remove(key);
+                return super.put(key, map -> predicate.test(map) || value.test(map));
+            }
+            return super.put(key, value);
+        }
+    };
+    private static final TreeMap<Float, Predicate<Map<String, Object>>> TAG_DETECTORS = new TreeMap<>(Comparator.reverseOrder()) {
+        @Override
+        public Predicate<Map<String, Object>> put(Float key, Predicate<Map<String, Object>> value) {
+            if (containsKey(key)) {
+                final Predicate<Map<String, Object>> predicate = remove(key);
+                return super.put(key, map -> predicate.test(map) || value.test(map));
+            }
+            return super.put(key, value);
+        }
+    };
 
     static {
         loadPaths();
@@ -229,7 +247,7 @@ public class ItemData {
     private static Float detectVersion(Object compound, Map<String, Object> value) {
         // Detect by item components
         final Object components = value.get("components");
-        if (components != null || TagBase.getValue(value.get("Count")) instanceof Integer) {
+        if (components != null || TagBase.getValue(value.get("count")) instanceof Integer) {
             final Float version = detectComponentVersion(components);
             return version == null ? 20.04f : version;
         }
@@ -265,6 +283,12 @@ public class ItemData {
         }
         if (components.containsKey("minecraft:container")) {
             result = maxVersion(result, detectListVersion(components.get("minecraft:container"), "item"));
+        }
+        if (components.containsKey("minecraft:charged_projectiles")) {
+            result = maxVersion(result, detectListVersion(components.get("minecraft:charged_projectiles"), null));
+        }
+        if (components.containsKey("minecraft:use_remainder")) {
+            result = maxVersion(result, getItemVersion(components.get("minecraft:use_remainder")));
         }
         return maxVersion(result, detectMapVersion(components, COMPONENT_DETECTORS));
     }
@@ -311,9 +335,9 @@ public class ItemData {
         return result;
     }
 
-    private static Float detectMapVersion(Map<String, Object> map, TreeMap<Float, Function<Map<String, Object>, Boolean>> detectors) {
+    private static Float detectMapVersion(Map<String, Object> map, TreeMap<Float, Predicate<Map<String, Object>>> detectors) {
         for (var entry : detectors.entrySet()) {
-            if (entry.getValue().apply(map)) {
+            if (entry.getValue().test(map)) {
                 return entry.getKey();
             }
         }
@@ -540,8 +564,76 @@ public class ItemData {
         }
     }
 
+    private static void loadComponentDetector(float version, Predicate<Map<String, Object>> predicate) {
+        COMPONENT_DETECTORS.put(version, predicate);
+    }
+
+    private static void loadComponentDetector(float version, String key, Predicate<Object> predicate) {
+        loadComponentDetector(version, map -> {
+            final Object value = map.get(key);
+            if (value != null) {
+                try {
+                    return predicate.test(value);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
+            }
+            return false;
+        });
+    }
+
+    private static void loadAttributeDetector(float version, Predicate<Map<String, Object>> predicate) {
+        loadComponentDetector(version, map -> {
+            final Object attributeModifiers = map.get("minecraft:attribute_modifiers");
+            if (attributeModifiers == null) {
+                return false;
+            }
+            final Object modifiers = TagCompound.get(attributeModifiers, "modifiers");
+            if (modifiers == null) {
+                return false;
+            }
+            for (Object modifier : TagList.getValue(modifiers)) {
+                if (predicate.test(TagCompound.getValue(modifier))) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    private static void loadTextDetector(float version, Predicate<Object> predicate, String[]... paths) {
+        loadComponentDetector(version, map -> {
+            for (String[] path : paths) {
+                Map<String, Object> parent = map;
+                for (int i = 0; i < path.length; i++) {
+                    final String key = path[i];
+                    final Object value = parent.get(key);
+                    if (i + 1 >= path.length) {
+                        if (value != null) {
+                            if (TagList.isTagList(value)) {
+                                for (Object line : TagList.getValue(value)) {
+                                    if (predicate.test(line)) {
+                                        return true;
+                                    }
+                                }
+                            } else if (predicate.test(parent.get(key))) {
+                                return true;
+                            }
+                        }
+                    } else {
+                        if (TagCompound.isTagCompound(value)) {
+                            parent = TagCompound.getValue(value);
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
     private static void loadComponentDetectors() {
-        COMPONENT_DETECTORS.put(21.04f, components ->
+        // 1.21.5
+        loadComponentDetector(21.04f, components ->
                 components.containsKey("minecraft:weapon")
                         || components.containsKey("minecraft:potion_duration_scale")
                         || components.containsKey("minecraft:blocks_attacks")
@@ -550,26 +642,56 @@ public class ItemData {
                         || components.containsKey("minecraft:provides_trim_material")
                         || components.containsKey("minecraft:tooltip_display")
         );
-        COMPONENT_DETECTORS.put(21.02f, components ->
+        loadComponentDetector(21.04f, "minecraft:tool", tool -> TagCompound.get(tool, "can_destroy_blocks_in_creative") != null);
+        loadComponentDetector(21.04f, "minecraft:equippable", equippable -> TagCompound.get(equippable, "equip_on_interact") != null);
+        loadComponentDetector(21.04f, "minecraft:enchantments", enchantments -> {
+            final Map<String, Object> value = TagCompound.getValue(enchantments);
+            return !value.isEmpty() && !value.containsKey("levels") && !value.containsKey("show_in_tooltip");
+        });
+        final Predicate<Object> canBuild = component -> {
+            if (TagList.isTagList(component)) {
+                return true;
+            }
+            final Map<String, Object> value = TagCompound.getValue(component);
+            return !value.isEmpty() && !value.containsKey("predicates") && !value.containsKey("show_in_tooltip");
+        };
+        loadComponentDetector(21.04f, "minecraft:can_break", canBuild);
+        loadComponentDetector(21.04f, "minecraft:can_place_on", canBuild);
+        loadComponentDetector(21.04f, "minecraft:dyed_color", dyedColor -> !TagCompound.isTagCompound(dyedColor));
+        loadComponentDetector(21.04f, "minecraft:attribute_modifiers", TagList::isTagList);
+        loadTextDetector(21.04f, TagCompound::isTagCompound,
+                new String[] {"minecraft:custom_name"},
+                new String[] {"minecraft:item_name"},
+                new String[] {"minecraft:lore"},
+                new String[] {"minecraft:written_book_content", "pages"},
+                new String[] {"minecraft:instrument", "description"}
+        );
+        // 1.21.4
+        loadComponentDetector(21.03f, "minecraft:custom_model_data", TagCompound::isTagCompound);
+        loadComponentDetector(21.03f, "minecraft:equippable", equippable -> TagCompound.get(equippable, "asset_id") != null);
+        // 1.21.2
+        loadComponentDetector(21.02f, components ->
                 components.containsKey("minecraft:repairable")
                         || components.containsKey("minecraft:enchantable")
                         || components.containsKey("minecraft:consumable")
                         || components.containsKey("minecraft:use_cooldown")
                         || components.containsKey("minecraft:use_remainder")
+                        || components.containsKey("minecraft:item_model")
+                        || components.containsKey("minecraft:equippable")
+                        || components.containsKey("minecraft:glider")
+                        || components.containsKey("minecraft:tooltip_style")
+                        || components.containsKey("minecraft:death_protection")
+                        || components.containsKey("minecraft:damage_resistant")
         );
-        COMPONENT_DETECTORS.put(21.01f, components -> {
-            if (components.containsKey("minecraft:jukebox_playable")) {
-                return true;
-            }
-
-            final Object food = components.get("minecraft:food");
-            if (food != null && TagCompound.get(food, "using_converts_to") != null) {
-                return true;
-            }
-
-            final Object attributeModifiers = components.get("minecraft:attribute_modifiers");
-            return attributeModifiers != null && TagCompound.get(attributeModifiers, "id") != null;
+        loadAttributeDetector(21.02f, modifier -> {
+            final String type = (String) TagBase.getValue(modifier.get("type"));
+            return !type.startsWith("generic.") && !type.startsWith("player.") && !type.startsWith("zombie.");
         });
+        loadComponentDetector(21.02f, "minecraft:potion_contents", potionContents -> TagCompound.get(potionContents, "custom_name") != null);
+        // 1.21.1
+        loadComponentDetector(21.01f, components -> components.containsKey("minecraft:jukebox_playable"));
+        loadComponentDetector(21.01f, "minecraft:food", food -> TagCompound.get(food, "using_converts_to") != null);
+        loadAttributeDetector(21.01f, modifier -> modifier.get("id") != null);
     }
 
     private static void loadTagDetectors() {
