@@ -281,6 +281,7 @@ public class ItemTagStream extends TStream<ItemStack> {
     public void onLoad(Object compound) {
         final Float version = getVersion(compound);
         if (version != null && !versionMatches(version, getVersion())) {
+            TagCompound.remove(compound, getVersionKey()); // Fix rare serialization exception
             onLoad(compound, version, getVersion());
         }
     }

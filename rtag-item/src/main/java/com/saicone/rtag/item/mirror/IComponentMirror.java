@@ -663,7 +663,7 @@ public class IComponentMirror implements ItemMirror {
                 if (level == null) {
                     level = 1;
                 }
-                levels.put(key, level.intValue());
+                levels.put(key, Math.max(1, level.intValue()));
             }
             TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, levels, id, "levels");

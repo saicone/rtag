@@ -525,7 +525,7 @@ public class ChatComponent {
         final Object value = TagBase.getValue(RtagMirror.INSTANCE, tag);
         if (value instanceof Boolean) {
             return new JsonPrimitive((Boolean) value);
-        };
+        }
         switch (TagBase.getTypeId(tag)) {
             case 0:
                 return JsonNull.INSTANCE;
