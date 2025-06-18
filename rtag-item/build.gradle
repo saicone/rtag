@@ -3,7 +3,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.21.6-R0.1-SNAPSHOT'
     compileOnly 'com.mojang:authlib:1.5.26' // 3.11.50
-    compileOnly('com.mojang:datafixerupper:4.1.27') { transitive = false }
+    compileOnly('com.github.Rubenicos:DataFixerUpper:8.0') { transitive = false }
 }

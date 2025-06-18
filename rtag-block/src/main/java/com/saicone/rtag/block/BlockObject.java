@@ -1,8 +1,10 @@
 package com.saicone.rtag.block;
 
 import com.saicone.rtag.Rtag;
+import com.saicone.rtag.registry.IOValue;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.ProblemReporter;
 import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -31,6 +33,11 @@ public class BlockObject {
 
             EasyLookup.addOBCClass("CraftWorld");
             EasyLookup.addOBCClass("block.CraftBlockState");
+
+            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                EasyLookup.addNMSClass("world.level.storage.ValueInput");
+                EasyLookup.addNMSClass("world.level.storage.ValueOutput");
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -106,6 +113,11 @@ public class BlockObject {
                 if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
                     getRegistry = "J_";
                 }
+                if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                    save = "e";
+                    load = "b";
+                    getRegistry = "K_";
+                }
             }
 
             new$BlockPosition = EasyLookup.constructor("BlockPosition", int.class, int.class, int.class);
@@ -113,9 +125,16 @@ public class BlockObject {
             method$getHandle = EasyLookup.method("CraftWorld", "getHandle", "WorldServer");
 
             if (ServerInstance.Release.COMPONENT) {
-                method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound", "HolderLookup.Provider");
                 method$getWorld = EasyLookup.method(TILE_ENTITY, getWorld, "World");
                 method$getRegistry = EasyLookup.method("IWorldReader", getRegistry, "IRegistryCustom");
+            }
+
+            if (ServerInstance.Release.COMPONENT) {
+                if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                    method$save = EasyLookup.method(TILE_ENTITY, save, void.class, "ValueOutput");
+                } else {
+                    method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound", "HolderLookup.Provider");
+                }
             } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound");
             } else {
@@ -123,7 +142,9 @@ public class BlockObject {
                 method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound", "NBTTagCompound");
             }
 
-            if (ServerInstance.Release.COMPONENT) {
+            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                method$load = EasyLookup.method(TILE_ENTITY, load, void.class, "ValueInput");
+            } else if (ServerInstance.Release.COMPONENT) {
                 method$load = EasyLookup.method(TILE_ENTITY, load, void.class, "NBTTagCompound", "HolderLookup.Provider");
             } else if (ServerInstance.MAJOR_VERSION == 16) {
                 method$getPosition = EasyLookup.method(TILE_ENTITY, "getPosition", "BlockPosition");
@@ -192,7 +213,13 @@ public class BlockObject {
             if (ServerInstance.Release.COMPONENT) {
                 final Object world = getWorld.invoke(tile);
                 final Object registry = world != null ? getRegistry.invoke(world) : Rtag.getMinecraftRegistry();
-                return save.invoke(tile, registry);
+                if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                    final Object output = IOValue.createOutput(ProblemReporter.DISCARDING, registry);
+                    save.invoke(tile, output);
+                    return IOValue.result(output);
+                } else {
+                    return save.invoke(tile, registry);
+                }
             } else if (ServerInstance.MAJOR_VERSION >= 18) {
                 return save.invoke(tile);
             } else if (ServerInstance.MAJOR_VERSION >= 9) {
@@ -218,7 +245,11 @@ public class BlockObject {
             if (ServerInstance.Release.COMPONENT) {
                 final Object world = getWorld.invoke(tile);
                 final Object registry = world != null ? getRegistry.invoke(world) : Rtag.getMinecraftRegistry();
-                load.invoke(tile, tag, registry);
+                if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                    load.invoke(tile, IOValue.createInput(ProblemReporter.DISCARDING, registry, tag));
+                } else {
+                    load.invoke(tile, tag, registry);
+                }
             } else if (ServerInstance.MAJOR_VERSION == 16) {
                 Object blockData = getType.invoke(getWorld.invoke(tile), getPosition.invoke(tile));
                 load.invoke(tile, tag, blockData);

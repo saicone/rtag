@@ -40,7 +40,9 @@ public class ChatComponent {
     static {
         try {
             EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
-            EasyLookup.addNMSClassId("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer", "network.chat.Component$Serializer");
+            if (ServerInstance.VERSION < 21.05f) { // Since 1.21.6 this class doesn't exist
+                EasyLookup.addNMSClassId("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer", "network.chat.Component$Serializer");
+            }
             EasyLookup.addOBCClass("util.CraftChatMessage");
             if (ServerInstance.Release.COMPONENT) {
                 EasyLookup.addNMSClass("network.chat.ComponentSerialization");

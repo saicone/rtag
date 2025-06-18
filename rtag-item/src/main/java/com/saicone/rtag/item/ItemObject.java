@@ -1,6 +1,6 @@
 package com.saicone.rtag.item;
 
-import com.saicone.rtag.Rtag;
+import com.mojang.serialization.Codec;
 import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.data.DataComponent;
 import com.saicone.rtag.tag.TagBase;
@@ -42,6 +42,9 @@ public class ItemObject {
     private static final Object ITEM_REGISTRY; // Remove in 2.0.0
 
     // Minecraft-related
+    // since 1.20.5
+    private static final Object CODEC;
+    // pre 1.20.5
     private static final MethodHandle newItem;
     private static final MethodHandle newCustomData;
     private static final MethodHandle newMinecraftKey; // Remove in 2.0.0
@@ -68,6 +71,7 @@ public class ItemObject {
         // Constants
         Object const$customData = null;
         Object const$item = null;
+        Object const$codec = null;
         // Constructors
         MethodHandle new$ItemStack = null;
         MethodHandle new$CustomData = null;
@@ -95,6 +99,7 @@ public class ItemObject {
             // Old method names
             String registry$item = "h";
             String key$parse = "a";
+            String codec = "b";
             String createStack = "createStack";
             String save = "save";
             String apply = "c";
@@ -110,12 +115,11 @@ public class ItemObject {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 registry$item = "ITEM";
                 key$parse = "parse";
-                createStack = "of";
+                codec = "CODEC";
                 apply = "load";
                 getItem = "get";
                 setItem = "item";
                 if (ServerInstance.Release.COMPONENT) {
-                    createStack = "parse";
                     apply = "applyComponentsAndValidate";
                     copy = "copy";
                     getTag = "tag";
@@ -158,6 +162,7 @@ public class ItemObject {
                     registry$item = "g";
                 }
                 if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                    codec = "a";
                     copy = "v";
                     isEmpty = "f";
                     setItem = "o";
@@ -167,6 +172,7 @@ public class ItemObject {
                     setItem = "p";
                 }
                 if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    codec = "b";
                     setItem = "s";
                 }
             }
@@ -175,7 +181,7 @@ public class ItemObject {
                 const$customData = ComponentType.of("minecraft:custom_data");
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
 
-                new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, Optional.class, "HolderLookup.Provider", "NBTBase");
+                const$codec = MC_ITEM.getDeclaredField(codec).get(null);
                 new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
                 if (ServerInstance.MAJOR_VERSION >= 21) {
                     new$MinecraftKey = EasyLookup.staticMethod("MinecraftKey", key$parse, "MinecraftKey", String.class);
@@ -183,7 +189,6 @@ public class ItemObject {
                     new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
                 }
 
-                method$save = EasyLookup.method(MC_ITEM, save, "NBTBase", "HolderLookup.Provider", "NBTBase");
                 method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
                 method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
                 method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
@@ -230,6 +235,7 @@ public class ItemObject {
         CUSTOM_DATA = const$customData;
         ITEM_REGISTRY = const$item;
 
+        CODEC = const$codec;
         newItem = new$ItemStack;
         newCustomData = new$CustomData;
         newMinecraftKey = new$MinecraftKey;
@@ -265,7 +271,7 @@ public class ItemObject {
     public static Object newItem(Object compound) {
         try {
             if (ServerInstance.Release.COMPONENT) {
-                return ((Optional<Object>) newItem.invoke(Rtag.getMinecraftRegistry(), compound)).orElse(null);
+                return ((Codec<Object>) CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), compound).result().orElse(null);
             } else {
                 return newItem.invoke(compound);
             }
@@ -352,6 +358,7 @@ public class ItemObject {
      * @param item ItemStack instance.
      * @return     A NBTTagCompound that represent the item.
      */
+    @SuppressWarnings("unchecked")
     public static Object save(Object item) {
         if (item == null) {
             return TagCompound.newTag();
@@ -361,7 +368,7 @@ public class ItemObject {
                 if ((boolean) isEmpty.invoke(item)) {
                     return TagCompound.newTag();
                 }
-                return save.invoke(item, Rtag.getMinecraftRegistry(), TagCompound.newTag());
+                return ((Codec<Object>) CODEC).encode(item, ComponentType.createGlobalContext(ComponentType.NBT_OPS), TagCompound.newTag()).getOrThrow();
             } else {
                 return save.invoke(item, TagCompound.newTag());
             }

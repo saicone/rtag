@@ -54,32 +54,33 @@ public class ServerInstance {
     static {
         // Original data versions start by 100 until 15w32a
         VERSION_MAP.put(98, new Integer[] {8, 3, 10803}); // 1.8 doesn't have data version, so 98 will be used by default
-        VERSION_MAP.put(169, new Integer[] {9, 1, 10901});
-        VERSION_MAP.put(183, new Integer[] {9, 2, 10902});
-        VERSION_MAP.put(510, new Integer[] {10, 1, 11001});
-        VERSION_MAP.put(819, new Integer[] {11, 1, 11101});
-        VERSION_MAP.put(1139, new Integer[] {12, 1, 11201});
-        VERSION_MAP.put(1519, new Integer[] {13, 1, 11301});
-        VERSION_MAP.put(1631, new Integer[] {13, 2, 11302});
-        VERSION_MAP.put(1952, new Integer[] {14, 1, 11401});
-        VERSION_MAP.put(2225, new Integer[] {15, 1, 11501});
-        VERSION_MAP.put(2566, new Integer[] {16, 1, 11601});
-        VERSION_MAP.put(2578, new Integer[] {16, 2, 11602});
-        VERSION_MAP.put(2584, new Integer[] {16, 3, 11603});
-        VERSION_MAP.put(2724, new Integer[] {17, 1, 11701});
-        VERSION_MAP.put(2860, new Integer[] {18, 1, 11801});
-        VERSION_MAP.put(2975, new Integer[] {18, 2, 11802});
-        VERSION_MAP.put(3105, new Integer[] {19, 1, 11901});
-        VERSION_MAP.put(3218, new Integer[] {19, 2, 11902});
-        VERSION_MAP.put(3337, new Integer[] {19, 3, 11903});
-        VERSION_MAP.put(3463, new Integer[] {20, 1, 12001});
-        VERSION_MAP.put(3578, new Integer[] {20, 2, 12002});
-        VERSION_MAP.put(3698, new Integer[] {20, 3, 12003});
-        VERSION_MAP.put(3837, new Integer[] {20, 4, 12004});
-        VERSION_MAP.put(3953, new Integer[] {21, 1, 12101});
-        VERSION_MAP.put(4080, new Integer[] {21, 2, 12102});
-        VERSION_MAP.put(4189, new Integer[] {21, 3, 12103});
-        VERSION_MAP.put(4324, new Integer[] {21, 4, 12104});
+        VERSION_MAP.put(169, new Integer[] {9, 1, 10901}); // 1.9
+        VERSION_MAP.put(183, new Integer[] {9, 2, 10902}); // 1.9.3
+        VERSION_MAP.put(510, new Integer[] {10, 1, 11001}); // 1.10
+        VERSION_MAP.put(819, new Integer[] {11, 1, 11101}); // 1.11
+        VERSION_MAP.put(1139, new Integer[] {12, 1, 11201}); // 1.12
+        VERSION_MAP.put(1519, new Integer[] {13, 1, 11301}); // 1.13
+        VERSION_MAP.put(1631, new Integer[] {13, 2, 11302}); // 1.13.1
+        VERSION_MAP.put(1952, new Integer[] {14, 1, 11401}); // 1.14
+        VERSION_MAP.put(2225, new Integer[] {15, 1, 11501}); // 1.15
+        VERSION_MAP.put(2566, new Integer[] {16, 1, 11601}); // 1.16
+        VERSION_MAP.put(2578, new Integer[] {16, 2, 11602}); // 1.16.2
+        VERSION_MAP.put(2584, new Integer[] {16, 3, 11603}); // 1.16.4
+        VERSION_MAP.put(2724, new Integer[] {17, 1, 11701}); // 1.17
+        VERSION_MAP.put(2860, new Integer[] {18, 1, 11801}); // 1.18
+        VERSION_MAP.put(2975, new Integer[] {18, 2, 11802}); // 1.18.2
+        VERSION_MAP.put(3105, new Integer[] {19, 1, 11901}); // 1.19
+        VERSION_MAP.put(3218, new Integer[] {19, 2, 11902}); // 1.19.3
+        VERSION_MAP.put(3337, new Integer[] {19, 3, 11903}); // 1.19.4
+        VERSION_MAP.put(3463, new Integer[] {20, 1, 12001}); // 1.20
+        VERSION_MAP.put(3578, new Integer[] {20, 2, 12002}); // 1.20.2
+        VERSION_MAP.put(3698, new Integer[] {20, 3, 12003}); // 1.20.3
+        VERSION_MAP.put(3837, new Integer[] {20, 4, 12004}); // 1.20.5
+        VERSION_MAP.put(3953, new Integer[] {21, 1, 12101}); // 1.21
+        VERSION_MAP.put(4080, new Integer[] {21, 2, 12102}); // 1.21.2
+        VERSION_MAP.put(4189, new Integer[] {21, 3, 12103}); // 1.21.4
+        VERSION_MAP.put(4324, new Integer[] {21, 4, 12104}); // 1.21.5
+        VERSION_MAP.put(4435, new Integer[] {21, 5, 12105}); // 1.21.6
 
         final String serverPackage = Bukkit.getServer().getClass().getPackage().getName();
         if (serverPackage.startsWith("org.bukkit.craftbukkit.v1_")) {

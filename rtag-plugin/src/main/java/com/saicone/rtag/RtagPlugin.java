@@ -14,6 +14,7 @@ public class RtagPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
+        getLogger().info("Found version " + ServerInstance.PACKAGE_VERSION + " (" + ServerInstance.DATA_VERSION + ")");
         // Utils
         loadRtagClass("util.EasyLookup",
                 "util.ChatComponent",
@@ -28,8 +29,12 @@ public class RtagPlugin extends JavaPlugin {
             // Data
             loadRtagClass("data.ComponentType", "data.DataComponent");
         }
+        // Registry
+        loadRtagClass("registry.IOValue");
         // Stream
         loadRtagClass("stream.TStream", "stream.TStreamTools");
+        // Util
+        loadRtagClass("util.ProblemReporter");
         // Block
         loadRtagClass("block.BlockObject");
         // Entity

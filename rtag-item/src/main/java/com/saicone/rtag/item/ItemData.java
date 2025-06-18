@@ -632,6 +632,18 @@ public class ItemData {
     }
 
     private static void loadComponentDetectors() {
+        // 1.21.6
+        loadComponentDetector(21.05f, "minecraft:attribute_modifiers", modifiers -> {
+            if (TagList.isTagList(modifiers)) {
+                for (Object modifier : TagList.getValue(modifiers)) {
+                    if (TagCompound.get(modifier, "display") != null) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+        loadComponentDetector(21.05f, "minecraft:equippable", equippable -> TagCompound.get(equippable, "can_be_sheared") != null || TagCompound.get(equippable, "shearing_sound") != null);
         // 1.21.5
         loadComponentDetector(21.04f, components ->
                 components.containsKey("minecraft:weapon")

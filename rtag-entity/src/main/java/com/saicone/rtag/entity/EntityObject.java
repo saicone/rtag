@@ -1,7 +1,10 @@
 package com.saicone.rtag.entity;
 
+import com.saicone.rtag.Rtag;
+import com.saicone.rtag.registry.IOValue;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.ProblemReporter;
 import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -22,6 +25,15 @@ public class EntityObject {
 
             EasyLookup.addOBCClass("CraftServer");
             EasyLookup.addOBCClass("entity.CraftEntity");
+
+            if (ServerInstance.MAJOR_VERSION >= 16) {
+                EasyLookup.addNMSClass("core.IRegistryCustom", "RegistryAccess");
+            }
+
+            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                EasyLookup.addNMSClass("world.level.storage.ValueInput");
+                EasyLookup.addNMSClass("world.level.storage.ValueOutput");
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -34,6 +46,8 @@ public class EntityObject {
     private static final MethodHandle getHandle;
     private static final MethodHandle save;
     private static final MethodHandle load;
+    // Only +1.20.5
+    private static final MethodHandle registryAccess;
 
     static {
         // Methods
@@ -41,14 +55,18 @@ public class EntityObject {
         MethodHandle method$getHandle = null;
         MethodHandle method$save = null;
         MethodHandle method$load = null;
+        MethodHandle method$registryAccess = null;
         try {
             // Old method names
             String save = "e";
             String load = "f";
+            String registryAccess = "dR";
+
             // New method names
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 save = "saveWithoutId";
                 load = "load";
+                registryAccess = "registryAccess";
             } else {
                 if (ServerInstance.MAJOR_VERSION >= 12) {
                     save = "save";
@@ -60,18 +78,46 @@ public class EntityObject {
                     save = "f";
                     load = "g";
                 }
+                if (ServerInstance.MAJOR_VERSION >= 21) {
+                    registryAccess = "dQ";
+                }
+                if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                    registryAccess = "dY";
+                }
+                if (ServerInstance.VERSION >= 21.03f) { // 1.21.4
+                    registryAccess = "dX";
+                }
                 if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
                     save = "h";
                     load = "i";
+                }
+                if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                    save = "d";
+                    load = "e";
+                    registryAccess = "eb";
                 }
             }
 
             method$getEntity = EasyLookup.staticMethod("CraftEntity", "getEntity", "CraftEntity", "CraftServer", "Entity");
             method$getHandle = EasyLookup.method("CraftEntity", "getHandle", "Entity");
-            // (1.8) void method
-            // (1.20.3) Note: New method to save entity as compound excluding world position data
-            method$save = EasyLookup.method("Entity", save, "NBTTagCompound", "NBTTagCompound");
-            method$load = EasyLookup.method("Entity", load, void.class, "NBTTagCompound");
+
+            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                method$save = EasyLookup.method("Entity", save, void.class, "ValueOutput");
+            } else {
+                // (1.8) void method
+                // (1.20.3) Note: New method to save entity as compound excluding world position data
+                method$save = EasyLookup.method("Entity", save, "NBTTagCompound", "NBTTagCompound");
+            }
+
+            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                method$load = EasyLookup.method("Entity", load, void.class, "ValueInput");
+            } else {
+                method$load = EasyLookup.method("Entity", load, void.class, "NBTTagCompound");
+            }
+
+            if (ServerInstance.Release.COMPONENT) {
+                method$registryAccess = EasyLookup.method("Entity", registryAccess, "IRegistryCustom");
+            }
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -79,6 +125,7 @@ public class EntityObject {
         getHandle = method$getHandle;
         save = method$save;
         load = method$load;
+        registryAccess = method$registryAccess;
     }
 
     EntityObject() {
@@ -145,7 +192,12 @@ public class EntityObject {
      */
     public static Object save(Object entity) {
         try {
-            if (ServerInstance.MAJOR_VERSION >= 9) {
+            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                final Object registry = registryAccess.invoke(entity);
+                final Object output = IOValue.createOutput(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry());
+                save.invoke(entity, output);
+                return IOValue.result(output);
+            } else if (ServerInstance.MAJOR_VERSION >= 9) {
                 return save.invoke(entity, TagCompound.newTag());
             } else {
                 Object tag = TagCompound.newTag();
@@ -165,7 +217,12 @@ public class EntityObject {
      */
     public static void load(Object entity, Object tag) {
         try {
-            load.invoke(entity, tag);
+            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                final Object registry = registryAccess.invoke(entity);
+                load.invoke(entity, IOValue.createInput(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), tag));
+            } else {
+                load.invoke(entity, tag);
+            }
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
