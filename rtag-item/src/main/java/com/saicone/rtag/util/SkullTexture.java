@@ -709,7 +709,7 @@ public class SkullTexture {
     public static class Profile {
 
         private static final UUID EMPTY_ID = new UUID(0, 0);
-        private static final Profile EMPTY = valueOf(EMPTY_ID, "null");
+        private static final Profile EMPTY = createProfile(EMPTY_ID, "null", null, null);
 
         private final GameProfile profile;
 
@@ -775,6 +775,11 @@ public class SkullTexture {
             if (uniqueId.equals(EMPTY_ID) && name.equals("null") && texture == null) {
                 return empty();
             }
+            return createProfile(uniqueId, name, texture, signature);
+        }
+
+        @NotNull
+        private static Profile createProfile(@NotNull UUID uniqueId, @NotNull String name, @Nullable String texture, @Nullable String signature) {
             final GameProfile profile = new GameProfile(uniqueId, name);
             if (texture != null) {
                 profile.getProperties().put("textures", new Property("textures", texture, signature));

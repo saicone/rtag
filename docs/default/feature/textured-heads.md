@@ -74,9 +74,9 @@ CompletableFuture<ItemStack> head = SkullTexture.playerDB().itemAsync(name);
 // Using CraftHead API
 CompletableFuture<ItemStack> head = SkullTexture.craftHead().itemAsync(name);
 
-head.whenComplete(item -> {
-        // do something
-        });
+head.thenAccept(item -> {
+    // do something
+});
 ```
 
 </TabItem>
@@ -103,9 +103,9 @@ CompletableFuture<ItemStack> head = SkullTexture.playerDB().itemAsync(uniqueId);
 // Using CraftHead API
 CompletableFuture<ItemStack> head = SkullTexture.craftHead().itemAsync(uniqueId);
 
-head.whenComplete(item -> {
-        // do something
-        });
+head.thenAccept(item -> {
+    // do something
+});
 ```
 
 </TabItem>
