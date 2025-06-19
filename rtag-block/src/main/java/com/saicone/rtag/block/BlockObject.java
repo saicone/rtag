@@ -99,6 +99,7 @@ public class BlockObject {
                 if (ServerInstance.MAJOR_VERSION >= 18) {
                     getTileEntity = "c_";
                     save = "m";
+                    load = "a";
                 }
                 if (ServerInstance.VERSION >= 19.03) { // 1.19.4
                     save = "o";
