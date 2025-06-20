@@ -6,7 +6,7 @@ description: Editar el NBT de los items
 
 :::info Antes de continuar
 
-Para entender esta página primero debes ver [la guía de RtagEditor](../../usage/editor/).
+Para entender esta página primero debes ver [la guía de RtagEditor](editor.md).
 
 Para entender sobre los tags comunes en los items se sugiere visitar la [página de la wiki de Minecraft](https://minecraft.wiki/w/Item_format).
 
@@ -188,7 +188,7 @@ int cost = tag.getRepairCost();
 
 :::info
 
-En Minecraft 1.14, los strings del lore del item fueron movidos a utilizar el formato de [componente de chat](../../feature/chat-component/), así que los items serializados en Bukkit de alguna forma no pueden ser comparados con otros items utilizando el método `ItemStack#isSimilar()` ya que el componente de chat del lore del item serializado no contiene varios tags sin utilizar.
+En Minecraft 1.14, los strings del lore del item fueron movidos a utilizar el formato de [componente de chat](../feature/chat-component.md), así que los items serializados en Bukkit de alguna forma no pueden ser comparados con otros items utilizando el método `ItemStack#isSimilar()` ya que el componente de chat del lore del item serializado no contiene varios tags sin utilizar.
 
 :::
 

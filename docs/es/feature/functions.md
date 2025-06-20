@@ -8,7 +8,7 @@ description: Como manejar rutas con funciones
 
 Esta es una característica avanzada, puedes ignorar esto ya que es raramente utilizado.
 
-Para entender esta página deberías ver la información sobre [Objetos de Tag](../../advanced/tags/).
+Para entender esta página deberías ver la información sobre [Objetos de Tag](../advanced/tags.md).
 
 :::
 

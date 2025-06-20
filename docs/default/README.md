@@ -79,7 +79,7 @@ You don't need to be an expert with NBT tags, just with simple methods you can s
 
 ### Dependency
 
-To use Rtag in your project **without shading** you need to add first as a dependency and tell your users to download Rtag from their [Spigot page](https://www.spigotmc.org/resources/rtag.100694/).
+To use Rtag in your project **without shading** you need to add first as a dependency and tell your users to download Rtag from their [Spigot page](https://www.spigotmc.org/resources/rtag.100694).
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -318,7 +318,7 @@ rtag.set(compound, "Normal string", "Custom", "Tag", "Path");
 String string = rtag.get(compound, "Custom", "Tag", "Path");
 ```
 
-The main [RtagEditor instances](usage/editor/) have methods to make tag editing easier.
+The main [RtagEditor instances](usage/editor.md) have methods to make tag editing easier.
 
 ```java
 RtagItem tag = new RtagItem(item);
@@ -353,7 +353,7 @@ ItemStack copy = RtagItem.edit(item, tag -> {
 
 By default, Rtag uses the Gson library inside Bukkit to (de)serialize custom objects, but you need to get them using explicit conversion.
 
-You can register (de)serializers in Rtag instance to [set and get custom objects with automatic conversion](feature/custom-objects/).
+You can register (de)serializers in Rtag instance to [set and get custom objects with automatic conversion](feature/custom-objects.md).
 
 ```java
 Rtag rtag = new Rtag();
@@ -365,7 +365,7 @@ MyObject sameObject = rtag.getOptional(compound, "CustomTagPath").as(MyObject.cl
 
 ### TagStream instances
 
-With [ItemTagStream instance](feature/stream/) you can convert items into Base64|File|Bytes|Map|String and viceversa.
+With [ItemTagStream instance](feature/stream.md) you can convert items into Base64|File|Bytes|Map|String and viceversa.
 Including **cross-version support**! Save an item on any version and get on any version without compatibility problems. Materials, enchantments, potions... etc, all will be converted!
 
 ```java
@@ -377,7 +377,7 @@ ItemStack sameItem = tag.fromBase64(string)[0];
 
 ### Textured heads
 
-With [SkullTexture class](feature/textured-heads/) you can get textured heads from base64, url, texture ID, player name or uuid.
+With [SkullTexture class](feature/textured-heads.md) you can get textured heads from base64, url, texture ID, player name or uuid.
 
 ```java
 // Base64
@@ -394,7 +394,7 @@ ItemStack head = SkullTexture.getTexturedHead("7ca003dc-175f-4f1f-b490-565104531
 
 ### Chat Component
 
-With [ChatComponent class](feature/chat-component/) you can convert (json) strings into chat components and viceversa.
+With [ChatComponent class](feature/chat-component.md) you can convert (json) strings into chat components and viceversa.
 
 ```java
 // To component

@@ -6,7 +6,7 @@ description: Como guardar items en bases de datos o archivos de configuración
 
 Al manejar los items probablemente has experimentado problemas al momento de guardarlos, eso es debido a que los items no están hechos para ser utilizados como objetos de una base de datos o archivos configurables en Minecraft vanilla.
 
-Así que Rtag ofrece una forma fácil de manejar items en diferentes tipos de data utilizando la instancia de [item stream](../../feature/stream/#itemtagstream), manteniendo compatibilidad a través de versiones a diferencia del serializador de Bukkit que no puede convertir el nuevo formato de los items en sus versiones viejas.
+Así que Rtag ofrece una forma fácil de manejar items en diferentes tipos de data utilizando la instancia de [item stream](../feature/stream.md#itemtagstream), manteniendo compatibilidad a través de versiones a diferencia del serializador de Bukkit que no puede convertir el nuevo formato de los items en sus versiones viejas.
 
 ## Guardar en base de datos
 

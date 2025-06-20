@@ -12,7 +12,7 @@ Es el class principal para manejar cualquier tipo de objeto NBT.
 
 ### Crear
 
-Con el class `TagBase` puede crear objetos NBT con cualquier tipo de objeto (normal de java), por defecto solo tiene soporte para los [objetos compatibles](../../intro/#objetos-compatibles), `Boolean` guardado como `Byte` y `UUID` guardado como `String`.
+Con el class `TagBase` puede crear objetos NBT con cualquier tipo de objeto (normal de java), por defecto solo tiene soporte para los [objetos compatibles](../intro.md#objetos-compatibles), `Boolean` guardado como `Byte` y `UUID` guardado como `String`.
 
 ```java
 // Este método NO es compatible con Map o List

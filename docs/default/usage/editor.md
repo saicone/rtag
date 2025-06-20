@@ -33,7 +33,7 @@ You probably noticed there's not an explicit setter and getter like `setString` 
 
 Take in count Rtag only return the converted object, it doesn't known if you want a String, Integer, Float... etc, on normal getter operations **you should be sure that the object you want is that type of object** or the returned object will be null after fail cast or simply it doesn't exist at provided path.
 
-If you don't known what type of object is it, or the Rtag instance doesn't provide a conversion because the [compatible objects](../../intro/#compatible-objects) are limited, you can use an [optional type](../../feature/types/) getter that provide a wide variety of conversions and null check for your needs.
+If you don't known what type of object is it, or the Rtag instance doesn't provide a conversion because the [compatible objects](../intro.md#compatible-objects) are limited, you can use an [optional type](../feature/types.md) getter that provide a wide variety of conversions and null check for your needs.
 
 ```java
 // Any RtagEditor instance (RtagItem, RtagEntity, RtagBlock)
@@ -55,7 +55,7 @@ int numValue = tag.getOptional("my", "saved", "object").asInt(-1); // -1 as defa
 
 :::tip
 
-Check out **[custom objects guide](../../feature/custom-objects/)** if you want to save any type of serializable object.
+Check out **[custom objects guide](../feature/custom-objects.md)** if you want to save any type of serializable object.
 
 :::
 

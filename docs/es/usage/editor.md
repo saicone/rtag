@@ -33,7 +33,7 @@ Probablemente notaste que no existe un establecimiento u obtención explícita c
 
 Tomar en cuenta que Rtag solo devuelve el objeto convertido, por sí mismo el no sabe si quieres un String, Integer, Float... etc, por lo que en operación normales de obtención **debes saber con seguridad que tipo objeto es el que estás obteniendo** o de lo contrario el objeto obtenido será null luego de fallar su conversión o sencillamente no existe un objeto en la ruta especificada.
 
-Si no sabes cual tipo de objeto estás obteniendo, o la instancia de Rtag sencillamente no tiene una conversión ya que los [objetos compatibles](../../intro/#objetos-compatibles) son limitados, puedes utilizar una obtención de [objeto opcional](../../feature/types/) la cual tiene una amplia variedad de conversiones para objetos además de revisiones para tus necesidades.
+Si no sabes cual tipo de objeto estás obteniendo, o la instancia de Rtag sencillamente no tiene una conversión ya que los [objetos compatibles](../intro.md#objetos-compatibles) son limitados, puedes utilizar una obtención de [objeto opcional](../feature/types.md) la cual tiene una amplia variedad de conversiones para objetos además de revisiones para tus necesidades.
 
 ```java
 // Cualquier instancia de RtagEditor (RtagItem, RtagEntity, RtagBlock)
@@ -56,7 +56,7 @@ int numValue = tag.getOptional("my", "saved", "object").asInt(-1); // -1 por def
 
 :::tip
 
-Revisa la **[guía de objetos custom](../../feature/custom-objects/)** si quieres guardar cualquier clase de objeto serializable.
+Revisa la **[guía de objetos custom](../feature/custom-objects.md)** si quieres guardar cualquier clase de objeto serializable.
 
 :::
 

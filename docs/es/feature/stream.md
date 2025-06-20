@@ -115,7 +115,7 @@ Rtag incluye compatibilidad para convertir los ItemStack en archivos, Base64, By
 
 :::info
 
-El formato de "map legible" convierte el nombre y lore del item en Strings colorizados, envés del formato de [componente de chat](../../feature/chat-component/) introducido para el NBT de los items en Minecraft 1.13, es bastante útil si quieres guardar items en archivos y hacerlos editables por el usuario sin necesidad de entender componentes de chat.
+El formato de "map legible" convierte el nombre y lore del item en Strings colorizados, envés del formato de [componente de chat](chat-component.md) introducido para el NBT de los items en Minecraft 1.13, es bastante útil si quieres guardar items en archivos y hacerlos editables por el usuario sin necesidad de entender componentes de chat.
 
 :::
 
