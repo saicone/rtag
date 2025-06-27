@@ -75,37 +75,54 @@ public class SkullTexture {
 
     private static final MethodHandle NEW_PROFILE;
     private static final MethodHandle GET_PROFILE;
-    private static final MethodHandle SET_PROFILE;
+    private static final MethodHandle GET_PLAYER_PROFILE;
+    private static final MethodHandle GET_META_PROFILE;
+    private static final MethodHandle SET_META_PROFILE;
     private static final MethodHandle GET_VALUE;
     private static final MethodHandle GET_SIGNATURE;
 
     static {
         MethodHandle new$ResolvableProfile = null;
         MethodHandle get$profile = null;
-        MethodHandle set$profile = null;
+        MethodHandle get$player_profile = null;
+        MethodHandle get$meta_profile = null;
+        MethodHandle set$meta_profile = null;
         MethodHandle get$value = null;
         MethodHandle get$signature = null;
         try {
+            // Old names
+            String gameProfile = "f";
+
+            // New names
+            if (ServerInstance.Type.MOJANG_MAPPED) {
+                gameProfile = "gameProfile";
+            }
+
             if (ServerInstance.Release.COMPONENT) {
                 for (Method method : EasyLookup.classOf("CraftMetaSkull").getDeclaredMethods()) {
                     if (method.getName().equals("setProfile") && method.getParameters().length == 1) {
                         if (method.getParameters()[0].getType().getSimpleName().equals("ResolvableProfile")) {
                             new$ResolvableProfile = EasyLookup.constructor("ResolvableProfile", GameProfile.class);
+                            get$profile = EasyLookup.getter("ResolvableProfile", gameProfile, GameProfile.class);
                         }
                     }
                 }
             }
 
-            get$profile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
+            get$player_profile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
+
+            // Unreflect reason:
+            // Private field
+            get$meta_profile = EasyLookup.unreflectGetter("CraftMetaSkull", "profile");
 
             // Unreflect reason:
             // Private method/field
-            if (new$ResolvableProfile != null) {
-                set$profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", "ResolvableProfile");
+            if (new$ResolvableProfile != null) { // +1.21.1 (latest builds)
+                set$meta_profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", "ResolvableProfile");
             } else if (ServerInstance.MAJOR_VERSION >= 15) {
-                set$profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
+                set$meta_profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
             } else {
-                set$profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
+                set$meta_profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
             }
 
             String value = "value";
@@ -132,7 +149,9 @@ public class SkullTexture {
         }
         NEW_PROFILE = new$ResolvableProfile;
         GET_PROFILE = get$profile;
-        SET_PROFILE = set$profile;
+        GET_PLAYER_PROFILE = get$player_profile;
+        GET_META_PROFILE = get$meta_profile;
+        SET_META_PROFILE = set$meta_profile;
         GET_VALUE = get$value;
         GET_SIGNATURE = get$signature;
     }
@@ -538,15 +557,44 @@ public class SkullTexture {
         }
         try {
             if (NEW_PROFILE != null) {
-                SET_PROFILE.invoke(meta, NEW_PROFILE.invoke(profile.getProfile()));
+                SET_META_PROFILE.invoke(meta, NEW_PROFILE.invoke(profile.getProfile()));
             } else {
-                SET_PROFILE.invoke(meta, profile.getProfile());
+                SET_META_PROFILE.invoke(meta, profile.getProfile());
             }
         } catch (Throwable t) {
             throw new RuntimeException("Cannot set profile value to ItemStack", t);
         }
         head.setItemMeta(meta);
         return head;
+    }
+
+    /**
+     * Get profile value from item.
+     *
+     * @param item the item to get the profile from.
+     * @return     a profile value, {@link Profile#empty()} if item is null o doesn't have profile.
+     */
+    @NotNull
+    public static Profile getProfile(@Nullable ItemStack item) {
+        if (item == null) {
+            return Profile.empty();
+        }
+        final ItemMeta meta = item.getItemMeta();
+        if (!(meta instanceof SkullMeta)) {
+            return Profile.empty();
+        }
+        try {
+            final Object profile = GET_META_PROFILE.invoke(meta);
+            if (profile == null) {
+                return Profile.empty();
+            } else if (profile instanceof GameProfile) {
+                return new Profile((GameProfile) profile);
+            } else { // ResolvableProfile
+                return new Profile((GameProfile) GET_PROFILE.invoke(profile));
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot get profile from item", t);
+        }
     }
 
     /**
@@ -561,7 +609,7 @@ public class SkullTexture {
             return Profile.empty();
         }
         try {
-            return new Profile((GameProfile) GET_PROFILE.invoke(player));
+            return new Profile((GameProfile) GET_PLAYER_PROFILE.invoke(player));
         } catch (Throwable t) {
             throw new RuntimeException("Cannot get online player profile from '" + player.getName() + "'", t);
         }
