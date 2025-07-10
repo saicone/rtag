@@ -258,16 +258,29 @@ public class ComponentType {
      *
      * @param dynamicOps the DynamicOps instance to wrap.
      * @return           a serialization context.
-     * @param <T>        the expected type of object.
+     * @param <T> the expected type of object.
+     */
+    @ApiStatus.Internal
+    public static <T> T createGlobalContext(Object dynamicOps) {
+        return createSerializationContext(dynamicOps, Rtag.getMinecraftRegistry());
+    }
+
+    /**
+     * Create a serialization context using HolderLookup.Provider.
+     *
+     * @param dynamicOps the DynamicOps instance to wrap.
+     * @param provider   the access provider.
+     * @return           a serialization context.
+     * @param <T> the expected type of object.
      */
     @ApiStatus.Internal
     @SuppressWarnings("unchecked")
-    public static <T> T createGlobalContext(Object dynamicOps) {
+    public static <T> T createSerializationContext(Object dynamicOps, Object provider) {
         if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
             return (T) dynamicOps;
         } else {
             try {
-                return (T) CREATE.invoke(dynamicOps, Rtag.getMinecraftRegistry());
+                return (T) CREATE.invoke(dynamicOps, provider);
             } catch (Throwable e) {
                 throw new RuntimeException("Cannot create serialization context", e);
             }

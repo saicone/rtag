@@ -1,6 +1,8 @@
 package com.saicone.rtag.registry;
 
+import com.mojang.serialization.DynamicOps;
 import com.saicone.rtag.Rtag;
+import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.ProblemReporter;
 import com.saicone.rtag.util.ServerInstance;
@@ -31,11 +33,13 @@ public class IOValue {
         }
     }
 
+    private static final MethodHandle newTagValueOutput;
     private static final MethodHandle createTagValueInput;
     private static final MethodHandle createTagValueOutput;
     private static final MethodHandle buildResult;
 
     static {
+        MethodHandle new$TagValueOutput = null;
         MethodHandle method$TagValueInput = null;
         MethodHandle method$TagValueOutput = null;
         MethodHandle method$buildResult = null;
@@ -55,12 +59,14 @@ public class IOValue {
 
                 method$TagValueInput = EasyLookup.staticMethod("TagValueInput", TagValueInput$create, "ValueInput", "ProblemReporter", "HolderLookup.Provider", "NBTTagCompound");
 
+                new$TagValueOutput = EasyLookup.constructor("TagValueOutput", "ProblemReporter", DynamicOps.class, "NBTTagCompound");
                 method$TagValueOutput = EasyLookup.staticMethod("TagValueOutput", TagValueOutput$createWithContext, "TagValueOutput", "ProblemReporter", "HolderLookup.Provider");
                 method$buildResult = EasyLookup.method("TagValueOutput", TagValueOutput$buildResult, "NBTTagCompound");
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
+        newTagValueOutput = new$TagValueOutput;
         createTagValueInput = method$TagValueInput;
         createTagValueOutput = method$TagValueOutput;
         buildResult = method$buildResult;
@@ -115,6 +121,23 @@ public class IOValue {
     public static Object createOutput(Object reporter, Object provider) {
         try {
             return createTagValueOutput.invoke(reporter, provider);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    /**
+     * Create a tag value output using provided objects.<br>
+     * This object is used to keep track of Minecraft serialization process.
+     *
+     * @param reporter the reporter to append errors.
+     * @param provider the access provider.
+     * @param compound the tag compound to insert information.
+     * @return         a newly generated tag value output.
+     */
+    public static Object createOutput(Object reporter, Object provider, Object compound) {
+        try {
+            return newTagValueOutput.invoke(reporter, ComponentType.createSerializationContext(ComponentType.NBT_OPS, provider), compound);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
