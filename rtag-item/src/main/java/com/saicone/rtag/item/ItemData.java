@@ -504,12 +504,41 @@ public class ItemData {
         // 1.21.5 - 25w02a
         loadPath("minecraft:weapon", "tag", "components", "minecraft:weapon");
         loadPath("minecraft:potion_duration_scale", "tag", "components", "minecraft:potion_duration_scale");
+        // 1.21.5 - 25w03a
+        loadPath("minecraft:villager/variant", "tag", "components", "minecraft:villager/variant");
+        loadPath("minecraft:wolf/variant", "tag", "components", "minecraft:wolf/variant");
+        loadPath("minecraft:wolf/collar", "tag", "components", "minecraft:wolf/collar");
+        loadPath("minecraft:fox/variant", "tag", "components", "minecraft:fox/variant");
+        loadPath("minecraft:salmon/size", "tag", "components", "minecraft:salmon/size");
+        loadPath("minecraft:parrot/variant", "tag", "components", "minecraft:parrot/variant");
+        loadPath("minecraft:tropical_fish/pattern", "tag", "components", "minecraft:tropical_fish/pattern");
+        loadPath("minecraft:tropical_fish/base_color", "tag", "components", "minecraft:tropical_fish/base_color");
+        loadPath("minecraft:tropical_fish/pattern_color", "tag", "components", "minecraft:tropical_fish/pattern_color");
+        loadPath("minecraft:mooshroom/variant", "tag", "components", "minecraft:mooshroom/variant");
+        loadPath("minecraft:rabbit/variant", "tag", "components", "minecraft:rabbit/variant");
+        loadPath("minecraft:pig/variant", "tag", "components", "minecraft:pig/variant");
+        loadPath("minecraft:frog/variant", "tag", "components", "minecraft:frog/variant");
+        loadPath("minecraft:horse/variant", "tag", "components", "minecraft:horse/variant");
+        loadPath("minecraft:llama/variant", "tag", "components", "minecraft:llama/variant");
+        loadPath("minecraft:axolotl/variant", "tag", "components", "minecraft:axolotl/variant");
+        loadPath("minecraft:cat/variant", "tag", "components", "minecraft:cat/variant");
+        loadPath("minecraft:cat/collar", "tag", "components", "minecraft:cat/collar");
+        loadPath("minecraft:sheep/color", "tag", "components", "minecraft:sheep/color");
+        loadPath("minecraft:shulker/color", "tag", "components", "minecraft:shulker/color");
         // 1.21.5 - 25w04a
         loadPath("minecraft:blocks_attacks", "tag", "components", "minecraft:blocks_attacks");
         loadPath("minecraft:break_sound", "tag", "components", "minecraft:break_sound");
         loadPath("minecraft:provides_banner_patterns", "tag", "components", "minecraft:provides_banner_patterns");
         loadPath("minecraft:provides_trim_material", "tag", "components", "minecraft:provides_trim_material");
         loadPath("minecraft:tooltip_display", "tag", "components", "minecraft:tooltip_display");
+        // 1.21.5 - 25w05a
+        loadPath("minecraft:cow/variant", "tag", "components", "minecraft:cow/variant");
+        // 1.21.5 - 25w06a
+        loadPath("minecraft:chicken/variant", "tag", "components", "minecraft:chicken/variant");
+        // 1.21.5 - 25w08a
+        loadPath("minecraft:wolf/sound_variant", "tag", "components", "minecraft:wolf/sound_variant");
+        // 1.21.6 - 25w16a
+        loadPath("minecraft:painting/variant", "tag", "components", "minecraft:painting/variant");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
@@ -633,6 +662,9 @@ public class ItemData {
 
     private static void loadComponentDetectors() {
         // 1.21.6
+        loadComponentDetector(21.04f, components ->
+                components.containsKey("minecraft:painting/variant")
+        );
         loadComponentDetector(21.05f, "minecraft:attribute_modifiers", modifiers -> {
             if (TagList.isTagList(modifiers)) {
                 for (Object modifier : TagList.getValue(modifiers)) {
@@ -653,6 +685,7 @@ public class ItemData {
                         || components.containsKey("minecraft:provides_banner_patterns")
                         || components.containsKey("minecraft:provides_trim_material")
                         || components.containsKey("minecraft:tooltip_display")
+                        || components.keySet().stream().anyMatch(key -> key.contains("/")) // Variants
         );
         loadComponentDetector(21.04f, "minecraft:tool", tool -> TagCompound.get(tool, "can_destroy_blocks_in_creative") != null);
         loadComponentDetector(21.04f, "minecraft:equippable", equippable -> TagCompound.get(equippable, "equip_on_interact") != null);
