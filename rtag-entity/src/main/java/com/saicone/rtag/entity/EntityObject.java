@@ -149,10 +149,20 @@ public class EntityObject {
             method$getEntity = EasyLookup.staticMethod("CraftEntity", "getEntity", "CraftEntity", "CraftServer", "Entity");
             method$getHandle = EasyLookup.method("CraftEntity", "getHandle", "Entity");
 
-            method$getEncodeId = EasyLookup.method("Entity", getEncodeId, String.class);
+            if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+                method$getEncodeId = EasyLookup.method("Entity", getEncodeId, String.class, boolean.class);
+            } else {
+                method$getEncodeId = EasyLookup.method("Entity", getEncodeId, String.class);
+            }
 
             if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
-                method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "ValueOutput", boolean.class);
+                if (ServerInstance.Platform.PAPER) {
+                    method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "ValueOutput", boolean.class, boolean.class, boolean.class);
+                } else {
+                    method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "ValueOutput", boolean.class);
+                }
+            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+                method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound", boolean.class, boolean.class, boolean.class);
             } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
                 method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound", boolean.class);
             } else {
@@ -160,7 +170,13 @@ public class EntityObject {
             }
 
             if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
-                method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, void.class, "ValueOutput", boolean.class);
+                if (ServerInstance.Platform.PAPER) {
+                    method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, void.class, "ValueOutput", boolean.class, boolean.class, boolean.class);
+                } else {
+                    method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, void.class, "ValueOutput", boolean.class);
+                }
+            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+                method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound", boolean.class, boolean.class, boolean.class);
             } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
                 method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound", boolean.class);
             } else {
@@ -252,8 +268,23 @@ public class EntityObject {
      * @return       a namespaced String is provided Entity is valid and can be serialized, null otherwise.
      */
     public static String getEncodeId(Object entity) {
+        return getEncodeId(entity, false);
+    }
+
+    /**
+     * Get encode ID from provided entity.
+     *
+     * @param entity             the Entity to extract id.
+     * @param includeNonSaveable true to include entity id even if it should not be serialized.
+     * @return                   a namespaced String is provided Entity is valid and can be serialized, null otherwise.
+     */
+    public static String getEncodeId(Object entity, boolean includeNonSaveable) {
         try {
-            return (String) getEncodeId.invoke(entity);
+            if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+                return (String) getEncodeId.invoke(entity, includeNonSaveable);
+            } else {
+                return (String) getEncodeId.invoke(entity);
+            }
         }  catch (Throwable t) {
             throw new RuntimeException("Cannot get encode ID from Minecraft Entity", t);
         }
@@ -267,20 +298,23 @@ public class EntityObject {
      * @return       a NBTTagCompound that represent the entity.
      */
     public static Object save(Object entity) {
-        return save(entity, true);
+        return save(entity, TagCompound.newTag(), true, false, false);
     }
 
     /**
      * Save provided entity into newly generated NBTTagCompound.<br>
      * This method will try to include entity ID as part of compound.
      *
-     * @param entity     the entity to save.
-     * @param includeAll true to include entity position data.
-     * @return           a NBTTagCompound that represent the entity.
+     * @param entity             the entity to save.
+     * @param compound           the tag compound that will receive entity data.
+     * @param includeAll         true to include entity position data.
+     * @param includeNonSaveable true to include any entity id even if it should not be serialized.
+     * @param forceSerialization save any entity even
+     * @return                   a NBTTagCompound that represent the entity.
      */
-    public static Object save(Object entity, boolean includeAll) {
-        final Object compound = saveWithoutId(entity, includeAll);
-        final String id = getEncodeId(entity);
+    public static Object save(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
+        saveWithoutId(entity, compound, includeAll, includeNonSaveable, forceSerialization);
+        final String id = getEncodeId(entity, includeNonSaveable);
         if (id != null) {
             TagCompound.set(compound, "id", TagBase.newTag(id));
         }
@@ -297,7 +331,7 @@ public class EntityObject {
      * @return         true if the entity data was saved, false otherwise.
      */
     public static boolean saveAsPassenger(Object entity, Object compound) {
-        return saveAsPassenger(entity, compound, true);
+        return saveAsPassenger(entity, compound, true, false, false);
     }
 
     /**
@@ -305,17 +339,25 @@ public class EntityObject {
      * This is an optional operation, the provided entity must be marked as 'savable',
      * persistent and should have a valid type.
      *
-     * @param entity     the entity to save.
-     * @param compound   the tag compound that will receive entity data.
-     * @param includeAll true to include entity position data.
-     * @return           true if the entity data was saved, false otherwise.
+     * @param entity             the entity to save.
+     * @param compound           the tag compound that will receive entity data.
+     * @param includeAll         true to include entity position data.
+     * @param includeNonSaveable true to include any entity id even if it should not be serialized.
+     * @param forceSerialization true to include non-persistent entity data.
+     * @return                   true if the entity data was saved, false otherwise.
      */
-    public static boolean saveAsPassenger(Object entity, Object compound, boolean includeAll) {
+    public static boolean saveAsPassenger(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         try {
             if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
                 final Object registry = registryAccess.invoke(entity);
-                final Object output = IOValue.createOutput(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), compound);
-                return (boolean) saveAsPassenger.invoke(entity, output, includeAll);
+                final Object output = IOValue.createOutputWrapping(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), compound);
+                if (ServerInstance.Platform.PAPER) {
+                    return (boolean) saveAsPassenger.invoke(entity, output, includeAll, includeNonSaveable, forceSerialization);
+                } else {
+                    return (boolean) saveAsPassenger.invoke(entity, output, includeAll);
+                }
+            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+                return (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag(), includeAll, includeNonSaveable, forceSerialization);
             } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
                 return (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag(), includeAll);
             } else {
@@ -334,42 +376,47 @@ public class EntityObject {
      * Save provided entity into newly generated NBTTagCompound.<br>
      * As its name says, this method doesn't generate the 'id' key.
      *
-     * @param entity the entity instance.
-     * @return       a NBTTagCompound that represent the entity.
+     * @param entity   the entity instance.
+     * @param compound the tag compound that will receive entity data.
+     * @return         a NBTTagCompound that represent the entity.
      */
-    public static Object saveWithoutId(Object entity) {
-        return saveWithoutId(entity, true);
+    public static Object saveWithoutId(Object entity, Object compound) {
+        return saveWithoutId(entity, compound, true, false, false);
     }
 
     /**
      * Save provided entity into newly generated NBTTagCompound.<br>
      * As its name says, this method doesn't generate the 'id' key.
      *
-     * @param entity     the entity instance.
-     * @param includeAll true to include entity position data.
-     * @return           a NBTTagCompound that represent the entity.
+     * @param entity             the entity instance.
+     * @param compound           the tag compound that will receive entity data.
+     * @param includeAll         true to include entity position data.
+     * @param includeNonSaveable true to include any entity id even if it should not be serialized.
+     * @param forceSerialization true to include non-persistent entity data.
+     * @return                   a NBTTagCompound that represent the entity.
      */
-    public static Object saveWithoutId(Object entity, boolean includeAll) {
+    public static Object saveWithoutId(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         try {
-            final Object tag;
             if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
                 final Object registry = registryAccess.invoke(entity);
-                final Object output = IOValue.createOutput(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry());
-                saveWithoutId.invoke(entity, output, includeAll);
+                final Object output = IOValue.createOutputWrapping(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), compound);
+                if (ServerInstance.Platform.PAPER) {
+                    saveWithoutId.invoke(entity, output, includeAll, includeNonSaveable, forceSerialization);
+                } else {
+                    saveWithoutId.invoke(entity, output, includeAll);
+                }
                 return IOValue.result(output);
+            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+                return saveWithoutId.invoke(entity, compound, includeAll, includeNonSaveable, forceSerialization);
             } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
-                return saveWithoutId.invoke(entity, TagCompound.newTag(), includeAll);
-            } else if (ServerInstance.MAJOR_VERSION >= 9) {
-                tag = saveWithoutId.invoke(entity, TagCompound.newTag());
+                return saveWithoutId.invoke(entity, compound, includeAll);
             } else {
-                tag = TagCompound.newTag();
-                saveWithoutId.invoke(entity, tag);
+                saveWithoutId.invoke(entity, compound);
+                if (!includeAll) {
+                    TagCompound.remove(compound, POSITION_KEY);
+                }
+                return compound;
             }
-
-            if (!includeAll) {
-                TagCompound.remove(tag, POSITION_KEY);
-            }
-            return tag;
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

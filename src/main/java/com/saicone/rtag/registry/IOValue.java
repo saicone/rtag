@@ -135,7 +135,7 @@ public class IOValue {
      * @param compound the tag compound to insert information.
      * @return         a newly generated tag value output.
      */
-    public static Object createOutput(Object reporter, Object provider, Object compound) {
+    public static Object createOutputWrapping(Object reporter, Object provider, Object compound) {
         try {
             return newTagValueOutput.invoke(reporter, ComponentType.createSerializationContext(ComponentType.NBT_OPS, provider), compound);
         } catch (Throwable t) {
