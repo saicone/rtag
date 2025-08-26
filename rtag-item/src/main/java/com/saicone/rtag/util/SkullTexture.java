@@ -673,10 +673,12 @@ public class SkullTexture {
      */
     @Deprecated
     public static String getTextureValue(String texture, Consumer<String> callback) {
+        Profile profile;
         if (texture.length() <= 20 || texture.length() == 36) {
-            final Profile profile = mojang().cache.getIfPresent(texture);
+            profile = mojang().cache.getIfPresent(texture);
             if (profile == null) {
-                mojang().cache.put(texture, Profile.valueOf(LOADING_TEXTURE));
+                profile = Profile.valueOf(LOADING_TEXTURE);
+                mojang().cache.put(texture, profile);
                 CompletableFuture.supplyAsync(() -> {
                     if (texture.length() == 36) {
                         return mojang().profileFromId(texture);
@@ -692,9 +694,10 @@ public class SkullTexture {
                     }
                 });
             }
-            return LOADING_TEXTURE;
+        } else {
+            profile = mojang().profileFrom(texture);
         }
-        return mojang().profileFrom(texture).getTexture().orElse(null);
+        return profile.getTexture().orElse(null);
     }
 
     /**
@@ -748,7 +751,22 @@ public class SkullTexture {
         if (profile == null) {
             return null;
         }
-        return profile.getTexture().orElse(null);
+        return profile.getTexture().map(value -> {
+            final JsonObject texture = parseJsonObject(new String(Base64.getDecoder().decode(value)));
+            if (texture != null) {
+                return texture.get("textures").getAsJsonObject().get("SKIN").getAsJsonObject().get("url").getAsString();
+            }
+            return null;
+        }).orElse(null);
+    }
+
+    private static JsonObject parseJsonObject(String text) {
+        try {
+            return new JsonParser().parse(text).getAsJsonObject();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return null;
+        }
     }
 
     /**
