@@ -175,6 +175,9 @@ public class ItemObject {
                     codec = "b";
                     setItem = "s";
                 }
+                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                    getTag = "e";
+                }
             }
 
             if (ServerInstance.Release.COMPONENT) {

@@ -119,6 +119,10 @@ public class BlockObject {
                     load = "b";
                     getRegistry = "K_";
                 }
+                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                    getWorld = "j";
+                    getRegistry = "L_";
+                }
             }
 
             new$BlockPosition = EasyLookup.constructor("BlockPosition", int.class, int.class, int.class);

@@ -144,6 +144,11 @@ public class EntityObject {
                     load = "e";
                     registryAccess = "eb";
                 }
+                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                    getEncodeId = "bW";
+                    load = "d";
+                    registryAccess = "ej";
+                }
             }
 
             method$getEntity = EasyLookup.staticMethod("CraftEntity", "getEntity", "CraftEntity", "CraftServer", "Entity");

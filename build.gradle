@@ -20,7 +20,7 @@ allprojects {
     }
 
     dependencies {
-        compileOnly 'org.jetbrains:annotations:24.1.0'
+        compileOnly 'org.jetbrains:annotations:26.0.2'
     }
 
     compileJava {
@@ -60,16 +60,9 @@ subprojects {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.21.7-R0.1-SNAPSHOT'
-    compileOnly 'it.unimi.dsi:fastutil:8.5.12'
+    compileOnly 'org.spigotmc:spigot-api:1.21.9-R0.1-SNAPSHOT'
+    compileOnly 'it.unimi.dsi:fastutil:8.5.16'
     compileOnly('com.github.Rubenicos:DataFixerUpper:8.0') { transitive = false }
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-}
-
-test {
-    useJUnitPlatform()
 }
 
 def javadocProjects= [

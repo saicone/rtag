@@ -108,6 +108,9 @@ public class ComponentType {
                     if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
                         registry$components = "am";
                     }
+                    if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                        registry$components = "an";
+                    }
                 }
 
                 nbtOps = (DynamicOps<Object>) EasyLookup.classById("DynamicOpsNBT").getDeclaredField(nbtOps$instance).get(null);
@@ -116,6 +119,7 @@ public class ComponentType {
 
                 final Object componentsRegistry = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$components).get(null);
                 final Map<Object, Object> componentsMap = (Map<Object, Object>) EasyLookup.field("RegistryMaterials", registry$map).get(componentsRegistry);
+
                 final Method keyMethod = EasyLookup.classById("MinecraftKey").getDeclaredMethod(resource$key);
                 final Method valueMethod = EasyLookup.classById("Holder").getDeclaredMethod(holder$value);
                 final Method codecMethod = EasyLookup.classById("DataComponentType").getDeclaredMethod(codec);
