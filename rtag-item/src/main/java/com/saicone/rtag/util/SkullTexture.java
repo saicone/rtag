@@ -2,6 +2,8 @@ package com.saicone.rtag.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -9,6 +11,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -23,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -73,87 +77,112 @@ public class SkullTexture {
 
     // Reflected methods
 
-    private static final MethodHandle NEW_PROFILE;
-    private static final MethodHandle GET_PROFILE;
-    private static final MethodHandle GET_PLAYER_PROFILE;
-    private static final MethodHandle GET_META_PROFILE;
-    private static final MethodHandle SET_META_PROFILE;
-    private static final MethodHandle GET_VALUE;
-    private static final MethodHandle GET_SIGNATURE;
+    private static final MethodHandle ResolvableProfile_createResolved;
+    private static final MethodHandle ResolvableProfile_createUnresolved$name;
+    private static final MethodHandle ResolvableProfile_createUnresolved$id;
+    private static final MethodHandle ResolvableProfile_partialProfile;
 
     static {
-        MethodHandle new$ResolvableProfile = null;
-        MethodHandle get$profile = null;
-        MethodHandle get$player_profile = null;
-        MethodHandle get$meta_profile = null;
-        MethodHandle set$meta_profile = null;
-        MethodHandle get$value = null;
-        MethodHandle get$signature = null;
-        try {
-            // Old names
-            String gameProfile = "f";
+        MethodHandle $createResolved = null;
+        MethodHandle $createUnresolved$name = null;
+        MethodHandle $createUnresolved$id = null;
+        MethodHandle $partialProfile = null;
 
-            // New names
+        try {
+            // Names
+            String createResolved = null;
+            String createUnresolved$name = null;
+            String createUnresolved$id = null;
+            String partialProfile = null;
+
             if (ServerInstance.Type.MOJANG_MAPPED) {
-                gameProfile = "gameProfile";
+                partialProfile = "gameProfile";
+                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                    createResolved = "createResolved";
+                    createUnresolved$name = "createUnresolved";
+                    createUnresolved$id = "createUnresolved";
+                    partialProfile = "partialProfile";
+                }
+            } else {
+                partialProfile = "f";
+                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                    createResolved = "a";
+                    createUnresolved$name = "a";
+                    createUnresolved$id = "a";
+                    partialProfile = "b";
+                }
             }
 
-            if (ServerInstance.Release.COMPONENT) {
-                for (Method method : EasyLookup.classOf("CraftMetaSkull").getDeclaredMethods()) {
-                    if (method.getName().equals("setProfile") && method.getParameters().length == 1) {
-                        if (method.getParameters()[0].getType().getSimpleName().equals("ResolvableProfile")) {
-                            new$ResolvableProfile = EasyLookup.constructor("ResolvableProfile", GameProfile.class);
-                            get$profile = EasyLookup.getter("ResolvableProfile", gameProfile, GameProfile.class);
-                        }
+            if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                $createResolved = EasyLookup.staticMethod("ResolvableProfile", createResolved, "ResolvableProfile", GameProfile.class);
+                $createUnresolved$name = EasyLookup.staticMethod("ResolvableProfile", createUnresolved$name, "ResolvableProfile", String.class);
+                $createUnresolved$id = EasyLookup.staticMethod("ResolvableProfile", createUnresolved$id, "ResolvableProfile", UUID.class);
+                $partialProfile = EasyLookup.method("ResolvableProfile", partialProfile, GameProfile.class);
+            } else if (ServerInstance.Release.COMPONENT) {
+                $createResolved = EasyLookup.constructor("ResolvableProfile", GameProfile.class);
+                $partialProfile = EasyLookup.getter("ResolvableProfile", partialProfile, GameProfile.class);
+            }
+        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        ResolvableProfile_createResolved = $createResolved;
+        ResolvableProfile_createUnresolved$name = $createUnresolved$name;
+        ResolvableProfile_createUnresolved$id = $createUnresolved$id;
+        ResolvableProfile_partialProfile = $partialProfile;
+    }
+
+    private static final MethodHandle CraftPlayer_getProfile;
+
+    static {
+        MethodHandle $getProfile = null;
+
+        try {
+            $getProfile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        CraftPlayer_getProfile = $getProfile;
+    }
+
+    private static final boolean USE_RESOLVABLE_PROFILE;
+    private static final MethodHandle CraftMetaSkull_profile;
+    private static final MethodHandle CraftMetaSkull_setProfile;
+
+    static {
+        boolean useResolvableProfile = false;
+        MethodHandle $profile = null;
+        MethodHandle $setProfile = null;
+
+        try {
+            for (Method method : EasyLookup.classOf("CraftMetaSkull").getDeclaredMethods()) {
+                if (method.getName().equals("setProfile") && method.getParameters().length == 1) {
+                    if (method.getParameters()[0].getType().getSimpleName().equals("ResolvableProfile")) {
+                        useResolvableProfile = true;
                     }
                 }
             }
 
-            get$player_profile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
-
             // Unreflect reason:
             // Private field
-            get$meta_profile = EasyLookup.unreflectGetter("CraftMetaSkull", "profile");
-
+            $profile = EasyLookup.unreflectGetter("CraftMetaSkull", "profile");
             // Unreflect reason:
             // Private method/field
-            if (new$ResolvableProfile != null) { // +1.21.1 (latest builds)
-                set$meta_profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", "ResolvableProfile");
+            if (useResolvableProfile) { // +1.21.1 (latest builds)
+                $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", "ResolvableProfile");
             } else if (ServerInstance.MAJOR_VERSION >= 15) {
-                set$meta_profile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
+                $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
             } else {
-                set$meta_profile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
+                $setProfile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
             }
-
-            String value = "value";
-            for (Method method : Property.class.getDeclaredMethods()) {
-                if (method.getName().equals("getValue")) {
-                    // Old name found
-                    value = "getValue";
-                    break;
-                }
-            }
-            get$value = EasyLookup.method(Property.class, value, String.class);
-
-            String signature = "signature";
-            for (Method method : Property.class.getDeclaredMethods()) {
-                if (method.getName().equals("getSignature")) {
-                    // Old name found
-                    signature = "getSignature";
-                    break;
-                }
-            }
-            get$signature = EasyLookup.method(Property.class, signature, String.class);
         } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
         }
-        NEW_PROFILE = new$ResolvableProfile;
-        GET_PROFILE = get$profile;
-        GET_PLAYER_PROFILE = get$player_profile;
-        GET_META_PROFILE = get$meta_profile;
-        SET_META_PROFILE = set$meta_profile;
-        GET_VALUE = get$value;
-        GET_SIGNATURE = get$signature;
+
+        USE_RESOLVABLE_PROFILE = useResolvableProfile;
+        CraftMetaSkull_profile = $profile;
+        CraftMetaSkull_setProfile = $setProfile;
     }
 
     // Providers
@@ -340,14 +369,19 @@ public class SkullTexture {
             final String value = String.valueOf(object);
             return caching(value, () -> {
                 if (value.length() < 32) {
+                    // Player Name
                     return profileFromName(value);
                 } else if (value.length() == 32 || value.length() == 36) {
+                    // Player UUID
                     return profileFromId(value);
-                } else if (value.length() == 64) {
-                    return Profile.valueOf(encodeUrlId(value));
                 } else if (value.startsWith("http")) {
+                    // Texture URL
                     return Profile.valueOf(encodeUrl(value));
+                } else if (value.length() >= 60 && value.length() <= 100) {
+                    // Texture ID
+                    return Profile.valueOf(encodeUrlId(value));
                 } else {
+                    // Encoded texture
                     return Profile.valueOf(value);
                 }
             });
@@ -507,7 +541,7 @@ public class SkullTexture {
                     final JsonPrimitive signature = property.getAsJsonPrimitive("signature");
                     return Profile.valueOf(
                             uniqueId,
-                            name != null ? name.getAsString() : "null",
+                            name != null ? name.getAsString() : null,
                             value != null ? value.getAsString() : null,
                             signature != null ? signature.getAsString() : null
                     );
@@ -515,7 +549,7 @@ public class SkullTexture {
             }
         }
 
-        return Profile.valueOf(uniqueId, name != null ? name.getAsString() : "null");
+        return Profile.valueOf(uniqueId, name != null ? name.getAsString() : null);
     }
 
     // Static methods
@@ -556,10 +590,18 @@ public class SkullTexture {
             throw new IllegalArgumentException("The provided item isn't a player head");
         }
         try {
-            if (NEW_PROFILE != null) {
-                SET_META_PROFILE.invoke(meta, NEW_PROFILE.invoke(profile.getProfile()));
+            if (USE_RESOLVABLE_PROFILE) {
+                if (profile.isStatic() || ServerInstance.VERSION < 21.06f) { // 1.21.9
+                    CraftMetaSkull_setProfile.invoke(meta, ResolvableProfile_createResolved.invoke(profile.getProfile()));
+                } else {
+                    if (profile.getUniqueId() == null) {
+                        CraftMetaSkull_setProfile.invoke(meta, ResolvableProfile_createUnresolved$name.invoke(profile.getName()));
+                    } else {
+                        CraftMetaSkull_setProfile.invoke(meta, ResolvableProfile_createUnresolved$id.invoke(profile.getUniqueId()));
+                    }
+                }
             } else {
-                SET_META_PROFILE.invoke(meta, profile.getProfile());
+                CraftMetaSkull_setProfile.invoke(meta, profile.getProfile());
             }
         } catch (Throwable t) {
             throw new RuntimeException("Cannot set profile value to ItemStack", t);
@@ -584,13 +626,13 @@ public class SkullTexture {
             return Profile.empty();
         }
         try {
-            final Object profile = GET_META_PROFILE.invoke(meta);
+            final Object profile = CraftMetaSkull_profile.invoke(meta);
             if (profile == null) {
                 return Profile.empty();
             } else if (profile instanceof GameProfile) {
                 return new Profile((GameProfile) profile);
             } else { // ResolvableProfile
-                return new Profile((GameProfile) GET_PROFILE.invoke(profile));
+                return new Profile((GameProfile) ResolvableProfile_partialProfile.invoke(profile));
             }
         } catch (Throwable t) {
             throw new RuntimeException("Cannot get profile from item", t);
@@ -609,7 +651,7 @@ public class SkullTexture {
             return Profile.empty();
         }
         try {
-            return new Profile((GameProfile) GET_PLAYER_PROFILE.invoke(player));
+            return new Profile((GameProfile) CraftPlayer_getProfile.invoke(player));
         } catch (Throwable t) {
             throw new RuntimeException("Cannot get online player profile from '" + player.getName() + "'", t);
         }
@@ -770,14 +812,110 @@ public class SkullTexture {
     }
 
     /**
-     * Abstract implementation of game profile, mainly focused on immutable texture-related data.
+     * Item profile representation, can be static of dynamic profile.
      */
     public static class Profile {
 
-        private static final UUID EMPTY_ID = new UUID(0, 0);
-        private static final Profile EMPTY = createProfile(EMPTY_ID, "null", null, null);
+        // Reflected methods
 
-        private final GameProfile profile;
+        private static final MethodHandle Property_value;
+        private static final MethodHandle Property_signature;
+
+        static {
+            MethodHandle $value = null;
+            MethodHandle $signature = null;
+
+            try {
+                // Names
+                String value = "value";
+                String signature = "signature";
+
+                for (Method method : Property.class.getDeclaredMethods()) {
+                    if (method.getName().equals("getValue")) {
+                        value = "getValue";
+                    } else if (method.getName().equals("getSignature")) {
+                        signature = "getSignature";
+                    }
+                }
+
+                $value = EasyLookup.method(Property.class, value, String.class);
+                $signature = EasyLookup.method(Property.class, signature, String.class);
+            } catch (IllegalAccessException | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+
+            Property_value = $value;
+            Property_signature = $signature;
+        }
+
+        private static final MethodHandle PropertyMap$new;
+
+        static {
+            MethodHandle $new = null;
+
+            try {
+                for (Constructor<?> constructor : PropertyMap.class.getDeclaredConstructors()) {
+                    if (constructor.getParameterCount() == 1 && Multimap.class.isAssignableFrom(constructor.getParameterTypes()[0])) {
+                        $new = EasyLookup.unreflectConstructor(constructor);
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            PropertyMap$new = $new;
+        }
+
+        private static final MethodHandle GameProfile$new;
+        private static final MethodHandle GameProfile_id;
+        private static final MethodHandle GameProfile_name;
+        private static final MethodHandle GameProfile_properties;
+
+        static {
+            MethodHandle $new = null;
+            MethodHandle $id = null;
+            MethodHandle $name = null;
+            MethodHandle $properties = null;
+
+            try {
+                // Names
+                String id = "id";
+                String name = "name";
+                String properties = "properties";
+
+                for (Method method : GameProfile.class.getDeclaredMethods()) {
+                    if (method.getName().equals("getId")) {
+                        id = "getId";
+                    } else if (method.getName().equals("getName")) {
+                        name = "getName";
+                    } else if (method.getName().equals("getProperties")) {
+                        properties = "getProperties";
+                    }
+                }
+
+                for (Constructor<?> constructor : GameProfile.class.getDeclaredConstructors()) {
+                    if (constructor.getParameterCount() == 3 && PropertyMap.class.isAssignableFrom(constructor.getParameterTypes()[2])) {
+                        $new = EasyLookup.unreflectConstructor(constructor);
+                    }
+                }
+                $id = EasyLookup.method(GameProfile.class, id, UUID.class);
+                $name = EasyLookup.method(GameProfile.class, name, String.class);
+                $properties = EasyLookup.method(GameProfile.class, properties, PropertyMap.class);
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            GameProfile$new = $new;
+            GameProfile_id = $id;
+            GameProfile_name = $name;
+            GameProfile_properties = $properties;
+        }
+
+        // Providers
+
+        private static final UUID EMPTY_ID = new UUID(0, 0);
+        private static final String EMPTY_NAME = "null";
+        private static final Profile EMPTY = createProfile(EMPTY_ID, EMPTY_NAME, null, null);
 
         /**
          * Get empty profile representation value.<br>
@@ -799,7 +937,7 @@ public class SkullTexture {
          */
         @NotNull
         public static Profile valueOf(@Nullable String texture) {
-            return valueOf(EMPTY_ID, "null", texture);
+            return valueOf(null, null, texture);
         }
 
         /**
@@ -810,7 +948,7 @@ public class SkullTexture {
          * @return         a newly generated profile value.
          */
         @NotNull
-        public static Profile valueOf(@NotNull UUID uniqueId, @NotNull String name) {
+        public static Profile valueOf(@Nullable UUID uniqueId, @Nullable String name) {
             return valueOf(uniqueId, name, null, null);
         }
 
@@ -823,7 +961,7 @@ public class SkullTexture {
          * @return         a newly generated profile value.
          */
         @NotNull
-        public static Profile valueOf(@NotNull UUID uniqueId, @NotNull String name, @Nullable String texture) {
+        public static Profile valueOf(@Nullable UUID uniqueId, @Nullable String name, @Nullable String texture) {
             return valueOf(uniqueId, name, texture, null);
         }
 
@@ -837,24 +975,62 @@ public class SkullTexture {
          * @return          a newly generated profile value.
          */
         @NotNull
-        public static Profile valueOf(@NotNull UUID uniqueId, @NotNull String name, @Nullable String texture, @Nullable String signature) {
-            if (uniqueId.equals(EMPTY_ID) && name.equals("null") && texture == null) {
+        public static Profile valueOf(@Nullable UUID uniqueId, @Nullable String name, @Nullable String texture, @Nullable String signature) {
+            final boolean emptyName = name == null || name.isBlank();
+            if (uniqueId == null && emptyName && texture == null) {
                 return empty();
             }
-            return createProfile(uniqueId, name, texture, signature);
+
+            // Dynamic profile
+            if (texture == null && (uniqueId == null || emptyName)) {
+                return new Profile(uniqueId, name);
+            }
+            // Static profile
+            return createProfile(uniqueId != null ? uniqueId : EMPTY_ID, name != null ? name : EMPTY_NAME, texture, signature);
         }
 
         @NotNull
-        private static Profile createProfile(@NotNull UUID uniqueId, @NotNull String name, @Nullable String texture, @Nullable String signature) {
-            final GameProfile profile = new GameProfile(uniqueId, name);
-            if (texture != null) {
-                profile.getProperties().put("textures", new Property("textures", texture, signature));
+        private static Profile createProfile(@Nullable UUID uniqueId, @Nullable String name, @Nullable String texture, @Nullable String signature) {
+            if (texture == null) {
+                return new Profile(new GameProfile(uniqueId, name));
             }
-            return new Profile(profile);
+            if (GameProfile$new != null) {
+                try {
+                    final PropertyMap properties = (PropertyMap) PropertyMap$new.invoke(ImmutableMultimap.of("textures", new Property("textures", texture, signature)));
+                    final GameProfile profile = (GameProfile) GameProfile$new.invoke(uniqueId, name, properties);
+                    return new Profile(profile);
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                final Profile profile = new Profile(new GameProfile(uniqueId, name));
+                if (texture != null) {
+                    profile.getProperties().put("textures", new Property("textures", texture, signature));
+                }
+                return profile;
+            }
         }
 
+        private final GameProfile profile;
+        private final UUID uniqueId;
+        private final String name;
+
+        // Static profile
         private Profile(@NotNull GameProfile profile) {
             this.profile = profile;
+            try {
+                this.uniqueId = (UUID) GameProfile_id.invoke(profile);
+                this.name = (String) GameProfile_name.invoke(profile);
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // Dynamic profile
+        private Profile(@Nullable UUID uniqueId, @Nullable String name) {
+            this.profile = null;
+            this.uniqueId = uniqueId;
+            this.name = name;
         }
 
         /**
@@ -899,32 +1075,60 @@ public class SkullTexture {
          * @return true if this profiles is empty.
          */
         public boolean isEmpty() {
-            return profile.getProperties().isEmpty();
+            return getProperties().isEmpty();
+        }
+
+        /**
+         * Check if this profile will not be automatically resolved.
+         *
+         * @return true if this profile is static.
+         */
+        public boolean isStatic() {
+            return profile != null;
+        }
+
+        /**
+         * Check if this profile will be automatically resolved.
+         *
+         * @return true if this profile is dynamic.
+         */
+        public boolean isDynamic() {
+            return profile == null;
         }
 
         @NotNull
         private GameProfile getProfile() {
+            if (profile == null) {
+                throw new IllegalStateException("Dynamic profiles only can provide player ID or name");
+            }
             return profile;
         }
 
-        /**
-         * Gets the unique ID of this profile.
-         *
-         * @return an unique id.
-         */
         @NotNull
-        public UUID getUniqueId() {
-            return profile.getId();
+        private PropertyMap getProperties() {
+            try {
+                return (PropertyMap) GameProfile_properties.invoke(profile);
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
         }
 
         /**
-         * Gets the display name of this profile.
+         * Gets the unique ID of this profile, on dynamic profiles this can be null.
+         *
+         * @return an unique id.
+         */
+        public UUID getUniqueId() {
+            return uniqueId;
+        }
+
+        /**
+         * Gets the display name of this profile, on dynamic profiles this can be null.
          *
          * @return a player name.
          */
-        @NotNull
         public String getName() {
-            return profile.getName();
+            return name;
         }
 
         /**
@@ -934,10 +1138,10 @@ public class SkullTexture {
          */
         @NotNull
         public Optional<String> getTexture() {
-            for (Property texture : profile.getProperties().get("textures")) {
+            for (Property texture : getProperties().get("textures")) {
                 if (texture != null) {
                     try {
-                        return Optional.ofNullable((String) GET_VALUE.invoke(texture));
+                        return Optional.ofNullable((String) Property_value.invoke(texture));
                     } catch (Throwable t) {
                         throw new RuntimeException("Cannot get texture value from Property object");
                     }
@@ -972,10 +1176,10 @@ public class SkullTexture {
          */
         @NotNull
         public Optional<String> getSignature() {
-            for (Property texture : profile.getProperties().get("textures")) {
+            for (Property texture : getProperties().get("textures")) {
                 if (texture != null) {
                     try {
-                        return Optional.ofNullable((String) GET_SIGNATURE.invoke(texture));
+                        return Optional.ofNullable((String) Property_signature.invoke(texture));
                     } catch (Throwable t) {
                         throw new RuntimeException("Cannot get texture signature from Property object");
                     }
@@ -1034,6 +1238,17 @@ public class SkullTexture {
                 }
                 return null;
             });
+        }
+
+        @Override
+        public String toString() {
+            if (profile != null) {
+                return profile.toString();
+            }
+            return "GameProfile{" +
+                    "uniqueId=" + uniqueId +
+                    ", name='" + name + '\'' +
+                    '}';
         }
     }
 
