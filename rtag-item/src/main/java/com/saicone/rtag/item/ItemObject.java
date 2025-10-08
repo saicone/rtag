@@ -42,10 +42,16 @@ public class ItemObject {
     private static final Object ITEM_REGISTRY; // Remove in 2.0.0
 
     // Minecraft-related
+
     // since 1.20.5
-    private static final Object CODEC;
+    /**
+     * ItemStack codec.
+     */
+    @ApiStatus.Experimental
+    public static final Object CODEC;
     // pre 1.20.5
     private static final MethodHandle newItem;
+
     private static final MethodHandle newCustomData;
     private static final MethodHandle newMinecraftKey; // Remove in 2.0.0
     private static final MethodHandle save;
@@ -272,14 +278,14 @@ public class ItemObject {
      */
     @SuppressWarnings("unchecked")
     public static Object newItem(Object compound) {
-        try {
-            if (ServerInstance.Release.COMPONENT) {
-                return ((Codec<Object>) CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), compound).result().orElse(null);
-            } else {
+        if (ServerInstance.Release.COMPONENT) {
+            return ((Codec<Object>) CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), compound).result().orElse(null);
+        } else {
+            try {
                 return newItem.invoke(compound);
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
             }
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
         }
     }
 

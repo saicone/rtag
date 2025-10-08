@@ -18,6 +18,7 @@ import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import jdk.jfr.Experimental;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
@@ -80,7 +81,11 @@ public class ChatComponent {
     private static final MethodHandle fromJson;
     private static final MethodHandle toJson;
     // since 1.20.5
-    private static final Object COMPONENT_CODEC;
+    /**
+     * Component codec.
+     */
+    @Experimental
+    public static final Object CODEC;
 
     static {
         // CraftChatMessage util class
@@ -138,7 +143,7 @@ public class ChatComponent {
                 e.printStackTrace();
             }
         }
-        COMPONENT_CODEC = componentCodec;
+        CODEC = componentCodec;
     }
 
     ChatComponent() {
@@ -938,19 +943,19 @@ public class ChatComponent {
     private static final class Serialization {
 
         private static Object parseJson(JsonElement element) {
-            return ((Codec<Object>) COMPONENT_CODEC).parse(ComponentType.createGlobalContext(JsonOps.INSTANCE), element).getOrThrow(JsonParseException::new);
+            return ((Codec<Object>) CODEC).parse(ComponentType.createGlobalContext(JsonOps.INSTANCE), element).getOrThrow(JsonParseException::new);
         }
 
         private static Object parseNbt(Object tag) {
-            return ((Codec<Object>) COMPONENT_CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), tag).getOrThrow();
+            return ((Codec<Object>) CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), tag).getOrThrow();
         }
 
         private static JsonElement encodeJson(Object component) {
-            return ((Codec<Object>) COMPONENT_CODEC).encodeStart((DynamicOps<JsonElement>) ComponentType.createGlobalContext(JsonOps.INSTANCE), component).getOrThrow(JsonParseException::new);
+            return ((Codec<Object>) CODEC).encodeStart((DynamicOps<JsonElement>) ComponentType.createGlobalContext(JsonOps.INSTANCE), component).getOrThrow(JsonParseException::new);
         }
 
         private static Object encodeNbt(Object component) {
-            return ((Codec<Object>) COMPONENT_CODEC).encodeStart(ComponentType.createGlobalContext(ComponentType.NBT_OPS), component).getOrThrow(IllegalArgumentException::new);
+            return ((Codec<Object>) CODEC).encodeStart(ComponentType.createGlobalContext(ComponentType.NBT_OPS), component).getOrThrow(IllegalArgumentException::new);
         }
     }
 }
