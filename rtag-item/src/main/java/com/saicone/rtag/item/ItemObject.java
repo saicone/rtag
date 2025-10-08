@@ -182,6 +182,7 @@ public class ItemObject {
                     setItem = "s";
                 }
                 if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                    registry$item = "h";
                     getTag = "e";
                 }
             }
