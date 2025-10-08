@@ -15,50 +15,46 @@ Obtener la siguiente textura como un `ItemStack` de una cabeza usando todos los 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import Admonition from '@theme/Admonition';
+import CodeBlock from '@theme/CodeBlock';
 
 <Tabs>
 <TabItem value="base64" label="Base64" default>
 
-```java
-String texture = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmVkZmEyZTBmZGVhMGMwNDIzODA0Y2RiNWI2MmFkMDVhNmU5MTRjMDQ2YzRhM2I3ZTM1NWJmODEyNjkxMjVmZCJ9fQ==";
-ItemStack head = SkullTexture.getTexturedHead(texture);
-```
+<CodeBlock language="java">{
+`String texture = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmVkZmEyZTBmZGVhMGMwNDIzODA0Y2RiNWI2MmFkMDVhNmU5MTRjMDQ2YzRhM2I3ZTM1NWJmODEyNjkxMjVmZCJ9fQ==";
+ItemStack head = SkullTexture.mojang().item(texture);`}</CodeBlock>
 
 </TabItem>
 <TabItem value="url" label="URL">
 
-```java
-String texture = "http://textures.minecraft.net/texture/fedfa2e0fdea0c0423804cdb5b62ad05a6e914c046c4a3b7e355bf81269125fd";
-ItemStack head = SkullTexture.getTexturedHead(texture);
-```
+<CodeBlock language="java">{
+`String texture = "http://textures.minecraft.net/texture/fedfa2e0fdea0c0423804cdb5b62ad05a6e914c046c4a3b7e355bf81269125fd";
+ItemStack head = SkullTexture.mojang().item(texture);`}</CodeBlock>
 
 </TabItem>
 <TabItem value="texture" label="ID de la textura">
 
-```java
-String texture = "fedfa2e0fdea0c0423804cdb5b62ad05a6e914c046c4a3b7e355bf81269125fd";
-ItemStack head = SkullTexture.getTexturedHead(texture);
-```
+<CodeBlock language="java">{
+`String texture = "fedfa2e0fdea0c0423804cdb5b62ad05a6e914c046c4a3b7e355bf81269125fd";
+ItemStack head = SkullTexture.mojang().item(texture);`}</CodeBlock>
 
 </TabItem>
 <TabItem value="player" label="Jugador">
 
-```java
-Player player = Bukkit.getPlayer("Rubenicos");
-ItemStack head = SkullTexture.mojang().item(player);
-```
+<CodeBlock language="java">{
+`Player player = Bukkit.getPlayer("Rubenicos");
+ItemStack head = SkullTexture.mojang().item(player);`}</CodeBlock>
 
-:::warning Los perfiles de jugador son dados por el servidor
-
+<Admonition type="warning" title="Los perfiles de jugador son dados por el servidor">
 Obtener la cabeza de un jugador usando el propio jugador puede causar problemas en los servidores no-premium.
-
-:::
+</Admonition>
 
 </TabItem>
 <TabItem value="name" label="Nombre">
 
-```java
-String name = "Rubenicos";
+<CodeBlock language="java">{
+`String name = "Rubenicos";
 // Usando la API de Mojang
 ItemStack head = SkullTexture.mojang().item(name);
 // Usando la API de PlayerDB
@@ -76,14 +72,13 @@ CompletableFuture<ItemStack> head = SkullTexture.craftHead().itemAsync(name);
 
 head.thenAccept(item -> {
     // usar el item
-});
-```
+});`}</CodeBlock>
 
 </TabItem>
 <TabItem value="uuid" label="UUID">
 
-```java
-// --- Compatible con todo tipo de formas de declarar el UUID de un jugador
+<CodeBlock language="java">{
+`// --- Compatible con todo tipo de formas de declarar el UUID de un jugador
 UUID uniqueId = UUID.fromString("7ca003dc-175f-4f1f-b490-5651045311ad");
 String uniqueId = "7ca003dc-175f-4f1f-b490-5651045311ad";
 String uniqueId = "7ca003dc175f4f1fb4905651045311ad";
@@ -105,8 +100,7 @@ CompletableFuture<ItemStack> head = SkullTexture.craftHead().itemAsync(uniqueId)
 
 head.thenAccept(item -> {
     // usar el item
-});
-```
+});`}</CodeBlock>
 
 </TabItem>
 </Tabs>
