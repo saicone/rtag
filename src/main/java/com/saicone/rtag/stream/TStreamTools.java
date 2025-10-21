@@ -5,6 +5,7 @@ import com.saicone.rtag.util.ServerInstance;
 
 import java.io.*;
 import java.lang.invoke.MethodHandle;
+import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -28,13 +29,15 @@ public class TStreamTools {
         }
     }
 
-    private static final Object READ_LIMITER;
+    private static final Supplier<Object> READ_LIMITER;
 
     private static final boolean USE_FAST_STREAM = ServerInstance.MAJOR_VERSION >= 18;
     private static final MethodHandle newFastInputStream;
 
     private static final MethodHandle readNBT;
     private static final MethodHandle writeNBT;
+
+    private static final MethodHandle unlimitedHeap;
 
     static {
         // Constructors
@@ -53,8 +56,12 @@ public class TStreamTools {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 read = "readUnnamedTag";
                 write = "writeUnnamedTag";
-                unlimited = ServerInstance.VERSION >= 20.02 ? "unlimitedHeap" : "UNLIMITED";
-            } else if (ServerInstance.VERSION >= 20.02) {
+                if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+                    unlimited = "unlimitedHeap";
+                } else {
+                    unlimited = "UNLIMITED";
+                }
+            } else if (ServerInstance.VERSION >= 20.02) { // 1.20.2
                 read = "c";
                 write = "b";
             }
@@ -63,7 +70,7 @@ public class TStreamTools {
                 new$FastInputStream = EasyLookup.constructor("FastBufferedInputStream", InputStream.class);
             }
 
-            if (ServerInstance.VERSION >= 20.02) {
+            if (ServerInstance.VERSION >= 20.02) { // 1.20.2
                 // Private method
                 // Note: The "unused" integer was removed, and also was added a new method (DataInput, NBTReadLimiter, byte)
                 //       to specify the id of NBT you're reading (probably add it here)
@@ -77,7 +84,7 @@ public class TStreamTools {
             // (1.20.3) Note: New method to write NBT using a DelegateDataOutput that writes empty String if any error occurs
             method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", write, void.class, "NBTBase", DataOutput.class);
 
-            if (ServerInstance.VERSION >= 20.02) {
+            if (ServerInstance.VERSION >= 20.02) { // 1.20.2
                 get$unlimited = EasyLookup.staticMethod("NBTReadLimiter", unlimited, "NBTReadLimiter");
             } else {
                 get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", unlimited, "NBTReadLimiter");
@@ -89,23 +96,41 @@ public class TStreamTools {
         newFastInputStream = new$FastInputStream;
         readNBT = method$read;
         writeNBT = method$write;
+        unlimitedHeap = get$unlimited;
 
-        Object readLimiter = null;
-        try {
-            if (get$unlimited != null) {
-                readLimiter = get$unlimited.invoke();
-            } else {
-                // Fallback instance constructor
-                if (ServerInstance.VERSION >= 20.02) {
-                    readLimiter = EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class, int.class).newInstance(Long.MAX_VALUE, 512);
-                } else {
-                    readLimiter = EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class).newInstance(Long.MAX_VALUE);
+        if (get$unlimited == null) {
+            // Fallback instance constructor
+            READ_LIMITER = () -> {
+                try {
+                    if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+                        return EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class, int.class).newInstance(Long.MAX_VALUE, 512);
+                    } else {
+                        return EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class).newInstance(Long.MAX_VALUE);
+                    }
+                } catch (Throwable t) {
+                    throw new RuntimeException("Cannot create NbtAccounter instance");
                 }
+            };
+        } else if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+            READ_LIMITER = () -> {
+                try {
+                    return unlimitedHeap.invoke();
+                } catch (Throwable t) {
+                    throw new RuntimeException("Cannot get NbtAccounter with unlimited heap");
+                }
+            };
+        } else {
+            Supplier<Object> supplier = () -> {
+                throw new RuntimeException("Cannot get unlimited NbtAccounter");
+            };
+            try {
+                final Object readLimiter = get$unlimited.invoke();
+                supplier = () -> readLimiter;
+            } catch (Throwable t) {
+                t.printStackTrace();
             }
-        } catch (Throwable t) {
-            t.printStackTrace();
+            READ_LIMITER = supplier;
         }
-        READ_LIMITER = readLimiter;
     }
 
     TStreamTools() {
@@ -117,7 +142,7 @@ public class TStreamTools {
      * @return A NBTReadLimiter instance.
      */
     public static Object getReadLimiter() {
-        return READ_LIMITER;
+        return READ_LIMITER.get();
     }
 
     /**
