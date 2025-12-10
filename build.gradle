@@ -11,11 +11,11 @@ allprojects {
     }
 
     repositories {
-        maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-        maven { url 'https://oss.sonatype.org/content/repositories/central' }
-        maven { url 'https://repo.papermc.io/repository/maven-public/' }
-        maven { url 'https://jitpack.io/' }
+        maven { url = uri('https://hub.spigotmc.org/nexus/content/repositories/snapshots/') }
+        maven { url = uri('https://oss.sonatype.org/content/repositories/snapshots') }
+        maven { url = uri('https://oss.sonatype.org/content/repositories/central') }
+        maven { url = uri('https://repo.papermc.io/repository/maven-public/') }
+        maven { url = uri('https://jitpack.io/') }
         mavenCentral()
     }
 
@@ -44,9 +44,9 @@ allprojects {
     publishing {
         publications {
             maven(MavenPublication) {
-                groupId project.group
-                artifactId project.name
-                version project.version
+                groupId = project.group
+                artifactId = project.name
+                version = project.version
                 from components.java
             }
         }
