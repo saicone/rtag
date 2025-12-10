@@ -94,7 +94,7 @@ public enum EnchantmentTag {
             if (tag.getVersion() <= 12) {
                 legacy.add(tag);
             }
-            if (MC.version().isNewerThanOrEquals(tag.ver)) {
+            if (tag.ver == null || MC.version().isNewerThanOrEquals(tag.ver)) {
                 server.add(tag);
             }
         }

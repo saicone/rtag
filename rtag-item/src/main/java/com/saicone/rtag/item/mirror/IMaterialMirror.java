@@ -363,32 +363,32 @@ public class IMaterialMirror implements ItemMirror {
             if (ItemMaterialTag.SERVER_VALUES.containsKey(material.id())) {
                 cache.put(material, material);
             } else {
-                compute(material, material, from, to);
+                compute(material, from, to);
             }
             mat = cache.getIfPresent(material);
         }
         return mat;
     }
 
-    private void compute(@NotNull ItemMaterialTag.Data key, @NotNull ItemMaterialTag.Data value, @NotNull MC from, @NotNull MC to) {
+    private void compute(@NotNull ItemMaterialTag.Data material, @NotNull MC from, @NotNull MC to) {
         for (ItemMaterialTag tag : ItemMaterialTag.SERVER_VALUES.values()) {
-            final TreeMap<MC, ItemMaterialTag.Data> names = tag.getDataMap();
-            for (MC tagVersion : names.descendingKeySet()) {
-                if (tagVersion.isOlderThanOrEquals(from)) {
-                    final ItemMaterialTag.Data data = names.get(tagVersion);
-                    if (data.equals(value)) {
-                        final var entry = names.floorEntry(to);
+            final TreeMap<MC, ItemMaterialTag.Data> dataMap = tag.getDataMap();
+            for (MC version : dataMap.descendingKeySet()) {
+                if (version.isOlderThanOrEquals(from)) {
+                    final ItemMaterialTag.Data data = dataMap.get(version);
+                    if (data.equals(material)) {
+                        final var entry = dataMap.floorEntry(to);
                         if (entry == null) {
-                            cache.put(key, ItemMaterialTag.Data.empty());
+                            cache.put(material, ItemMaterialTag.Data.empty());
                         } else {
-                            cache.put(key, entry.getValue());
+                            cache.put(material, entry.getValue());
                         }
                         return;
                     }
                 }
             }
         }
-        cache.put(key, ItemMaterialTag.Data.empty());
+        cache.put(material, ItemMaterialTag.Data.empty());
     }
 
     /**

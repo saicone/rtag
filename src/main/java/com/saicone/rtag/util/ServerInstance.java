@@ -247,7 +247,7 @@ public class ServerInstance {
      * @return            The provided data version as craftbukkit package.
      */
     public static String version(int dataVersion) {
-        return MC.findReverse(MC::dataVersion, dataVersion).bukkitPackage();
+        return MC.findReverse(version -> version.dataVersion().orElse(null), dataVersion).bukkitPackage();
     }
 
     /**
@@ -257,7 +257,7 @@ public class ServerInstance {
      * @return            The provided data version as formatted server version.
      */
     public static int fullVersion(int dataVersion) {
-        return MC.findReverse(MC::dataVersion, dataVersion).fullRevision();
+        return MC.findReverse(version -> version.dataVersion().orElse(null), dataVersion).fullRevision();
     }
 
     /**
@@ -267,7 +267,7 @@ public class ServerInstance {
      * @return            The provided data version as simplified server version.
      */
     public static int verNumber(int dataVersion) {
-        return MC.findReverse(MC::dataVersion, dataVersion).feature();
+        return MC.findReverse(version -> version.dataVersion().orElse(null), dataVersion).feature();
     }
 
     /**
@@ -277,7 +277,7 @@ public class ServerInstance {
      * @return            The provided data version as release version.
      */
     public static int release(int dataVersion) {
-        return MC.findReverse(MC::dataVersion, dataVersion).revision();
+        return MC.findReverse(version -> version.dataVersion().orElse(null), dataVersion).revision();
     }
 
     /**

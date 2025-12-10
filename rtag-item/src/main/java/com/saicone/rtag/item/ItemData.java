@@ -242,26 +242,17 @@ public class ItemData {
         if (value.isEmpty()) {
             return null;
         }
-        Object providedVersion = TagBase.getValue(value.get("rtagDataVersion"));
-        if (providedVersion instanceof Integer) {
-            return MC.findReverse(MC::feature, providedVersion);
-        } else if (providedVersion instanceof Number) {
-            final float num = ((Number) providedVersion).floatValue();
-            if (num % 1 >= 0.01f) {
-                return MC.findReverse(MC::featRevision, num);
-            } else {
-                return MC.findReverse(MC::feature, (int) num);
-            }
-        } else {
+        Object providedVersion = TagBase.getValue(value.get("rtagDataVersion")); // Backwards compatibility
+        if (providedVersion == null) {
             providedVersion = TagBase.getValue(value.get(VERSION_KEY));
-            if (providedVersion == null) {
-                providedVersion = TagBase.getValue(value.get("v"));
-            }
+        }
+        if (providedVersion == null) {
+            providedVersion = TagBase.getValue(value.get("v"));
         }
 
-        if (providedVersion instanceof Number) {
-            final int dataVersion = ((Number) providedVersion).intValue();
-            return MC.findReverse(MC::dataVersion, dataVersion);
+        final MC version = MC.fromAny(providedVersion);
+        if (version != null) {
+            return version;
         }
 
         // Calculate the minimum version

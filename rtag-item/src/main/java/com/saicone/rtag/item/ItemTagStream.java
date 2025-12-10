@@ -1,9 +1,12 @@
 package com.saicone.rtag.item;
 
+import com.saicone.rtag.Rtag;
+import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.item.mirror.*;
 import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
+import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.MC;
 import org.bukkit.Material;
@@ -177,7 +180,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      */
     @NotNull
     public Map<String, Object> toReadableMap(@NotNull ItemStack item) {
-        return parseMap(toMap(item), getTargetVersion(), true);
+        return TagCompound.getValue(RtagMirror.INSTANCE, translateItem(toCompound(item), MC.version(), true));
     }
 
     /**
@@ -189,57 +192,96 @@ public class ItemTagStream extends TStream<ItemStack> {
      */
     @NotNull
     public ItemStack fromReadableMap(@NotNull Map<String, Object> map) {
-        final MC version = ItemData.lookupVersion(map);
+        final Object compound = TagCompound.newTag(RtagMirror.INSTANCE, map);
+
+        MC version = null;
+        // Backwards compatibility
+        if (this.versionKey != null && !this.versionKey.equals("rtagDataVersion")) {
+            version = MC.fromAny(TagBase.getValue(TagCompound.get(compound, this.versionKey)));
+        }
+        // Lookup version
+        if (version == null) {
+            version = ItemData.lookupVersion(compound);
+        }
+
         if (version != null) {
-            return fromMap(parseMap(map, version, false));
+            return fromCompound(translateItem(compound, version, false));
         } else {
-            return fromMap(map);
+            return fromCompound(compound);
         }
     }
 
     @NotNull
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseMap(@NotNull Map<String, Object> map, @NotNull MC version, boolean readable) {
+    private Object translateItem(@NotNull Object item, @NotNull MC version, boolean toReadable) {
         if (version.isLegacy()) {
-            return map;
-        }
-        final Map<String, Object> components;
-        if (version.isComponent()) {
-            components = (Map<String, Object>) map.get("components");
-        } else {
-            final Map<String, Object> tag = (Map<String, Object>) map.get("tag");
-            if (tag == null) return map;
-            components = (Map<String, Object>) tag.get("display");
+            return item;
         }
 
-        if (components != null) {
-            // Process name
-            final String nameKey = version.isComponent() ? "minecraft:custom_name" : "Name";
-            final String name = (String) components.get(nameKey);
-            if (name != null) {
-                components.put(nameKey, parseText(name, readable));
+        if (version.isComponent()) {
+            // custom_name
+            final Object customName = Rtag.INSTANCE.getExact(item, "components", "minecraft:custom_name");
+            if (customName != null) {
+                Rtag.INSTANCE.set(item, translateValue(customName, version, toReadable), "components", "minecraft:custom_name");
             }
-            if (version.isNewerThanOrEquals(MC.V_1_14)) {
-                // Process lore
-                final List<String> lore = (List<String>) components.get(version.isComponent() ? "minecraft:lore" : "Lore");
-                if (lore != null) {
-                    lore.replaceAll(line -> parseText(line, readable));
+
+            // item_name
+            final Object itemName = Rtag.INSTANCE.getExact(item, "components", "minecraft:item_name");
+            if (itemName != null) {
+                Rtag.INSTANCE.set(item, translateValue(itemName, version, toReadable), "components", "minecraft:item_name");
+            }
+
+            // lore
+            final Object lore = Rtag.INSTANCE.getExact(item, "components", "minecraft:lore");
+            if (lore != null) {
+                Rtag.INSTANCE.set(item, translateList(lore, version, toReadable), "components", "minecraft:lore");
+            }
+        } else {
+            // display.Name
+            final Object name = Rtag.INSTANCE.getExact(item, "tag", "display", "Name");
+            if (name != null) {
+                Rtag.INSTANCE.set(item, translateValue(name, version, toReadable), "tag", "display", "Name");
+            }
+
+            // display.Lore
+            final Object lore = Rtag.INSTANCE.getExact(item, "tag", "display", "Lore");
+            if (lore != null) {
+                Rtag.INSTANCE.set(item, translateList(lore, version, toReadable), "tag", "display", "Lore");
+            }
+        }
+
+        return item;
+    }
+
+    @NotNull
+    private Object translateList(@NotNull Object list, @NotNull MC version, boolean toReadable) {
+        final List<Object> value = TagList.getValue(list);
+        value.replaceAll(element -> translateValue(element, version, toReadable));
+        return list;
+    }
+
+    @NotNull
+    private Object translateValue(@NotNull Object value, @NotNull MC version, boolean toReadable) {
+        if (TagList.isTagList(value) || TagCompound.isTagCompound(value)) {
+            if (toReadable) {
+                return TagBase.newTag(ChatComponent.toString(ChatComponent.fromTag(value)));
+            }
+        } else if (TagBase.getTypeId(value) == 8) { // STRING
+            final String s = (String) TagBase.getValue(value);
+            if (version.isNewerThanOrEquals(MC.V_1_21_5)) {
+                if (!toReadable) {
+                    return ChatComponent.toTag(ChatComponent.fromString(s));
+                }
+            } else {
+                if (ChatComponent.isChatComponent(s)) {
+                    if (toReadable) {
+                        return TagBase.newTag(ChatComponent.toString(s));
+                    }
+                } else if (!toReadable) {
+                    return TagBase.newTag(ChatComponent.toJson(s));
                 }
             }
         }
-        return map;
-    }
-
-    @NotNull
-    private String parseText(@NotNull String s, boolean readable) {
-        if (ChatComponent.isChatComponent(s)) {
-            if (readable) {
-                return ChatComponent.toString(s);
-            }
-        } else if (!readable) {
-            return ChatComponent.toJson(s);
-        }
-        return s;
+        return value;
     }
 
     /**
@@ -249,7 +291,7 @@ public class ItemTagStream extends TStream<ItemStack> {
      */
     public void onSave(@Nullable Object compound) {
         if (compound != null) {
-            TagCompound.set(compound, ItemData.VERSION_KEY, TagBase.newTag(getTargetVersion().dataVersion()));
+            TagCompound.set(compound, ItemData.VERSION_KEY, TagBase.newTag(getTargetVersion().dataVersion().orElse(98)));
         }
     }
 
@@ -259,7 +301,16 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param compound NBTTagCompound with item information.
      */
     public void onLoad(@Nullable Object compound) {
-        final MC version = ItemData.lookupVersion(compound);
+        MC version = null;
+        // Backwards compatibility
+        if (this.versionKey != null && !this.versionKey.equals("rtagDataVersion")) {
+            version = MC.fromAny(TagBase.getValue(TagCompound.get(compound, this.versionKey)));
+        }
+        // Lookup version
+        if (version == null) {
+            version = ItemData.lookupVersion(compound);
+        }
+
         if (version != null && !versionMatches(version, getTargetVersion())) {
             // Fix rare serialization exception
             TagCompound.remove(compound, getVersionKey());

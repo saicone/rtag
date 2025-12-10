@@ -14,7 +14,7 @@ public class RtagPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
-        getLogger().info("Found version " + MC.version() + " (" + MC.version().dataVersion() + ")");
+        getLogger().info("Found version " + MC.version() + " (data version = " + MC.version().dataVersion().orElse(null) + ", package = " + MC.version().bukkitPackage() + ")");
         // Utils
         loadRtagClass("util.EasyLookup",
                 "util.ChatComponent",

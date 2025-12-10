@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeMap;
 
 /**
@@ -1650,7 +1651,7 @@ public enum ItemMaterialTag {
                 final Data data = dataMap.get(version);
                 // Find valid material using minecraft names as aliases
                 for (Data name : dataMap.values()) {
-                    if (Material.getMaterial(name.id.toUpperCase()) != null) {
+                    if (name.bukkitMaterial().isPresent()) {
                         return data;
                     }
                 }
@@ -1813,7 +1814,9 @@ public enum ItemMaterialTag {
         private final Short damage;
         private final String entity;
 
-        private transient final String formatted;
+        private transient String formatted;
+        @SuppressWarnings("all")
+        private transient Optional<Material> bukkitMaterial;
 
         /**
          * Constructs a data instance with the given parameters.
@@ -1826,16 +1829,6 @@ public enum ItemMaterialTag {
             this.id = id;
             this.damage = damage;
             this.entity = entity;
-
-            final StringBuilder builder = new StringBuilder();
-            builder.append((id.contains(":") ? id.split(":")[1] : id).toUpperCase());
-            if (damage != null) {
-                builder.append(":").append(damage);
-            }
-            if (entity != null) {
-                builder.append("=").append(entity);
-            }
-            this.formatted = builder.toString();
         }
 
         public boolean isEmpty() {
@@ -1880,7 +1873,33 @@ public enum ItemMaterialTag {
         @NotNull
         @ApiStatus.Internal
         public String formatted() {
+            if (formatted == null) {
+                final StringBuilder builder = new StringBuilder();
+                builder.append((this.id.contains(":") ? this.id.split(":")[1] : this.id).toUpperCase());
+                if (this.damage != null) {
+                    builder.append(":").append(this.damage);
+                }
+                if (this.entity != null) {
+                    builder.append("=").append(this.entity);
+                }
+                formatted = builder.toString();
+            }
             return formatted;
+        }
+
+        /**
+         * Get bukkit material representation of this material.
+         *
+         * @return the bukkit material representation or null.
+         */
+        @NotNull
+        @ApiStatus.Internal
+        @SuppressWarnings("all")
+        public Optional<Material> bukkitMaterial() {
+            if (bukkitMaterial == null) {
+                bukkitMaterial = Optional.ofNullable(Material.getMaterial((id.contains(":") ? id.split(":")[1] : id).toUpperCase()));
+            }
+            return bukkitMaterial;
         }
 
         @NotNull

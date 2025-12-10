@@ -588,6 +588,38 @@ public final class MC implements Comparable<MC> {
     }
 
     /**
+     * Get version from any object representation.
+     *
+     * @param object the object representation of the version.
+     * @return       the MC version or null if not found.
+     */
+    @Nullable
+    @ApiStatus.Internal
+    public static MC fromAny(@Nullable Object object) {
+        if (object instanceof Integer) {
+            final Integer integer = (Integer) object;
+            if (integer >= 100) {
+                return MC.findReverse(version -> version.dataVersion().orElse(null), integer);
+            } else if (integer == 98) { // Backwards compatibility
+                return V_1_8;
+            } else {
+                return MC.findReverse(MC::feature, integer);
+            }
+        } else if (object instanceof Number) {
+            final float num = ((Number) object).floatValue();
+            if (num % 1 >= 0.01f) {
+                return MC.findReverse(MC::featRevision, num);
+            } else {
+                return MC.findReverse(MC::feature, (int) num);
+            }
+        } else if (object instanceof String) {
+            return MC.fromString((String) object);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Get version from a specific getter function and target value.
      *
      * @param getter the function to get the value from each version.
