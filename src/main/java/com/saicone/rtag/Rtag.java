@@ -4,8 +4,8 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
-import com.saicone.rtag.util.ServerInstance;
 import com.saicone.rtag.util.ThrowableFunction;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -60,13 +60,13 @@ public class Rtag extends RtagMirror {
     static {
         Object unit = new Object();
         Object registry = null;
-        if (ServerInstance.MAJOR_VERSION >= 14) {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_14)) {
             try {
                 unit = ((Object[]) EasyLookup.addNMSClass("util.Unit").getDeclaredMethod("values").invoke(null))[0];
             } catch (Throwable t) {
                 t.printStackTrace();
             }
-            if (ServerInstance.MAJOR_VERSION >= 20) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_20)) {
                 try {
                     registry = EasyLookup.addOBCClass("CraftRegistry").getDeclaredMethod("getMinecraftRegistry").invoke(null);
                 } catch (Throwable t) {

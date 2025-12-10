@@ -1,6 +1,7 @@
 package com.saicone.rtag.data;
 
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ServerInstance;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import org.jetbrains.annotations.ApiStatus;
@@ -81,7 +82,7 @@ public class DataComponent {
             MethodHandle method$getComponents = null;
             MethodHandle method$get = null;
             MethodHandle method$has = null;
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 // Old names
                 String getComponents = "a";
                 String get = "a";
@@ -92,7 +93,7 @@ public class DataComponent {
                     get = "get";
                     has = "has";
                 } else {
-                    if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                         has = "c";
                     }
                 }
@@ -188,7 +189,7 @@ public class DataComponent {
             MethodHandle method$keySet = null;
             MethodHandle method$builder = null;
             MethodHandle method$builder$build = null;
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 // Old names
                 String empty = "a";
                 String map = "c";
@@ -219,7 +220,7 @@ public class DataComponent {
                     // Private field
                     get$builder$map = EasyLookup.unreflectSetter("DataComponentMap.Builder", builder$map);
 
-                    if (ServerInstance.VERSION >= 21.04f) {
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                         EasyLookup.addNMSClass("core.component.DataComponentGetter");
                         method$get = EasyLookup.method("DataComponentGetter", get, Object.class, "DataComponentType");
                     } else {
@@ -365,7 +366,7 @@ public class DataComponent {
             // Methods
             MethodHandle method$set = null;
             MethodHandle method$remove = null;
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 // Old names
                 String map = "d";
                 String set = "b";
@@ -377,7 +378,7 @@ public class DataComponent {
                     set = "set";
                     remove = "remove";
                 } else {
-                    if (ServerInstance.VERSION >= 21.03f) { // 1.21.3
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) { // 1.21.3
                         remove = "e";
                     }
                 }
@@ -493,7 +494,7 @@ public class DataComponent {
             // Methods
             MethodHandle method$builder = null;
             MethodHandle method$builder$build = null;
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 // Old names
                 String empty = "a";
                 String map = "d";
@@ -511,7 +512,7 @@ public class DataComponent {
                     builder$map = "map";
                     builder$build = "build";
                 } else {
-                    if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                         map = "e";
                     }
                 }

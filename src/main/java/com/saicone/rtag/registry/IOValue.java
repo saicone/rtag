@@ -4,6 +4,7 @@ import com.mojang.serialization.DynamicOps;
 import com.saicone.rtag.Rtag;
 import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ProblemReporter;
 import com.saicone.rtag.util.ServerInstance;
 import org.jetbrains.annotations.ApiStatus;
@@ -20,7 +21,7 @@ public class IOValue {
 
     // Import reflected classes
     static {
-        if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
             try {
                 EasyLookup.addNMSClass("util.ProblemReporter");
                 EasyLookup.addNMSClass("world.level.storage.ValueInput");
@@ -43,7 +44,7 @@ public class IOValue {
         MethodHandle method$TagValueInput = null;
         MethodHandle method$TagValueOutput = null;
         MethodHandle method$buildResult = null;
-        if (ServerInstance.VERSION >= 21.05f) {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
             try {
                 // Old method names
                 String TagValueInput$create = "a";

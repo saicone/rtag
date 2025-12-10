@@ -9,6 +9,7 @@ import com.mojang.serialization.JsonOps;
 import com.saicone.rtag.Rtag;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ServerInstance;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -31,13 +32,13 @@ public class ComponentType {
     // Import reflected classes
     static {
         try {
-            if (ServerInstance.MAJOR_VERSION >= 13) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
                 EasyLookup.addNMSClass("nbt.DynamicOpsNBT", "NbtOps");
             }
-            if (ServerInstance.VERSION >= 18.02f) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_18_2)) {
                 EasyLookup.addNMSClass("resources.RegistryOps");
             }
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 EasyLookup.addNMSClass("core.Holder");
                 EasyLookup.addNMSClass("core.RegistryMaterials", "MappedRegistry");
             }
@@ -77,7 +78,7 @@ public class ComponentType {
         // Methods
         MethodHandle method$create = null;
         MethodHandle method$codec = null;
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             try {
                 // Old names
                 String nbtOps$instance = "a";
@@ -98,17 +99,17 @@ public class ComponentType {
                     holder$value = "value";
                     codec = "codec";
                 } else {
-                    if (ServerInstance.MAJOR_VERSION >= 21) {
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
                         registry$components = "aq";
                     }
-                    if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
                         registry$components = "ao";
                         registry$map = "e";
                     }
-                    if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                         registry$components = "am";
                     }
-                    if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) { // 1.21.9
                         registry$components = "an";
                     }
                 }

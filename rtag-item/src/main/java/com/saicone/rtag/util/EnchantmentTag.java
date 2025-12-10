@@ -81,7 +81,7 @@ public enum EnchantmentTag {
     /**
      * Current key where enchantments are inside items tag.
      */
-    public static final String TAG_KEY = ServerInstance.Release.LEGACY ? "ench" : "Enchantments";
+    public static final String TAG_KEY = MC.version().isLegacy() ? "ench" : "Enchantments";
     /**
      * Current key where stored enchantments are inside items tag.
      */
@@ -94,7 +94,7 @@ public enum EnchantmentTag {
             if (tag.getVersion() <= 12) {
                 legacy.add(tag);
             }
-            if (tag.getVersion() <= ServerInstance.MAJOR_VERSION) {
+            if (MC.version().isNewerThanOrEquals(tag.ver)) {
                 server.add(tag);
             }
         }
@@ -102,6 +102,7 @@ public enum EnchantmentTag {
         SERVER_VALUES = server.toArray(new EnchantmentTag[0]);
     }
 
+    private final MC ver;
     private final int version;
     private final short id;
     private final String[] aliases;
@@ -113,6 +114,7 @@ public enum EnchantmentTag {
     }
 
     EnchantmentTag(int version, short id, String... aliases) {
+        this.ver = MC.findReverse(MC::feature, version);
         this.version = version;
         this.id = id;
         this.aliases = aliases;
@@ -128,10 +130,10 @@ public enum EnchantmentTag {
 
     @SuppressWarnings("deprecation")
     private static Enchantment parseEnchantment(String s) {
-        if (ServerInstance.VERSION >= 20.03f) {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_20_3)) {
             // Registry exist in older versions, but since 1.20.3 there is a deprecation notice
             return Registry.ENCHANTMENT.match(s);
-        } else if (ServerInstance.Release.FLAT) {
+        } else if (MC.version().isFlat()) {
             return Enchantment.getByKey(NamespacedKey.minecraft(s.toLowerCase()));
         } else {
             return Enchantment.getByName(s);
@@ -180,7 +182,7 @@ public enum EnchantmentTag {
      * @return Short id for legacy versions, namespaced key otherwise.
      */
     public Object getKey() {
-        if (ServerInstance.Release.LEGACY) {
+        if (MC.version().isLegacy()) {
             return id;
         } else {
             return "minecraft:" + name().toLowerCase();

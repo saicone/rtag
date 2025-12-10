@@ -1,6 +1,7 @@
 package com.saicone.rtag.stream;
 
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ServerInstance;
 
 import java.io.*;
@@ -21,7 +22,7 @@ public class TStreamTools {
         try {
             EasyLookup.addNMSClass("nbt.NBTCompressedStreamTools", "NbtIo");
             EasyLookup.addNMSClass("nbt.NBTReadLimiter", "NbtAccounter");
-            if (ServerInstance.MAJOR_VERSION >= 18) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
                 EasyLookup.addNMSClass("util.FastBufferedInputStream");
             }
         } catch (ClassNotFoundException e) {
@@ -31,7 +32,7 @@ public class TStreamTools {
 
     private static final Supplier<Object> READ_LIMITER;
 
-    private static final boolean USE_FAST_STREAM = ServerInstance.MAJOR_VERSION >= 18;
+    private static final boolean USE_FAST_STREAM = MC.version().isNewerThanOrEquals(MC.V_1_18);
     private static final MethodHandle newFastInputStream;
 
     private static final MethodHandle readNBT;
@@ -56,12 +57,12 @@ public class TStreamTools {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 read = "readUnnamedTag";
                 write = "writeUnnamedTag";
-                if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                     unlimited = "unlimitedHeap";
                 } else {
                     unlimited = "UNLIMITED";
                 }
-            } else if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                 read = "c";
                 write = "b";
             }
@@ -70,7 +71,7 @@ public class TStreamTools {
                 new$FastInputStream = EasyLookup.constructor("FastBufferedInputStream", InputStream.class);
             }
 
-            if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+            if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                 // Private method
                 // Note: The "unused" integer was removed, and also was added a new method (DataInput, NBTReadLimiter, byte)
                 //       to specify the id of NBT you're reading (probably add it here)
@@ -84,7 +85,7 @@ public class TStreamTools {
             // (1.20.3) Note: New method to write NBT using a DelegateDataOutput that writes empty String if any error occurs
             method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", write, void.class, "NBTBase", DataOutput.class);
 
-            if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+            if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                 get$unlimited = EasyLookup.staticMethod("NBTReadLimiter", unlimited, "NBTReadLimiter");
             } else {
                 get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", unlimited, "NBTReadLimiter");
@@ -102,7 +103,7 @@ public class TStreamTools {
             // Fallback instance constructor
             READ_LIMITER = () -> {
                 try {
-                    if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                         return EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class, int.class).newInstance(Long.MAX_VALUE, 512);
                     } else {
                         return EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class).newInstance(Long.MAX_VALUE);
@@ -111,7 +112,7 @@ public class TStreamTools {
                     throw new RuntimeException("Cannot create NbtAccounter instance");
                 }
             };
-        } else if (ServerInstance.VERSION >= 20.02) { // 1.20.2
+        } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
             READ_LIMITER = () -> {
                 try {
                     return unlimitedHeap.invoke();
@@ -324,7 +325,7 @@ public class TStreamTools {
      */
     public static Object read(DataInput input) throws IOException {
         try {
-            if (ServerInstance.VERSION >= 20.02) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) {
                 return readNBT.invoke(input, getReadLimiter());
             } else {
                 return readNBT.invoke(input, 0, getReadLimiter());

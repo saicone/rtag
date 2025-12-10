@@ -1,6 +1,6 @@
 package com.saicone.rtag;
 
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.MC;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class RtagPlugin extends JavaPlugin {
@@ -14,7 +14,7 @@ public class RtagPlugin extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
-        getLogger().info("Found version " + ServerInstance.PACKAGE_VERSION + " (" + ServerInstance.DATA_VERSION + ")");
+        getLogger().info("Found version " + MC.version() + " (" + MC.version().dataVersion() + ")");
         // Utils
         loadRtagClass("util.EasyLookup",
                 "util.ChatComponent",
@@ -25,7 +25,7 @@ public class RtagPlugin extends JavaPlugin {
         loadRtagClass("Rtag", "RtagMirror");
         // Tag
         loadRtagClass("tag.TagBase", "tag.TagList", "tag.TagCompound");
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             // Data
             loadRtagClass("data.ComponentType", "data.DataComponent");
         }

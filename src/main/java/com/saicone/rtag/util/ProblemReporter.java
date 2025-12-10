@@ -20,7 +20,7 @@ public interface ProblemReporter {
     class Static {
 
         private static Object discarding() {
-            if (ServerInstance.VERSION >= 20.03f) { // 1.20.3
+            if (MC.version().isNewerThanOrEquals(MC.V_1_20_3)) {
                 try {
                     final Class<?> ProblemReporter = EasyLookup.addNMSClass("util.ProblemReporter");
 
@@ -29,7 +29,7 @@ public interface ProblemReporter {
                         discarding = "DISCARDING";
                     }
 
-                    if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                         return ProblemReporter.getDeclaredField(discarding).get(null);
                     } else {
                         return Proxy.newProxyInstance(ProblemReporter.getClassLoader(), new Class[] { ProblemReporter }, (proxy, method, args) -> {

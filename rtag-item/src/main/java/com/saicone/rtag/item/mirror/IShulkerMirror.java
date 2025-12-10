@@ -18,7 +18,7 @@ public class IShulkerMirror extends IContainerMirror {
      */
     @Deprecated
     public IShulkerMirror(ItemTagStream stream) {
-        super(stream, ServerInstance.VERSION >= 20.04f);
+        super(stream, MC.version().isNewerThanOrEquals(MC.V_1_20_5));
     }
 
     /**

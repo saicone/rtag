@@ -2,6 +2,7 @@ package com.saicone.rtag.tag;
 
 import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ServerInstance;
 import com.saicone.rtag.util.ThrowableFunction;
 
@@ -98,7 +99,7 @@ public class TagBase {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 getTypeId = "getId";
                 asLongArray = "data";
-                if (ServerInstance.VERSION >= 21.04) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                     asByte = "value";
                     asDouble = "value";
                     asFloat = "value";
@@ -108,10 +109,10 @@ public class TagBase {
                     asString = "value";
                 }
             } else {
-                if (ServerInstance.MAJOR_VERSION == 13 || ServerInstance.MAJOR_VERSION == 14) {
+                if (MC.version().isBetween(MC.V_1_13, MC.V_1_14_4)) {
                     asLongArray = "f";
                 }
-                if (ServerInstance.Release.UNIVERSAL) {
+                if (MC.version().isUniversal()) {
                     data = "c";
                     asByte = "x";
                     asDouble = "w";
@@ -122,13 +123,13 @@ public class TagBase {
                     asLongArray = "c";
                     asString = "A";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 18) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
                     getTypeId = "a";
                 }
-                if (ServerInstance.VERSION >= 19.02) { // 1.19.3
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) { // 1.19.3
                     getTypeId = "b";
                 }
-                if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                     asByte = "v";
                     asDouble = "c";
                     asFloat = "c";
@@ -165,7 +166,7 @@ public class TagBase {
             new$Long = EasyLookup.unreflectConstructor("NBTTagLong", long.class);
             get$Long = EasyLookup.getter("NBTTagLong", asLong, long.class);
 
-            if (ServerInstance.MAJOR_VERSION >= 12) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_12)) {
                 new$LongArray = EasyLookup.unreflectConstructor("NBTTagLongArray", "long[]");
                 get$LongArray = EasyLookup.getter("NBTTagLongArray", asLongArray, "long[]");
             }
@@ -225,7 +226,7 @@ public class TagBase {
         newFunction(tagLong::invoke, long.class, Long.class);
         getValueFunction.put(EasyLookup.classById("NBTTagLong"), asLong::invoke);
 
-        if (ServerInstance.MAJOR_VERSION >= 12) {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_12)) {
             newTagFunction.put(EasyLookup.classById("long[]"), tagLongArray::invoke);
             getValueFunction.put(EasyLookup.classById("NBTTagLongArray"), asLongArray::invoke);
         }

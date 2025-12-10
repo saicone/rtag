@@ -33,7 +33,7 @@ public class EasyLookup {
             (m, type, params) -> Arrays.equals(m.getParameterTypes(), params),
             (m, type, params) -> isAssignableFrom(params, m.getParameterTypes())
     };
-    private static final String nmsPackage = ServerInstance.Release.UNIVERSAL ? "net.minecraft." : ("net.minecraft.server." + ServerInstance.PACKAGE_VERSION + ".");
+    private static final String nmsPackage = MC.version().isUniversal() ? "net.minecraft." : ("net.minecraft.server." + MC.version().bukkitPackage() + ".");
     private static final String obcPackage = Bukkit.getServer().getClass().getPackage().getName() + ".";
 
     static {
@@ -54,16 +54,16 @@ public class EasyLookup {
             addNMSClass("nbt.NBTTagIntArray", "IntArrayTag");
             addNMSClass("nbt.NBTTagList", "ListTag");
             addNMSClass("nbt.NBTTagLong", "LongTag");
-            if (ServerInstance.MAJOR_VERSION >= 12) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_12)) {
                 addNMSClass("nbt.NBTTagLongArray", "LongArrayTag");
             }
             addNMSClass("nbt.NBTTagShort", "ShortTag");
             addNMSClass("nbt.NBTTagString", "StringTag");
-            if (ServerInstance.VERSION >= 19.02f) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) {
                 EasyLookup.addNMSClass("core.registries.BuiltInRegistries");
                 EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation");
             }
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 addNMSClass("core.component.DataComponentHolder");
                 addNMSClass("core.component.DataComponentMap");
                 addNMSClassId("DataComponentMap.Builder", "core.component.DataComponentMap$a", "core.component.DataComponentMap$Builder");
@@ -74,9 +74,9 @@ public class EasyLookup {
                 addNMSClass("core.component.TypedDataComponent");
                 addNMSClass("core.component.DataComponentType");
             }
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 addNMSClassId("HolderLookup.Provider", "core.HolderLookup$a", "core.HolderLookup$Provider");
-            } else if (ServerInstance.VERSION >= 19.02f) {
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) {
                 addNMSClassId("HolderLookup.Provider", "core.HolderLookup$b", "core.HolderLookup$Provider");
             }
         } catch (ClassNotFoundException e) {
@@ -263,7 +263,7 @@ public class EasyLookup {
                 aliases[i] = nmsPackage + alias;
             }
         }
-        if (ServerInstance.Release.UNIVERSAL) {
+        if (MC.version().isUniversal()) {
             return nmsPackage + name;
         } else {
             return nmsPackage + (name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : name);

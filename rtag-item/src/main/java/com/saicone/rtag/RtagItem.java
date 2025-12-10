@@ -8,6 +8,7 @@ import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.EnchantmentTag;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
 import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.Material;
@@ -83,7 +84,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public RtagItem(Rtag rtag, ItemStack item) {
         super(rtag, item);
-        this.components = ServerInstance.Release.COMPONENT ? DataComponent.Holder.getComponents(getLiteralObject()) : null;
+        this.components = MC.version().isComponent() ? DataComponent.Holder.getComponents(getLiteralObject()) : null;
     }
 
     /**
@@ -96,7 +97,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public RtagItem(Rtag rtag, ItemStack item, Object mcItem) {
         super(rtag, item, mcItem);
-        this.components = ServerInstance.Release.COMPONENT ? DataComponent.Holder.getComponents(mcItem) : null;
+        this.components = MC.version().isComponent() ? DataComponent.Holder.getComponents(mcItem) : null;
     }
 
     /**
@@ -110,7 +111,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public RtagItem(Rtag rtag, ItemStack item, Object mcItem, Object tag) {
         super(rtag, item, mcItem, tag);
-        this.components = ServerInstance.Release.COMPONENT ? DataComponent.Holder.getComponents(mcItem) : null;
+        this.components = MC.version().isComponent() ? DataComponent.Holder.getComponents(mcItem) : null;
     }
 
     /**
@@ -353,7 +354,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean hasHideFlags(int... hideFlags) {
-        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
             final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
             if (tooltipDisplay == null) {
                 return hideFlags.length < 1;
@@ -371,7 +372,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
             }
             return true;
         }
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             for (int ordinal : hideFlags) {
                 if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) return false;
                 if (ordinal == 5 && getItem().getType() != Material.ENCHANTED_BOOK) {
@@ -397,7 +398,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public boolean hasEnchantment(Object enchant) {
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             final EnchantmentTag tag = EnchantmentTag.of(enchant);
             if (tag == null) {
                 return false;
@@ -412,11 +413,11 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * item lore component that doesn't allow to compare with similar items.
      */
     public void fixSerialization() {
-        if (ServerInstance.MAJOR_VERSION < 14) {
+        if (MC.version().isOlderThan(MC.V_1_14)) {
             return;
         }
         // Since 1.20.5, the server use a different serialization
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return;
         }
         // Fix lore
@@ -451,7 +452,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean addHideFlags(int... hideFlags) {
-        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
             final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
 
             boolean hideTooltip;
@@ -490,7 +491,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
                 return false;
             }
         }
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             boolean result = false;
             for (int ordinal : hideFlags) {
                 if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) continue;
@@ -533,7 +534,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
             return false;
         }
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             getItem().addUnsafeEnchantment(tag.getEnchantment(), level);
             return true;
         }
@@ -552,7 +553,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return            true if the status was changed.
      */
     public boolean setUnbreakable(boolean unbreakable) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             setComponent("minecraft:unbreakable", Map.of());
             return true;
         }
@@ -567,11 +568,11 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @Deprecated
     public boolean setCustomModelData(Integer model) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             if (model == null) {
                 removeComponent("minecraft:custom_model_data");
             } else {
-                if (ServerInstance.VERSION >= 21.03f) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) {
                     setComponent("minecraft:custom_model_data", Map.of("floats", List.of(model.floatValue())));
                 } else {
                     setComponent("minecraft:custom_model_data", model);
@@ -594,7 +595,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean setHideFlags(int... hideFlags) {
-        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
             final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
             boolean hideTooltip = tooltipDisplay != null && (boolean) tooltipDisplay.getOrDefault("hide_tooltip", false);
             final List<String> hiddenComponents = new ArrayList<>();
@@ -613,7 +614,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
             ));
             return true;
         }
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             boolean result = addHideFlags(hideFlags);
             final Set<Integer> toRemove = new HashSet<>(Set.of(0, 1, 2, 3, 4, 5, 6, 7));
             for (int ordinal : hideFlags) {
@@ -641,7 +642,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return     true if the repair cost was changes.
      */
     public boolean setRepairCost(int cost) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             DataComponent.MapPatch.set(components, ComponentType.of("minecraft:repair_cost"), cost);
             return true;
         }
@@ -660,7 +661,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public boolean removeHideFlags(int... hideFlags) {
-        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
             final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
 
             boolean hideTooltip;
@@ -698,7 +699,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
                 return false;
             }
         }
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             boolean result = false;
             for (int ordinal : hideFlags) {
                 if (ordinal < 0 || ordinal >= HIDE_FLAGS.size()) continue;
@@ -740,7 +741,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         }
 
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return getItem().removeEnchantment(tag.getEnchantment());
         }
 
@@ -791,7 +792,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @Deprecated
     public Integer getCustomModelData() {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return ComponentType.encodeJava("minecraft:custom_model_data", getComponent("minecraft:custom_model_data")).map(model -> {
                 if (model instanceof Map) {
                     final Object floats = ((Map<?, ?>) model).get("floats");
@@ -820,7 +821,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     @Deprecated
     @SuppressWarnings("unchecked")
     public Set<Integer> getHideFlags() {
-        if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
             final Set<Integer> hideFlags = new HashSet<>();
 
             final Map<String, Object> tooltipDisplay = (Map<String, Object>) ComponentType.encodeJava("minecraft:tooltip_display", getComponent("minecraft:tooltip_display")).orElse(null);
@@ -841,7 +842,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
             return hideFlags;
         }
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             final Set<Integer> hideFlags = new HashSet<>();
             if (getItem().hasItemMeta()) {
                 for (ItemFlag flag : getItem().getItemMeta().getItemFlags()) {
@@ -859,7 +860,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return Level repair cost.
      */
     public int getRepairCost() {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return (int) DataComponent.Map.get(components, ComponentType.of("minecraft:repair_cost"));
         }
         return getOptional("RepairCost").or(0);
@@ -877,7 +878,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
             return null;
         }
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             int level = getItem().getEnchantmentLevel(tag.getEnchantment());
             if (level > 0) {
                 return TagCompound.newTag(RtagMirror.INSTANCE, Map.of("id", tag.getKey(), "lvl", level));
@@ -903,7 +904,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     public int getEnchantmentLevel(Object enchant) {
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             final EnchantmentTag tag = EnchantmentTag.of(enchant);
             if (tag == null) {
                 return 0;
@@ -926,7 +927,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public Map<EnchantmentTag, Integer> getEnchantments() {
         final Map<EnchantmentTag, Integer> enchants = new HashMap<>();
         // Since 1.20.5, items cannot hold invalid enchantments
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             for (Map.Entry<Enchantment, Integer> entry : getItem().getEnchantments().entrySet()) {
                 enchants.put(EnchantmentTag.of(entry.getKey()), entry.getValue());
             }
@@ -953,7 +954,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * @return true if the item is unbreakable.
      */
     public boolean isUnbreakable() {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return DataComponent.Map.has(components, ComponentType.of("minecraft:unbreakable"));
         }
         return getOptional("Unbreakable").asBoolean(false);

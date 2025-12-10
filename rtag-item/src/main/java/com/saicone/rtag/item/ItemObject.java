@@ -6,6 +6,7 @@ import com.saicone.rtag.data.DataComponent;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
@@ -25,7 +26,7 @@ public class ItemObject {
     static {
         try {
             EasyLookup.addNMSClass("world.item.ItemStack");
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 EasyLookup.addNMSClass("core.RegistryBlocks", "DefaultedRegistry");
                 EasyLookup.addNMSClass("world.item.component.CustomData");
             }
@@ -125,75 +126,75 @@ public class ItemObject {
                 apply = "load";
                 getItem = "get";
                 setItem = "item";
-                if (ServerInstance.Release.COMPONENT) {
+                if (MC.version().isComponent()) {
                     apply = "applyComponentsAndValidate";
                     copy = "copy";
                     getTag = "tag";
                     setCount = "setCount";
                 }
-                if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
                     getItem = "getValue";
                 }
             } else {
-                if (ServerInstance.MAJOR_VERSION >= 11) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
                     apply = "load";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 13) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
                     createStack = "a";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 18) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
                     save = "b";
                     isEmpty = "b";
                     getTag = "s";
                     setTag = "c";
                 }
-                if (ServerInstance.VERSION >= 18.02) { // 1.18.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_18_2)) { // 1.18.2
                     getTag = "t";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 19) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19)) {
                     getTag = "u";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 20) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20)) {
                     getTag = "v";
                 }
-                if (ServerInstance.Release.COMPONENT) {
+                if (MC.version().isComponent()) {
                     apply = "a";
                     isEmpty = "e";
                     getTag = "e";
                 }
-                if (ServerInstance.DATA_VERSION >= 3839) { // 1.20.6
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_6)) { // 1.20.6
                     getTag = "f";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 21) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
                     registry$item = "g";
                 }
-                if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
                     codec = "a";
                     copy = "v";
                     isEmpty = "f";
                     setItem = "o";
                 }
-                if (ServerInstance.VERSION >= 21.03f) { // 1.21.3
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) { // 1.21.3
                     getTag = "g";
                     setItem = "p";
                 }
-                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                     codec = "b";
                     setItem = "s";
                 }
-                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) { // 1.21.9
                     registry$item = "h";
                     getTag = "e";
                 }
             }
 
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 const$customData = ComponentType.of("minecraft:custom_data");
                 const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
 
                 const$codec = MC_ITEM.getDeclaredField(codec).get(null);
                 new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
-                if (ServerInstance.MAJOR_VERSION >= 21) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
                     new$MinecraftKey = EasyLookup.staticMethod("MinecraftKey", key$parse, "MinecraftKey", String.class);
                 } else {
                     new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
@@ -206,7 +207,7 @@ public class ItemObject {
                 method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
                 method$setCount = EasyLookup.method(MC_ITEM, setCount, void.class, int.class);
             } else {
-                if (ServerInstance.MAJOR_VERSION >= 13 || ServerInstance.MAJOR_VERSION <= 10) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_13) || MC.version().isOlderThanOrEquals(MC.V_1_10_2)) {
                     new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
                 } else {
                     // (1.11 - 1.12) Only by public constructor
@@ -219,7 +220,7 @@ public class ItemObject {
                 method$getTag = EasyLookup.method(MC_ITEM, getTag, "NBTTagCompound");
                 method$setTag = EasyLookup.method(MC_ITEM, setTag, void.class, "NBTTagCompound");
             }
-            if (ServerInstance.MAJOR_VERSION >= 11) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
                 method$isEmpty = EasyLookup.method(MC_ITEM, isEmpty, boolean.class);
             } else {
                 method$isEmpty = EasyLookup.getter(MC_ITEM, "count", int.class);
@@ -231,7 +232,7 @@ public class ItemObject {
             get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
             set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
 
-            if (ServerInstance.Platform.PAPER && ServerInstance.MAJOR_VERSION >= 21) {
+            if (ServerInstance.Platform.PAPER && MC.version().isNewerThanOrEquals(MC.V_1_21)) {
                 method$getCraftStack = EasyLookup.method(CRAFT_ITEM, "getCraftStack", CRAFT_ITEM, ItemStack.class);
             }
             method$asBukkitCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asBukkitCopy", ItemStack.class, "ItemStack");
@@ -279,7 +280,7 @@ public class ItemObject {
      */
     @SuppressWarnings("unchecked")
     public static Object newItem(Object compound) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return ((Codec<Object>) CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), compound).result().orElse(null);
         } else {
             try {
@@ -333,7 +334,7 @@ public class ItemObject {
      */
     public static boolean isEmpty(Object item) {
         try {
-            if (ServerInstance.MAJOR_VERSION >= 11) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
                 return (boolean) isEmpty.invoke(item);
             } else {
                 return (int) isEmpty.invoke(item) <= 0;
@@ -351,7 +352,7 @@ public class ItemObject {
      * @return     true if the item has custom data.
      */
     public static boolean hasCustomData(Object item) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return DataComponent.Holder.has(item, CUSTOM_DATA);
         } else {
             try {
@@ -374,7 +375,7 @@ public class ItemObject {
             return TagCompound.newTag();
         }
         try {
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 if ((boolean) isEmpty.invoke(item)) {
                     return TagCompound.newTag();
                 }
@@ -399,7 +400,7 @@ public class ItemObject {
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
     public static void load(Object item, Object compound) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             final Object id = TagCompound.get(compound, "id");
             if (id != null) {
                 try {
@@ -447,7 +448,7 @@ public class ItemObject {
         if (mirror != null) {
             item.setType(mirror.getType());
             item.setAmount(mirror.getAmount());
-            if (ServerInstance.Release.LEGACY) {
+            if (MC.version().isLegacy()) {
                 item.setDurability(mirror.getDurability());
             }
             item.setItemMeta(mirror.getItemMeta());
@@ -476,7 +477,7 @@ public class ItemObject {
      * @return     A copy from Minecraft ItemStack.
      */
     public static Object copy(Object item) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             try {
                 return copy.invoke(item);
             } catch (Throwable t) {
@@ -617,7 +618,7 @@ public class ItemObject {
      * @return     The custom data component inside provided item.
      */
     public static Object getCustomDataTag(Object item) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             final Object customData = DataComponent.Holder.get(item, CUSTOM_DATA);
             if (customData == null) {
                 return null;
@@ -671,7 +672,7 @@ public class ItemObject {
             if (copy != null) {
                 item.setType(copy.getType());
                 item.setAmount(copy.getAmount());
-                if (ServerInstance.Release.LEGACY) {
+                if (MC.version().isLegacy()) {
                     item.setDurability(copy.getDurability());
                 }
                 item.setItemMeta(copy.getItemMeta());
@@ -687,7 +688,7 @@ public class ItemObject {
      * @param tag  NBTTagCompound to put into custom data component.
      */
     public static void setCustomDataTag(Object item, Object tag) {
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             try {
                 if (tag == null || TagCompound.getValue(tag).isEmpty()) {
                     DataComponent.MapPatch.remove(DataComponent.Holder.getComponents(item), CUSTOM_DATA);

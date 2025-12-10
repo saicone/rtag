@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
 import com.saicone.rtag.util.ServerInstance;
 import org.jetbrains.annotations.ApiStatus;
@@ -71,36 +72,36 @@ public class TagCompound {
                 map = "tags";
                 clone = "copy";
                 parse = "parseTag";
-                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                     parse = "parseCompoundFully";
                 }
             } else {
-                if (ServerInstance.MAJOR_VERSION >= 10) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_10)) {
                     clone = "g";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 13) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
                     clone = "clone";
                 }
-                if (ServerInstance.Release.UNIVERSAL) {
+                if (MC.version().isUniversal()) {
                     map = "x";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 18) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
                     clone = "g";
                     parse = "a";
                 }
-                if (ServerInstance.VERSION >= 19.03) { // 1.19.4
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) { // 1.19.4
                     clone = "h";
                 }
-                if (ServerInstance.Release.COMPONENT) {
+                if (MC.version().isComponent()) {
                     clone = "i";
                 }
-                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                     clone = "l";
                 }
             }
 
             new$EmptyCompound = EasyLookup.constructor(NBT_COMPOUND);
-            if (ServerInstance.MAJOR_VERSION >= 15) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
                 // Protected method
                 new$Compound = EasyLookup.constructor(NBT_COMPOUND, Map.class);
             }
@@ -184,7 +185,7 @@ public class TagCompound {
      * @return    New NBTTagCompound instance.
      */
     public static Object newUncheckedTag(Map<String, Object> map) {
-        if (ServerInstance.MAJOR_VERSION >= 15) {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
             try {
                 return newCompound.invoke(map);
             } catch (Throwable t) {

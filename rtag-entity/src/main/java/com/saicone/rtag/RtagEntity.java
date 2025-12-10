@@ -4,8 +4,8 @@ import com.saicone.rtag.entity.EntityObject;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
-import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.entity.Entity;
 
 import java.util.function.Consumer;
@@ -19,9 +19,9 @@ import java.util.function.Function;
 public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
 
     private static final String PREFIX = "minecraft:";
-    private static final String ATTRIBUTES = ServerInstance.MAJOR_VERSION >= 21 ? "attributes" : "Attributes";
-    private static final String ATTRIBUTE_ID = ServerInstance.MAJOR_VERSION >= 21 ? "id" : "Name";
-    private static final String ATTRIBUTE_BASE = ServerInstance.MAJOR_VERSION >= 21 ? "base" : "Base";
+    private static final String ATTRIBUTES = MC.version().isNewerThanOrEquals(MC.V_1_21) ? "attributes" : "Attributes";
+    private static final String ATTRIBUTE_ID = MC.version().isNewerThanOrEquals(MC.V_1_21) ? "id" : "Name";
+    private static final String ATTRIBUTE_BASE = MC.version().isNewerThanOrEquals(MC.V_1_21) ? "base" : "Base";
 
     /**
      * Create an RtagEntity using Entity.

@@ -2,6 +2,7 @@ package com.saicone.rtag.tag;
 
 import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ServerInstance;
 
 import java.lang.invoke.MethodHandle;
@@ -47,20 +48,20 @@ public class TagList {
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 clone = "copy";
             } else {
-                if (ServerInstance.MAJOR_VERSION >= 10 && ServerInstance.MAJOR_VERSION <= 13) {
+                if (MC.version().isBetween(MC.V_1_10, MC.V_1_13_2)) {
                     clone = "d";
                 }
-                if (ServerInstance.Release.UNIVERSAL) {
+                if (MC.version().isUniversal()) {
                     type = "w";
                     list = "c";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 18) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
                     clone = "d";
                 }
-                if (ServerInstance.VERSION >= 19.03) { // 1.19.4
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) { // 1.19.4
                     clone = "e";
                 }
-                if (ServerInstance.VERSION >= 21.04) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                     list = "v";
                     clone = "g";
                 }
@@ -68,15 +69,15 @@ public class TagList {
 
             new$EmptyList = EasyLookup.constructor(NBT_LIST);
             // Private constructor
-            if (ServerInstance.VERSION >= 21.04) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                 new$List = EasyLookup.constructor(NBT_LIST, List.class);
-            } else if (ServerInstance.MAJOR_VERSION >= 15) {
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
                 new$List = EasyLookup.constructor(NBT_LIST, List.class, byte.class);
             }
             // (1.8 -  1.9) return NBTBase
             method$clone = EasyLookup.method(NBT_LIST, clone, NBT_LIST);
             // Private fields
-            if (ServerInstance.VERSION < 21.04) {
+            if (MC.version().isOlderThan(MC.V_1_21_5)) {
                 get$type = EasyLookup.getter(NBT_LIST, type, byte.class);
                 set$type = EasyLookup.setter(NBT_LIST, type, byte.class);
             }
@@ -144,11 +145,11 @@ public class TagList {
     public static <T> Object newUncheckedTag(List<T> list) {
         try {
             // List are heterogeneous since 1.21.5
-            if (ServerInstance.VERSION >= 21.04) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                 return newList.invoke(list);
             }
             final byte type = TagBase.getTypeId(list.get(0));
-            if (ServerInstance.MAJOR_VERSION >= 15) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
                 return newList.invoke(list, type);
             } else {
                 Object tag = newTag();
@@ -276,7 +277,7 @@ public class TagList {
     @Deprecated
     public static byte getType(Object tag) {
         // List are heterogeneous since 1.21.5
-        if (ServerInstance.VERSION >= 21.04) {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
             for (Object o : getValue(tag)) {
                 return TagBase.getTypeId(o);
             }
@@ -323,7 +324,7 @@ public class TagList {
      */
     public static void add(Object listTag, Object tag) {
         // List are heterogeneous since 1.21.5
-        if (ServerInstance.VERSION < 21.04) {
+        if (MC.version().isOlderThan(MC.V_1_21_5)) {
             final byte listType = getType0(listTag);
             if (listType == 0) {
                 setType0(listTag, TagBase.getTypeId(tag));
@@ -342,7 +343,7 @@ public class TagList {
      */
     public static void add(Object listTag, Object... tags) {
         // List are heterogeneous since 1.21.5
-        if (ServerInstance.VERSION < 21.04) {
+        if (MC.version().isOlderThan(MC.V_1_21_5)) {
             final byte listType = getType0(listTag);
             if (listType == 0) {
                 setType0(listTag, TagBase.getTypeId(tags[0]));
@@ -389,7 +390,7 @@ public class TagList {
     @Deprecated
     public static void setType(Object tag, byte type) {
         // List are heterogeneous since 1.21.5
-        if (ServerInstance.VERSION >= 21.04) {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
             return;
         }
         setType0(tag, type);
@@ -414,7 +415,7 @@ public class TagList {
             clear(tag);
         } else {
             try {
-                if (ServerInstance.VERSION < 21.04) {
+                if (MC.version().isOlderThan(MC.V_1_21_5)) {
                     final byte type = TagBase.getTypeId(list.get(0));
                     setTypeField.invoke(tag, type);
                 }

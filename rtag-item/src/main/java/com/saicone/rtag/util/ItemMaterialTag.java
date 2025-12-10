@@ -2,6 +2,8 @@ package com.saicone.rtag.util;
 
 import org.bukkit.Material;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -858,7 +860,7 @@ public enum ItemMaterialTag {
     MUSIC_DISC_CREATOR(21),
     MUSIC_DISC_CREATOR_MUSIC_BOX(21),
     MUSIC_DISC_FAR(13, "RECORD_FAR", 8, "RECORD_5"),
-    MUSIC_DISC_LAVA_CHICKEN(21.05f), // 1.21.7
+    MUSIC_DISC_LAVA_CHICKEN(MC.V_1_21_7),
     MUSIC_DISC_MALL(13, "RECORD_MALL", 8, "RECORD_6"),
     MUSIC_DISC_MELLOHI(13, "RECORD_MELLOHI", 8, "RECORD_7"),
     MUSIC_DISC_OTHERSIDE(18),
@@ -1547,20 +1549,17 @@ public enum ItemMaterialTag {
      */
     public static final Map<String, ItemMaterialTag> SERVER_VALUES;
 
-    private final TreeMap<Float, String> names;
-    private final String[] aliases;
-
     static {
         final Map<String, ItemMaterialTag> compatible = new HashMap<>();
         for (ItemMaterialTag tag : VALUES) {
-            final TreeMap<Float, String> names = tag.getNames();
+            final TreeMap<MC, Data> names = tag.getDataMap();
             // Fix legacy SPAWN_EGG entity name for MC 1.11 & 1.12
             if (tag.name().contains("SPAWN_EGG") && names.size() > 1) {
-                final float version = names.containsKey(11f) ? 11 : names.containsKey(10f) ? 10 : names.containsKey(9f) ? 9 : 0;
-                if (version != 0) {
-                    String entity = names.get(version).split("=", 2)[1].toLowerCase();
-                    names.put(11f, "SPAWN_EGG=minecraft:" + entity);
-                    names.put(12f, "SPAWN_EGG=" + entity);
+                final MC version = names.containsKey(MC.V_1_11) ? MC.V_1_11 : names.containsKey(MC.V_1_10) ? MC.V_1_10 : names.containsKey(MC.V_1_9) ? MC.V_1_9 : null;
+                if (version != null) {
+                    String entity = names.get(version).entity().toLowerCase();
+                    names.put(MC.V_1_11, Data.valueOf("SPAWN_EGG=minecraft:" + entity));
+                    names.put(MC.V_1_12, Data.valueOf("SPAWN_EGG=" + entity));
                 }
             }
             final String name = tag.getValidMaterial();
@@ -1571,6 +1570,12 @@ public enum ItemMaterialTag {
         SERVER_VALUES = compatible;
     }
 
+    private final TreeMap<MC, Data> dataMap;
+    private final String[] aliases;
+
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    private TreeMap<Float, String> names;
+
     /**
      * Change material name case without affecting entity ID (if contains it).
      *
@@ -1578,7 +1583,8 @@ public enum ItemMaterialTag {
      * @param upper True for uppercase.
      * @return A material name.
      */
-    public static String changeNameCase(String name, boolean upper) {
+    @NotNull
+    public static String changeNameCase(@NotNull String name, boolean upper) {
         String finalName = upper ? name.toUpperCase() : name.toLowerCase();
         if (name.contains("=")) {
             return finalName.split("=", 2)[0] + "=" + name.split("=", 2)[1];
@@ -1586,78 +1592,121 @@ public enum ItemMaterialTag {
         return finalName;
     }
 
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    ItemMaterialTag(int version, String name1, int ver1, String name2, int ver2, String... aliases) {
+        this(version, Map.of(name1, ver1, name2, ver2), aliases);
+    }
+
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    ItemMaterialTag(int version, String name1, int ver1, String... aliases) {
+        this(version, Map.of(name1, ver1), aliases);
+    }
+
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    ItemMaterialTag(int version, String... aliases) {
+        this.dataMap = new TreeMap<>();
+        dataMap.put(MC.find(MC::feature, version), Data.valueOf(this.name()));
+        this.aliases = aliases;
+    }
+
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    ItemMaterialTag(int version, Map<String, Integer> names, String... aliases) {
+        this.dataMap = new TreeMap<>();
+        this.dataMap.put(MC.find(MC::feature, version), Data.valueOf(this.name()));
+        names.forEach((name, ver) -> this.dataMap.put(MC.find(MC::feature, ver), Data.valueOf(name)));
+        this.aliases = aliases;
+    }
+
+    @Deprecated(since = "1.5.14", forRemoval = true)
     ItemMaterialTag(float version, String name1, float ver1, String name2, float ver2, String... aliases) {
         this(version, Map.of(name1, ver1, name2, ver2), aliases);
     }
 
+    @Deprecated(since = "1.5.14", forRemoval = true)
     ItemMaterialTag(float version, String name1, float ver1, String... aliases) {
         this(version, Map.of(name1, ver1), aliases);
     }
 
+    @Deprecated(since = "1.5.14", forRemoval = true)
     ItemMaterialTag(float version, String... aliases) {
-        this.names = new TreeMap<>();
-        names.put(version, this.name());
+        this.dataMap = new TreeMap<>();
+        dataMap.put(MC.findReverse(MC::featRevision, version), Data.valueOf(this.name()));
         this.aliases = aliases;
     }
 
+    @Deprecated(since = "1.5.14", forRemoval = true)
     ItemMaterialTag(float version, Map<String, Float> names, String... aliases) {
-        this.names = new TreeMap<>();
-        this.names.put(version, this.name());
-        names.forEach((name, ver) -> this.names.put(ver, name));
+        this.dataMap = new TreeMap<>();
+        this.dataMap.put(MC.findReverse(MC::featRevision, version), Data.valueOf(this.name()));
+        names.forEach((name, ver) -> this.dataMap.put(MC.findReverse(MC::featRevision, ver), Data.valueOf(name)));
+        this.aliases = aliases;
+    }
+
+    ItemMaterialTag(@NotNull MC version, @NotNull String name1, @NotNull MC ver1, @NotNull String name2, @NotNull MC ver2, @NotNull String... aliases) {
+        this(version, Map.of(name1, ver1, name2, ver2), aliases);
+    }
+
+    ItemMaterialTag(@NotNull MC version, @NotNull String name1, @NotNull MC ver1, @NotNull String... aliases) {
+        this(version, Map.of(name1, ver1), aliases);
+    }
+
+    ItemMaterialTag(@NotNull MC version, @NotNull String... aliases) {
+        this.dataMap = new TreeMap<>();
+        dataMap.put(version, Data.valueOf(this.name()));
+        this.aliases = aliases;
+    }
+
+    ItemMaterialTag(@NotNull MC version, @NotNull Map<String, MC> names, @NotNull String... aliases) {
+        this.dataMap = new TreeMap<>();
+        this.dataMap.put(version, Data.valueOf(this.name()));
+        names.forEach((name, ver) -> this.dataMap.put(ver, Data.valueOf(name)));
         this.aliases = aliases;
     }
 
     /**
-     * Get current map with material names and version.
+     * Get current material data based on current minecraft version.
      *
-     * @return A TreeMap with material names.
+     * @return material data or null if not found.
      */
-    public TreeMap<Float, String> getNames() {
-        return names;
-    }
-
-    /**
-     * Get current material aliases.
-     *
-     * @return An array of material aliases.
-     */
-    public String[] getAliases() {
-        return aliases;
-    }
-
-    /**
-     * Get valid material name for current server version or null
-     * if the required material cannot be found.
-     *
-     * @return A material name or null.
-     */
-    public String getValidMaterial() {
-        return getValidMaterial(ServerInstance.VERSION);
-    }
-
-    /**
-     * Get value material name for provided server version or null
-     * if the required material cannot be found.
-     *
-     * @param serverVersion The server version to check.
-     * @return              A material name or null.
-     */
+    @Nullable
     @ApiStatus.Experimental
-    public String getValidMaterial(float serverVersion) {
-        for (Float version : names.descendingKeySet()) {
+    public Data getData() {
+        return getDataFor(MC.version());
+    }
+
+    /**
+     * Get current map containing material data based on minecraft versions.
+     *
+     * @return a TreeMap with material data.
+     */
+    @NotNull
+    public TreeMap<MC, Data> getDataMap() {
+        return dataMap;
+    }
+
+    /**
+     * Get current material data for provided server version or null if the required material cannot be found.
+     *
+     * @param serverVersion the server version to check.
+     * @return              a material data or null.
+     */
+    @Nullable
+    @ApiStatus.Experimental
+    public Data getDataFor(@NotNull MC serverVersion) {
+        for (MC version : dataMap.descendingKeySet()) {
             // Found valid version
-            if (version <= serverVersion) {
-                final String s = names.get(version);
+            if (version.isOlderThanOrEquals(serverVersion)) {
+                final Data data = dataMap.get(version);
                 // Find valid material using minecraft names as aliases
-                for (String name : names.values()) {
-                    if (Material.getMaterial(name.split("=", 2)[0].split(":", 2)[0]) != null) {
-                        return s;
+                for (Data name : dataMap.values()) {
+                    if (Material.getMaterial(name.id.toUpperCase()) != null) {
+                        return data;
                     }
                 }
                 // Find valid material using aliases
                 for (String alias : aliases) {
                     if (Material.getMaterial(alias) != null) {
-                        return s;
+                        return data;
                     }
                 }
                 // There's not a valid material found (Maybe Rtag version is too old for the current server?)
@@ -1668,13 +1717,84 @@ public enum ItemMaterialTag {
     }
 
     /**
+     * Get current material aliases.
+     *
+     * @return an array of material aliases.
+     */
+    @NotNull
+    public String[] getAliases() {
+        return aliases;
+    }
+
+    /**
      * Checks if this ItemMaterialTag is valid for current server version
      * by trying to find an existing Bukkit {@link Material}.
      *
-     * @return True if is valid.
+     * @return true if is valid.
      */
     public boolean isValid() {
-        return getValidMaterial(ServerInstance.VERSION) != null;
+        return getDataFor(MC.version()) != null;
+    }
+
+    /**
+     * Checks if this ItemMaterialTag is valid for provided server version
+     * by trying to find an existing Bukkit {@link Material}.
+     *
+     * @param version the server version to check.
+     * @return        true if is valid.
+     */
+    public boolean isValid(@NotNull MC version) {
+        return getDataFor(version) != null;
+    }
+
+    /**
+     * Get current map with material names and version.
+     *
+     * @return A TreeMap with material names.
+     *
+     * @deprecated use {@link #getDataMap()} instead.
+     */
+    @NotNull
+    @Deprecated(since = "1.5.14")
+    public TreeMap<Float, String> getNames() {
+        if (names == null) {
+            names = new TreeMap<>();
+            for (Map.Entry<MC, Data> entry : dataMap.entrySet()) {
+                names.put(entry.getKey().featRevision(), entry.getValue().formatted());
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Get valid material name for current server version or null
+     * if the required material cannot be found.
+     *
+     * @return A material name or null.
+     *
+     * @deprecated use {@link #getData()} instead.
+     */
+    @Nullable
+    @Deprecated(since = "1.5.14")
+    public String getValidMaterial() {
+        final Data data = getDataFor(MC.version());
+        return data == null ? null : data.formatted();
+    }
+
+    /**
+     * Get value material name for provided server version or null
+     * if the required material cannot be found.
+     *
+     * @param serverVersion The server version to check.
+     * @return              A material name or null.
+     *
+     * @deprecated use {@link #getDataFor(MC)} instead.
+     */
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
+    public String getValidMaterial(float serverVersion) {
+        final Data data = getDataFor(MC.findReverse(MC::featRevision, serverVersion));
+        return data == null ? null : data.formatted();
     }
 
     /**
@@ -1683,9 +1803,108 @@ public enum ItemMaterialTag {
      *
      * @param serverVersion The server version to check.
      * @return              True if is valid.
+     *
+     * @deprecated use {@link #isValid(MC)} instead.
      */
-    @ApiStatus.Experimental
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     public boolean isValid(float serverVersion) {
         return getValidMaterial(serverVersion) != null;
+    }
+
+    /**
+     * Data class that represent an item ID.
+     */
+    @ApiStatus.Experimental
+    public static class Data {
+
+        @NotNull
+        public static Data valueOf(@NotNull String id) {
+            String entity = null;
+            if (id.contains("=")) {
+                final int index = id.indexOf('=');
+                entity = id.substring(index + 1);
+                id = id.substring(0, index);
+            }
+
+            Short damage = null;
+            if (id.contains(":")) {
+                final int index = id.indexOf(':');
+                damage = Short.parseShort(id.substring(index + 1));
+                id = id.substring(0, index);
+            }
+
+            return new Data(id.toLowerCase(), damage, entity);
+        }
+
+        private final String id;
+        private final Short damage;
+        private final String entity;
+
+        private transient final String formatted;
+
+        /**
+         * Constructs a data instance with the given parameters.
+         *
+         * @param id     the item id.
+         * @param damage the item damage value.
+         * @param entity the entity id (for legacy spawn eggs).
+         */
+        public Data(@NotNull String id, @Nullable Short damage, @Nullable String entity) {
+            this.id = id;
+            this.damage = damage;
+            this.entity = entity;
+
+            final StringBuilder builder = new StringBuilder();
+            builder.append(id.toUpperCase());
+            if (damage != null) {
+                builder.append(":").append(damage);
+            }
+            if (entity != null) {
+                builder.append("=").append(entity);
+            }
+            this.formatted = builder.toString();
+        }
+
+        /**
+         * Get the item id.
+         *
+         * @return the item id.
+         */
+        @NotNull
+        public String id() {
+            return id;
+        }
+
+        /**
+         * Get the item damage value.
+         *
+         * @return the item damage value.
+         */
+        @Nullable
+        public Short damage() {
+            return damage;
+        }
+
+        /**
+         * Get the entity id (for legacy spawn eggs).
+         *
+         * @return the entity id.
+         */
+        @Nullable
+        public String entity() {
+            return entity;
+        }
+
+        /**
+         * Get the formatted item id.
+         *
+         * @return the formatted item id.
+         */
+        @NotNull
+        @ApiStatus.Internal
+        public String formatted() {
+            return formatted;
+        }
     }
 }

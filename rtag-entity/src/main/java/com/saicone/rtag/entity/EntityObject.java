@@ -5,6 +5,7 @@ import com.saicone.rtag.registry.IOValue;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ProblemReporter;
 import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.Bukkit;
@@ -29,11 +30,11 @@ public class EntityObject {
             EasyLookup.addOBCClass("CraftServer");
             EasyLookup.addOBCClass("entity.CraftEntity");
 
-            if (ServerInstance.MAJOR_VERSION >= 16) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_16)) {
                 EasyLookup.addNMSClass("core.IRegistryCustom", "RegistryAccess");
             }
 
-            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                 EasyLookup.addNMSClass("world.level.storage.ValueInput");
                 EasyLookup.addNMSClass("world.level.storage.ValueOutput");
             }
@@ -79,72 +80,72 @@ public class EntityObject {
                 load = "load";
                 registryAccess = "registryAccess";
             } else {
-                if (ServerInstance.MAJOR_VERSION >= 9) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_9)) {
                     getEncodeId = "as";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 10) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_10)) {
                     getEncodeId = "at";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 12) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_12)) {
                     getEncodeId = "getSaveID";
                     saveWithoutId = "save";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 16) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_16)) {
                     saveAsPassenger = "a_";
                     load = "load";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 17) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_17)) {
                     saveAsPassenger = "d";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 18) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
                     getEncodeId = "bk";
                     saveWithoutId = "f";
                     load = "g";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 19) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19)) {
                     getEncodeId = "bn";
                 }
-                if (ServerInstance.VERSION >= 19.02f) { // 1.19.3
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) { // 1.19.3
                     getEncodeId = "bq";
                 }
-                if (ServerInstance.VERSION >= 19.03f) { // 1.19.4
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) { // 1.19.4
                     getEncodeId = "bp";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 20) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20)) {
                     getEncodeId = "br";
                 }
-                if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                     getEncodeId = "bu";
                     saveAsPassenger = "saveAsPassenger";
                     saveWithoutId = "saveWithoutId";
                 }
-                if (ServerInstance.VERSION >= 20.03f) { // 1.20.3
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_3)) { // 1.20.3
                     getEncodeId = "bw";
                 }
-                if (ServerInstance.VERSION >= 20.04f) { // 1.20.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_5)) { // 1.20.5
                     getEncodeId = "bC";
                 }
-                if (ServerInstance.MAJOR_VERSION >= 21) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
                     getEncodeId = "bD";
                     registryAccess = "dQ";
                 }
-                if (ServerInstance.VERSION >= 21.02f) { // 1.21.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
                     getEncodeId = "bK";
                     registryAccess = "dY";
                 }
-                if (ServerInstance.VERSION >= 21.03f) { // 1.21.4
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) { // 1.21.4
                     registryAccess = "dX";
                 }
-                if (ServerInstance.VERSION >= 21.04f) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
                     getEncodeId = "bI";
                     load = "i";
                 }
-                if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                     getEncodeId = "bN";
                     load = "e";
                     registryAccess = "eb";
                 }
-                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) { // 1.21.9
                     getEncodeId = "bW";
                     load = "d";
                     registryAccess = "ej";
@@ -154,48 +155,48 @@ public class EntityObject {
             method$getEntity = EasyLookup.staticMethod("CraftEntity", "getEntity", "CraftEntity", "CraftServer", "Entity");
             method$getHandle = EasyLookup.method("CraftEntity", "getHandle", "Entity");
 
-            if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
                 method$getEncodeId = EasyLookup.method("Entity", getEncodeId, String.class, boolean.class);
             } else {
                 method$getEncodeId = EasyLookup.method("Entity", getEncodeId, String.class);
             }
 
-            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                 if (ServerInstance.Platform.PAPER) {
                     method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "ValueOutput", boolean.class, boolean.class, boolean.class);
                 } else {
                     method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "ValueOutput", boolean.class);
                 }
-            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
                 method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound", boolean.class, boolean.class, boolean.class);
-            } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                 method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound", boolean.class);
             } else {
                 method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound");
             }
 
-            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                 if (ServerInstance.Platform.PAPER) {
                     method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, void.class, "ValueOutput", boolean.class, boolean.class, boolean.class);
                 } else {
                     method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, void.class, "ValueOutput", boolean.class);
                 }
-            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
                 method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound", boolean.class, boolean.class, boolean.class);
-            } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                 method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound", boolean.class);
             } else {
                 // (1.8) void method
                 method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound");
             }
 
-            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                 method$load = EasyLookup.method("Entity", load, void.class, "ValueInput");
             } else {
                 method$load = EasyLookup.method("Entity", load, void.class, "NBTTagCompound");
             }
 
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 method$registryAccess = EasyLookup.method("Entity", registryAccess, "IRegistryCustom");
             }
         } catch (NoSuchMethodException | IllegalAccessException e) {
@@ -285,7 +286,7 @@ public class EntityObject {
      */
     public static String getEncodeId(Object entity, boolean includeNonSaveable) {
         try {
-            if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
                 return (String) getEncodeId.invoke(entity, includeNonSaveable);
             } else {
                 return (String) getEncodeId.invoke(entity);
@@ -353,7 +354,7 @@ public class EntityObject {
      */
     public static boolean saveAsPassenger(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         try {
-            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                 final Object registry = registryAccess.invoke(entity);
                 final Object output = IOValue.createOutputWrapping(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), compound);
                 if (ServerInstance.Platform.PAPER) {
@@ -361,9 +362,9 @@ public class EntityObject {
                 } else {
                     return (boolean) saveAsPassenger.invoke(entity, output, includeAll);
                 }
-            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
                 return (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag(), includeAll, includeNonSaveable, forceSerialization);
-            } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                 return (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag(), includeAll);
             } else {
                 final boolean result = (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag());
@@ -402,7 +403,7 @@ public class EntityObject {
      */
     public static Object saveWithoutId(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         try {
-            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                 final Object registry = registryAccess.invoke(entity);
                 final Object output = IOValue.createOutputWrapping(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), compound);
                 if (ServerInstance.Platform.PAPER) {
@@ -411,9 +412,9 @@ public class EntityObject {
                     saveWithoutId.invoke(entity, output, includeAll);
                 }
                 return IOValue.result(output);
-            } else if (ServerInstance.VERSION >= 21.03f && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
                 return saveWithoutId.invoke(entity, compound, includeAll, includeNonSaveable, forceSerialization);
-            } else if (ServerInstance.VERSION >= 20.02f) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
                 return saveWithoutId.invoke(entity, compound, includeAll);
             } else {
                 saveWithoutId.invoke(entity, compound);
@@ -435,7 +436,7 @@ public class EntityObject {
      */
     public static void load(Object entity, Object tag) {
         try {
-            if (ServerInstance.VERSION >= 21.05f) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
                 final Object registry = registryAccess.invoke(entity);
                 load.invoke(entity, IOValue.createInput(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), tag));
             } else {

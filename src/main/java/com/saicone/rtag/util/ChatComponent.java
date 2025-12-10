@@ -41,11 +41,11 @@ public class ChatComponent {
     static {
         try {
             EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
-            if (ServerInstance.VERSION < 21.05f) { // Since 1.21.6 this class doesn't exist
+            if (MC.version().isOlderThan(MC.V_1_21_6)) { // Since 1.21.6 this class doesn't exist
                 EasyLookup.addNMSClassId("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer", "network.chat.Component$Serializer");
             }
             EasyLookup.addOBCClass("util.CraftChatMessage");
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 EasyLookup.addNMSClass("network.chat.ComponentSerialization");
             }
         } catch (ClassNotFoundException e) {
@@ -108,7 +108,7 @@ public class ChatComponent {
                 codec = "CODEC";
             }
 
-            if (ServerInstance.MAJOR_VERSION >= 13) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
                 method$fromString = EasyLookup.staticMethod("CraftChatMessage", "fromStringOrNull", "IChatBaseComponent", String.class);
             } else {
                 // Unreflect reason:
@@ -117,7 +117,7 @@ public class ChatComponent {
             }
             method$fromComponent = EasyLookup.staticMethod("CraftChatMessage", "fromComponent", String.class, "IChatBaseComponent");
 
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 component$codec = EasyLookup.staticGetter("ComponentSerialization", codec, Codec.class);
             } else {
                 // Unreflect reason:
@@ -187,7 +187,7 @@ public class ChatComponent {
             if (json == null || json.isEmpty()) {
                 return null;
             }
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 JsonElement element;
                 try {
                     element = new JsonParser().parse(json);
@@ -199,7 +199,7 @@ public class ChatComponent {
                 if (element == null) {
                     return null;
                 }
-                if (ServerInstance.VERSION >= 21.04f) {
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                     updateJson(element);
                 }
                 return Serialization.parseJson(element);
@@ -365,7 +365,7 @@ public class ChatComponent {
      */
     public static Object fromString(String string) {
         try {
-            if (ServerInstance.MAJOR_VERSION >= 13) {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
                 return fromString.invoke(string);
             } else {
                 return string == null || string.isEmpty() ? null : ((Object[]) fromString.invoke(string))[0];
@@ -384,7 +384,7 @@ public class ChatComponent {
      */
     public static Object fromTag(Object tag) {
         final Object currentTag;
-        if (ServerInstance.VERSION < 21.04f) {
+        if (MC.version().isOlderThan(MC.V_1_21_5)) {
             if (TagList.isTagList(tag)) {
                 currentTag = downgradeTagList(TagList.clone(tag));
             } else if (TagCompound.isTagCompound(tag)) {
@@ -395,7 +395,7 @@ public class ChatComponent {
         } else {
             currentTag = tag;
         }
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             return Serialization.parseNbt(currentTag);
         } else {
             return fromJson(GSON.toJson(tagToJson(currentTag)));
@@ -594,7 +594,7 @@ public class ChatComponent {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
         try {
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 final JsonElement element = Serialization.encodeJson(component);
                 return GSON.toJson(element);
             } else {
@@ -671,7 +671,7 @@ public class ChatComponent {
         if (!CHAT_BASE_COMPONENT.isInstance(component)) {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
-        if (ServerInstance.Release.COMPONENT) {
+        if (MC.version().isComponent()) {
             try {
                 return Serialization.encodeNbt(component);
             } catch (Throwable t) {

@@ -67,7 +67,7 @@ public class SkullTexture {
         try {
             EasyLookup.addOBCClass("entity.CraftPlayer");
             EasyLookup.addOBCClass("inventory.CraftMetaSkull");
-            if (ServerInstance.Release.COMPONENT) {
+            if (MC.version().isComponent()) {
                 EasyLookup.addNMSClass("world.item.component.ResolvableProfile");
             }
         } catch (ClassNotFoundException e) {
@@ -97,7 +97,7 @@ public class SkullTexture {
 
             if (ServerInstance.Type.MOJANG_MAPPED) {
                 partialProfile = "gameProfile";
-                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
                     createResolved = "createResolved";
                     createUnresolved$name = "createUnresolved";
                     createUnresolved$id = "createUnresolved";
@@ -105,7 +105,7 @@ public class SkullTexture {
                 }
             } else {
                 partialProfile = "f";
-                if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
                     createResolved = "a";
                     createUnresolved$name = "a";
                     createUnresolved$id = "a";
@@ -113,12 +113,12 @@ public class SkullTexture {
                 }
             }
 
-            if (ServerInstance.VERSION >= 21.06f) { // 1.21.9
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
                 $createResolved = EasyLookup.staticMethod("ResolvableProfile", createResolved, "ResolvableProfile", GameProfile.class);
                 $createUnresolved$name = EasyLookup.staticMethod("ResolvableProfile", createUnresolved$name, "ResolvableProfile", String.class);
                 $createUnresolved$id = EasyLookup.staticMethod("ResolvableProfile", createUnresolved$id, "ResolvableProfile", UUID.class);
                 $partialProfile = EasyLookup.method("ResolvableProfile", partialProfile, GameProfile.class);
-            } else if (ServerInstance.Release.COMPONENT) {
+            } else if (MC.version().isComponent()) {
                 $createResolved = EasyLookup.constructor("ResolvableProfile", GameProfile.class);
                 $partialProfile = EasyLookup.getter("ResolvableProfile", partialProfile, GameProfile.class);
             }
@@ -171,7 +171,7 @@ public class SkullTexture {
             // Private method/field
             if (useResolvableProfile) { // +1.21.1 (latest builds)
                 $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", "ResolvableProfile");
-            } else if (ServerInstance.MAJOR_VERSION >= 15) {
+            } else if (MC.version().isOlderThanOrEquals(MC.V_1_15)) {
                 $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
             } else {
                 $setProfile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
@@ -189,7 +189,7 @@ public class SkullTexture {
 
     private static final JsonParser JSON_PARSER = new JsonParser();
     private static final Supplier<ItemStack> PLAYER_HEAD = () -> {
-        if (ServerInstance.Release.FLAT) {
+        if (MC.version().isFlat()) {
             return new ItemStack(Material.PLAYER_HEAD);
         } else {
             return new ItemStack(Material.getMaterial("SKULL_ITEM"), 1, (short) 3);
@@ -591,7 +591,7 @@ public class SkullTexture {
         }
         try {
             if (USE_RESOLVABLE_PROFILE) {
-                if (profile.isStatic() || ServerInstance.VERSION < 21.06f) { // 1.21.9
+                if (profile.isStatic() || MC.version().isOlderThan(MC.V_1_21_9)) {
                     CraftMetaSkull_setProfile.invoke(meta, ResolvableProfile_createResolved.invoke(profile.getProfile()));
                 } else {
                     if (profile.getUniqueId() == null) {

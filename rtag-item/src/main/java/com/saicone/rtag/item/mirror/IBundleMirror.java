@@ -26,7 +26,7 @@ public class IBundleMirror implements ItemMirror {
      * @param stream ItemTagStream instance.
      */
     public IBundleMirror(ItemTagStream stream) {
-        this(stream, ServerInstance.VERSION >= 20.04f);
+        this(stream, MC.version().isNewerThanOrEquals(MC.V_1_20_5));
     }
 
     /**
