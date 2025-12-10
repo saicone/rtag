@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -1562,9 +1563,9 @@ public enum ItemMaterialTag {
                     names.put(MC.V_1_12, Data.valueOf("SPAWN_EGG=" + entity));
                 }
             }
-            final String name = tag.getValidMaterial();
+            final Data name = tag.getData();
             if (name != null) {
-                compatible.put("minecraft:" + changeNameCase(name, false), tag);
+                compatible.put(name.id(), tag);
             }
         }
         SERVER_VALUES = compatible;
@@ -1818,8 +1819,25 @@ public enum ItemMaterialTag {
     @ApiStatus.Experimental
     public static class Data {
 
+        private static final Data EMPTY = new Data("", null, null) {
+            @Override
+            public boolean isEmpty() {
+                return true;
+            }
+        };
+
         @NotNull
-        public static Data valueOf(@NotNull String id) {
+        public static Data empty() {
+            return EMPTY;
+        }
+
+        @NotNull
+        @ApiStatus.Internal
+        public static Data valueOf(@Nullable String id) {
+            if (id == null) {
+                return empty();
+            }
+
             String entity = null;
             if (id.contains("=")) {
                 final int index = id.indexOf('=');
@@ -1829,12 +1847,16 @@ public enum ItemMaterialTag {
 
             Short damage = null;
             if (id.contains(":")) {
-                final int index = id.indexOf(':');
+                final int index = id.lastIndexOf(':');
                 damage = Short.parseShort(id.substring(index + 1));
                 id = id.substring(0, index);
             }
 
-            return new Data(id.toLowerCase(), damage, entity);
+            if (id.isBlank()) {
+                return empty();
+            }
+
+            return new Data((id.contains(":") ? "" : "minecraft:") + id.toLowerCase(), damage, entity);
         }
 
         private final String id;
@@ -1856,7 +1878,7 @@ public enum ItemMaterialTag {
             this.entity = entity;
 
             final StringBuilder builder = new StringBuilder();
-            builder.append(id.toUpperCase());
+            builder.append((id.contains(":") ? id.split(":")[1] : id).toUpperCase());
             if (damage != null) {
                 builder.append(":").append(damage);
             }
@@ -1864,6 +1886,10 @@ public enum ItemMaterialTag {
                 builder.append("=").append(entity);
             }
             this.formatted = builder.toString();
+        }
+
+        public boolean isEmpty() {
+            return false;
         }
 
         /**
@@ -1905,6 +1931,37 @@ public enum ItemMaterialTag {
         @ApiStatus.Internal
         public String formatted() {
             return formatted;
+        }
+
+        @NotNull
+        public Data withDamage(@Nullable Short damage) {
+            return new Data(this.id, damage, this.entity);
+        }
+
+        @NotNull
+        public Data withEntity(@Nullable String entity) {
+            return new Data(this.id, this.damage, entity);
+        }
+
+        @Override
+        public String toString() {
+            return this.id + (this.damage == null ? "" : ":" + this.damage) + (this.entity == null ? "" : "=" + this.entity);
+        }
+
+        @Override
+        public final boolean equals(Object object) {
+            if (!(object instanceof Data)) return false;
+
+            Data data = (Data) object;
+            return id.equals(data.id) && Objects.equals(damage, data.damage) && Objects.equals(entity, data.entity);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = id.hashCode();
+            result = 31 * result + Objects.hashCode(damage);
+            result = 31 * result + Objects.hashCode(entity);
+            return result;
         }
     }
 }

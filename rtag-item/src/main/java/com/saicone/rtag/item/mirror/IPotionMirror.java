@@ -4,6 +4,9 @@ import com.saicone.rtag.Rtag;
 import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
+import com.saicone.rtag.util.MC;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,14 +60,14 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public float getDeprecationVersion() {
-        return 20;
+    public @NotNull MC getMaximumVersion() {
+        return MC.V_1_20;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
-        if (from <= 20.01f && POTION_ITEMS.contains(id)) {
-            if (to >= 20.02f) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (from.isOlderThan(MC.V_1_20_2) && POTION_ITEMS.contains(id)) {
+            if (to.isNewerThanOrEquals(MC.V_1_20_2)) {
                 final Map<String, Object> map = TagCompound.getValue(components);
                 if (map.containsKey("CustomPotionEffects")) {
                     final Object customPotionEffects = map.remove("CustomPotionEffects");
@@ -76,8 +79,8 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, float from, float to) {
-        if (convertDamage && to >= 9f && from < 9f && id.equals("minecraft:potion")) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull MC from, @NotNull MC to) {
+        if (convertDamage && to.isNewerThanOrEquals(MC.V_1_9) && from.isOlderThan(MC.V_1_9) && id.equals("minecraft:potion")) {
             upgrade(compound);
         }
     }
@@ -95,16 +98,16 @@ public class IPotionMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (to <= 20.01f && POTION_ITEMS.contains(id)) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (to.isOlderThan(MC.V_1_20_2) && POTION_ITEMS.contains(id)) {
             final Map<String, Object> map = TagCompound.getValue(components);
-            if (from >= 20.02f) {
+            if (from.isNewerThanOrEquals(MC.V_1_20_2)) {
                 if (map.containsKey("custom_potion_effects")) {
                     final Object customPotionEffects = map.remove("custom_potion_effects");
                     map.put("CustomPotionEffects", customPotionEffects);
                 }
             }
-            if (from >= 9f && to < 9f && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
+            if (from.isNewerThanOrEquals(MC.V_1_9) && to.isOlderThan(MC.V_1_9) && (id.equals("minecraft:potion") || id.equals("minecraft:splash_potion"))) {
                 if (id.equals("minecraft:splash_potion")) {
                     TagCompound.set(compound, "id", POTION);
                 }
@@ -127,6 +130,7 @@ public class IPotionMirror implements ItemMirror {
      * @param damage Potion item damage.
      * @return       A potion name.
      */
+    @ApiStatus.Internal
     public String getPotion(int damage) {
         return (String) cache.computeIfAbsent(damage, __ -> {
             for (PotionType type : PotionType.VALUES) {
@@ -145,6 +149,7 @@ public class IPotionMirror implements ItemMirror {
      * @param potion Potion name.
      * @return       A item damage number.
      */
+    @ApiStatus.Internal
     public int getDamage(String id, String potion) {
         return (int) cache.computeIfAbsent(id + "=" + potion, __ -> {
             String potionType = potion.replace("minecraft:", "").toUpperCase();
@@ -167,6 +172,7 @@ public class IPotionMirror implements ItemMirror {
      *
      * @author Rubenicos
      */
+    @ApiStatus.Internal
     public enum PotionType {
 
         MUNDANE(64),
@@ -223,6 +229,7 @@ public class IPotionMirror implements ItemMirror {
          *
          * @return A item damage number.
          */
+        @ApiStatus.Internal
         public int getPotion() {
             return potion;
         }
@@ -232,6 +239,7 @@ public class IPotionMirror implements ItemMirror {
          *
          * @return A item damage number.
          */
+        @ApiStatus.Internal
         public int getSplash() {
             return splash;
         }

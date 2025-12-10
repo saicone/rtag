@@ -1,12 +1,15 @@
 package com.saicone.rtag.item;
 
-import com.saicone.rtag.Rtag;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.ItemMaterialTag;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.MC;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,15 +25,19 @@ import java.util.function.Predicate;
  */
 public class ItemData {
 
+    /**
+     * Default key to save item data version.
+     */
+    public static final String VERSION_KEY = "DataVersion";
     private static final String ROOT_PATH = "==root";
 
     // Paths
     private static final Map<String, Object> COMPONENT_PATHS = new LinkedHashMap<>();
     private static final Map<String, Object> TAG_PATHS = new LinkedHashMap<>();
     // Detectors
-    private static final TreeMap<Float, Predicate<Map<String, Object>>> COMPONENT_DETECTORS = new TreeMap<>(Comparator.reverseOrder()) {
+    private static final TreeMap<MC, Predicate<Map<String, Object>>> COMPONENT_DETECTORS = new TreeMap<>(Comparator.reverseOrder()) {
         @Override
-        public Predicate<Map<String, Object>> put(Float key, Predicate<Map<String, Object>> value) {
+        public Predicate<Map<String, Object>> put(MC key, Predicate<Map<String, Object>> value) {
             if (containsKey(key)) {
                 final Predicate<Map<String, Object>> predicate = remove(key);
                 return super.put(key, map -> predicate.test(map) || value.test(map));
@@ -38,9 +45,9 @@ public class ItemData {
             return super.put(key, value);
         }
     };
-    private static final TreeMap<Float, Predicate<Map<String, Object>>> TAG_DETECTORS = new TreeMap<>(Comparator.reverseOrder()) {
+    private static final TreeMap<MC, Predicate<Map<String, Object>>> TAG_DETECTORS = new TreeMap<>(Comparator.reverseOrder()) {
         @Override
-        public Predicate<Map<String, Object>> put(Float key, Predicate<Map<String, Object>> value) {
+        public Predicate<Map<String, Object>> put(MC key, Predicate<Map<String, Object>> value) {
             if (containsKey(key)) {
                 final Predicate<Map<String, Object>> predicate = remove(key);
                 return super.put(key, map -> predicate.test(map) || value.test(map));
@@ -200,27 +207,65 @@ public class ItemData {
      * @param compound NBTTagCompound that represent an item.
      * @return         A valid version number or null.
      */
-    public static Float getItemVersion(Object compound) {
+    @Nullable
+    @Contract("null -> null")
+    @Deprecated(since = "1.5.14")
+    public static Float getItemVersion(@Nullable Object compound) {
+        final MC version = lookupVersion(compound);
+        return version == null ? null : version.featRevision();
+    }
+
+    /**
+     * Lookup item version number by reading its data.
+     *
+     * @param compound a tag compound that represents item data.
+     * @return         the found version if found, null otherwise.
+     */
+    @Nullable
+    @Contract("null -> null")
+    public static MC lookupVersion(@Nullable Object compound) {
         if (compound == null) {
             return null;
         }
-        final Map<String, Object> value = TagCompound.getValue(compound);
+        return lookupVersion(TagCompound.getValue(compound));
+    }
+
+    /**
+     * Lookup item version number by reading its data.
+     *
+     * @param value a tag compound value that represents item data.
+     * @return      the found version if found, null otherwise.
+     */
+    @Nullable
+    @ApiStatus.Internal
+    public static MC lookupVersion(@NotNull Map<String, Object> value) {
         if (value.isEmpty()) {
             return null;
         }
-        Object providedVersion = TagBase.getValue(value.get("DataVersion"));
-        if (providedVersion == null) {
-            providedVersion = TagBase.getValue(value.get("v"));
+        Object providedVersion = TagBase.getValue(value.get("rtagDataVersion"));
+        if (providedVersion instanceof Integer) {
+            return MC.findReverse(MC::feature, providedVersion);
+        } else if (providedVersion instanceof Number) {
+            final float num = ((Number) providedVersion).floatValue();
+            if (num % 1 >= 0.01f) {
+                return MC.findReverse(MC::featRevision, num);
+            } else {
+                return MC.findReverse(MC::feature, (int) num);
+            }
+        } else {
+            providedVersion = TagBase.getValue(value.get(VERSION_KEY));
+            if (providedVersion == null) {
+                providedVersion = TagBase.getValue(value.get("v"));
+            }
         }
 
         if (providedVersion instanceof Number) {
             final int dataVersion = ((Number) providedVersion).intValue();
-            final int release = ServerInstance.release(dataVersion);
-            return Float.parseFloat(ServerInstance.verNumber(dataVersion) + "." + (release < 10 ? "0" : "") + release);
+            return MC.findReverse(MC::dataVersion, dataVersion);
         }
 
         // Calculate the minimum version
-        final Float detectedVersion = detectVersion(compound, value);
+        final MC detectedVersion = detectVersion(value);
 
         // Get full item id
         String id = (String) TagBase.getValue(value.get("id"));
@@ -230,112 +275,119 @@ public class ItemData {
         if (id.startsWith("minecraft:")) {
             id = id.substring(10);
         }
-        if (detectedVersion != null && detectedVersion < 13f) {
-            final int damage = Rtag.INSTANCE.getOptional(compound, "Damage").asInt(0);
-            if (damage > 0) {
+        if (detectedVersion != null && detectedVersion.isLegacy()) {
+            final Object damage = TagBase.getValue(value.get("Damage"));
+            if (damage instanceof Number && ((Number) damage).intValue() > 0) {
                 id = id + ":" + damage;
             }
         }
 
         // Compare material version with detected version
-        final Float materialVersion = findMaterialVersion(id, detectedVersion == null ? 8f : detectedVersion);
-        final float finalVersion = Math.max(detectedVersion == null ? 0f : detectedVersion, materialVersion == null ? 0f : materialVersion);
+        final MC materialVersion = findMaterialVersion(id, detectedVersion == null ? MC.first() : detectedVersion);
 
-        return finalVersion > 0 ? finalVersion : null;
+        return MC.max(detectedVersion, materialVersion);
     }
 
-    private static Float detectVersion(Object compound, Map<String, Object> value) {
+    @Nullable
+    private static MC detectVersion(@NotNull Map<String, Object> value) {
         // Detect by item components
         final Object components = value.get("components");
         if (components != null || TagBase.getValue(value.get("count")) instanceof Integer) {
-            final Float version = detectComponentVersion(components);
-            return version == null ? 20.04f : version;
+            final MC version = detectComponentVersion(components);
+            return version == null ? MC.V_1_20_5 : version;
         }
 
         // Detect by old tag value
-        final Float version = detectTagVersion(value.get("tag"));
-        if (version == null || version < 9.01f) {
+        final MC version = detectTagVersion(value.get("tag"));
+        if (version == null || version.isOlderThan(MC.V_1_9)) {
             // Detect by old entity tag
-            String entity = Rtag.INSTANCE.get(compound, "EntityTag", "id");
-            if (entity != null) {
-                if (entity.equals(entity.toLowerCase())) {
-                    if (entity.startsWith("minecraft:")) {
-                        return 11.01f;
+            final Object entityTag = value.get("EntityTag");
+            if (TagCompound.isTagCompound(entityTag)) {
+                String entity = (String) TagBase.getValue(TagCompound.get(entityTag, "id"));
+                if (entity != null) {
+                    if (entity.equals(entity.toLowerCase())) {
+                        if (entity.startsWith("minecraft:")) {
+                            return MC.V_1_11;
+                        } else {
+                            return MC.V_1_12;
+                        }
                     } else {
-                        return 12.01f;
+                        return MC.V_1_9;
                     }
-                } else {
-                    return 9.01f;
                 }
             }
         }
         return version;
     }
 
-    private static Float detectComponentVersion(Object compound) {
+    @Nullable
+    private static MC detectComponentVersion(@Nullable Object compound) {
         if (compound == null) {
             return null;
         }
-        Float result = null;
+        MC result = null;
         final Map<String, Object> components = TagCompound.getValue(compound);
         if (components.containsKey("minecraft:bundle_contents")) {
             result = detectListVersion(components.get("minecraft:bundle_contents"), null);
         }
         if (components.containsKey("minecraft:container")) {
-            result = maxVersion(result, detectListVersion(components.get("minecraft:container"), "item"));
+            result = MC.max(result, detectListVersion(components.get("minecraft:container"), "item"));
         }
         if (components.containsKey("minecraft:charged_projectiles")) {
-            result = maxVersion(result, detectListVersion(components.get("minecraft:charged_projectiles"), null));
+            result = MC.max(result, detectListVersion(components.get("minecraft:charged_projectiles"), null));
         }
         if (components.containsKey("minecraft:use_remainder")) {
-            result = maxVersion(result, getItemVersion(components.get("minecraft:use_remainder")));
+            result = MC.max(result, lookupVersion(components.get("minecraft:use_remainder")));
         }
-        return maxVersion(result, detectMapVersion(components, COMPONENT_DETECTORS));
+        return MC.max(result, detectMapVersion(components, COMPONENT_DETECTORS));
     }
 
-    private static Float detectTagVersion(Object compound) {
+    @Nullable
+    private static MC detectTagVersion(@Nullable Object compound) {
         if (compound == null) {
             return null;
         }
-        Float result = null;
+        MC result = null;
         final Map<String, Object> tag = TagCompound.getValue(compound);
         if (tag.containsKey("Items")) {
             result = detectListVersion(tag.get("Items"), null);
             // Bundles exists since 1.17
-            if (result == null || result < 17.01f) {
-                result = 17.01f;
+            if (result == null || result.isOlderThan(MC.V_1_17)) {
+                result = MC.V_1_17;
             }
         }
         final Object blockEntityTag = tag.get("BlockEntityTag");
         if (TagCompound.isTagCompound(blockEntityTag)) {
             final Object items = TagCompound.get(blockEntityTag, "Items");
-            result = maxVersion(result, detectListVersion(items, null));
+            result = MC.max(result, detectListVersion(items, null));
             // BlockEntityTag was added on 1.9
-            if (result == null || result < 9.01f) {
-                result = 9.01f;
+            if (result == null || result.isOlderThan(MC.V_1_9)) {
+                result = MC.V_1_9;
             }
         }
-        return maxVersion(result, detectMapVersion(tag, TAG_DETECTORS));
+        return MC.max(result, detectMapVersion(tag, TAG_DETECTORS));
     }
 
-    private static Float detectListVersion(Object iterable, String key) {
+    @Nullable
+    private static MC detectListVersion(@NotNull Object iterable, @Nullable String key) {
         if (!TagList.isTagList(iterable)) {
             return null;
         }
-        Float result = null;
+        MC result = null;
         for (Object compound : TagList.getValue(iterable)) {
-            final Float version;
+            final MC version;
             if (key == null) {
-                version = getItemVersion(compound);
+                version = lookupVersion(compound);
             } else {
-                version = getItemVersion(TagCompound.get(compound, key));
+                version = lookupVersion(TagCompound.get(compound, key));
             }
-            result = maxVersion(result, version);
+            result = MC.max(result, version);
         }
         return result;
     }
 
-    private static Float detectMapVersion(Map<String, Object> map, TreeMap<Float, Predicate<Map<String, Object>>> detectors) {
+    @Nullable
+    private static MC detectMapVersion(@NotNull Map<String, Object> map, @NotNull TreeMap<MC, Predicate<Map<String, Object>>> detectors) {
         for (var entry : detectors.entrySet()) {
             if (entry.getValue().test(map)) {
                 return entry.getKey();
@@ -344,24 +396,15 @@ public class ItemData {
         return null;
     }
 
-    private static Float maxVersion(Float version1, Float version2) {
-        if (version1 == null) {
-            return version2;
-        }
-        if (version2 == null) {
-            return version1;
-        }
-        return Math.max(version1, version2);
-    }
-
-    private static Float findMaterialVersion(String id, float minimumVersion) {
-        final String mat = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
+    @Nullable
+    private static MC findMaterialVersion(@NotNull String id, @NotNull MC minimumVersion) {
+        final String mat = id.contains(":") ? id : "minecraft:" + id;
         for (ItemMaterialTag material : ItemMaterialTag.VALUES) {
-            for (Map.Entry<Float, String> entry : material.getNames().entrySet()) {
-                if (entry.getKey() < minimumVersion) {
+            for (Map.Entry<MC, ItemMaterialTag.Data> entry : material.getDataMap().entrySet()) {
+                if (entry.getKey().isOlderThan(minimumVersion)) {
                     continue;
                 }
-                if (entry.getValue().equalsIgnoreCase(mat)) {
+                if (entry.getValue().id().equalsIgnoreCase(mat)) {
                     return entry.getKey();
                 }
             }
@@ -543,21 +586,22 @@ public class ItemData {
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
 
-    private static void loadPath(String name, Object... path) {
+    private static void loadPath(@NotNull String name, @NotNull Object... path) {
         COMPONENT_PATHS.put(name, path);
         loadTagPath(path, new Object[] { name });
     }
 
-    private static void loadPath(String name, Map<String, Object> aliases) {
+    private static void loadPath(@NotNull String name, @NotNull Map<String, Object> aliases) {
         loadPath(name, new Object[] { "tag" }, aliases);
     }
 
-    private static void loadPath(String name, Object[] path, Map<String, Object> aliases) {
+    private static void loadPath(@NotNull String name, @NotNull Object[] path, @NotNull Map<String, Object> aliases) {
         COMPONENT_PATHS.put(name, loadComponentPath(new Object[] { name }, path, aliases));
     }
 
+    @NotNull
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> loadComponentPath(Object[] root, Object[] start, Map<String, Object> path) {
+    private static Map<String, Object> loadComponentPath(@NotNull Object[] root, @NotNull Object[] start, @NotNull Map<String, Object> path) {
         final Map<String, Object> map = new HashMap<>();
         for (var entry : path.entrySet()) {
             if (entry.getValue() instanceof Map) {
@@ -572,7 +616,7 @@ public class ItemData {
     }
 
     @SuppressWarnings("unchecked")
-    private static void loadTagPath(Object[] tagPath, Object[] componentPath) {
+    private static void loadTagPath(@NotNull Object[] tagPath, @NotNull Object[] componentPath) {
         Map<String, Object> map = TAG_PATHS;
         if (tagPath.length >= 2) {
             for (int i = 0; i < tagPath.length - 1; i++) {
@@ -593,11 +637,11 @@ public class ItemData {
         }
     }
 
-    private static void loadComponentDetector(float version, Predicate<Map<String, Object>> predicate) {
+    private static void loadComponentDetector(@NotNull MC version, @NotNull Predicate<Map<String, Object>> predicate) {
         COMPONENT_DETECTORS.put(version, predicate);
     }
 
-    private static void loadComponentDetector(float version, String key, Predicate<Object> predicate) {
+    private static void loadComponentDetector(@NotNull MC version, @NotNull String key, Predicate<Object> predicate) {
         loadComponentDetector(version, map -> {
             final Object value = map.get(key);
             if (value != null) {
@@ -611,7 +655,7 @@ public class ItemData {
         });
     }
 
-    private static void loadAttributeDetector(float version, Predicate<Map<String, Object>> predicate) {
+    private static void loadAttributeDetector(@NotNull MC version, @NotNull Predicate<Map<String, Object>> predicate) {
         loadComponentDetector(version, map -> {
             final Object attributeModifiers = map.get("minecraft:attribute_modifiers");
             if (attributeModifiers == null) {
@@ -630,7 +674,7 @@ public class ItemData {
         });
     }
 
-    private static void loadTextDetector(float version, Predicate<Object> predicate, String[]... paths) {
+    private static void loadTextDetector(@NotNull MC version, @NotNull Predicate<Object> predicate, String[]... paths) {
         loadComponentDetector(version, map -> {
             for (String[] path : paths) {
                 Map<String, Object> parent = map;
@@ -662,10 +706,10 @@ public class ItemData {
 
     private static void loadComponentDetectors() {
         // 1.21.6
-        loadComponentDetector(21.04f, components ->
+        loadComponentDetector(MC.V_1_21_6, components ->
                 components.containsKey("minecraft:painting/variant")
         );
-        loadComponentDetector(21.05f, "minecraft:attribute_modifiers", modifiers -> {
+        loadComponentDetector(MC.V_1_21_6, "minecraft:attribute_modifiers", modifiers -> {
             if (TagList.isTagList(modifiers)) {
                 for (Object modifier : TagList.getValue(modifiers)) {
                     if (TagCompound.get(modifier, "display") != null) {
@@ -675,9 +719,9 @@ public class ItemData {
             }
             return false;
         });
-        loadComponentDetector(21.05f, "minecraft:equippable", equippable -> TagCompound.get(equippable, "can_be_sheared") != null || TagCompound.get(equippable, "shearing_sound") != null);
+        loadComponentDetector(MC.V_1_21_6, "minecraft:equippable", equippable -> TagCompound.get(equippable, "can_be_sheared") != null || TagCompound.get(equippable, "shearing_sound") != null);
         // 1.21.5
-        loadComponentDetector(21.04f, components ->
+        loadComponentDetector(MC.V_1_21_5, components ->
                 components.containsKey("minecraft:weapon")
                         || components.containsKey("minecraft:potion_duration_scale")
                         || components.containsKey("minecraft:blocks_attacks")
@@ -687,9 +731,9 @@ public class ItemData {
                         || components.containsKey("minecraft:tooltip_display")
                         || components.keySet().stream().anyMatch(key -> key.contains("/")) // Variants
         );
-        loadComponentDetector(21.04f, "minecraft:tool", tool -> TagCompound.get(tool, "can_destroy_blocks_in_creative") != null);
-        loadComponentDetector(21.04f, "minecraft:equippable", equippable -> TagCompound.get(equippable, "equip_on_interact") != null);
-        loadComponentDetector(21.04f, "minecraft:enchantments", enchantments -> {
+        loadComponentDetector(MC.V_1_21_5, "minecraft:tool", tool -> TagCompound.get(tool, "can_destroy_blocks_in_creative") != null);
+        loadComponentDetector(MC.V_1_21_5, "minecraft:equippable", equippable -> TagCompound.get(equippable, "equip_on_interact") != null);
+        loadComponentDetector(MC.V_1_21_5, "minecraft:enchantments", enchantments -> {
             final Map<String, Object> value = TagCompound.getValue(enchantments);
             return !value.isEmpty() && !value.containsKey("levels") && !value.containsKey("show_in_tooltip");
         });
@@ -700,11 +744,11 @@ public class ItemData {
             final Map<String, Object> value = TagCompound.getValue(component);
             return !value.isEmpty() && !value.containsKey("predicates") && !value.containsKey("show_in_tooltip");
         };
-        loadComponentDetector(21.04f, "minecraft:can_break", canBuild);
-        loadComponentDetector(21.04f, "minecraft:can_place_on", canBuild);
-        loadComponentDetector(21.04f, "minecraft:dyed_color", dyedColor -> !TagCompound.isTagCompound(dyedColor));
-        loadComponentDetector(21.04f, "minecraft:attribute_modifiers", TagList::isTagList);
-        loadTextDetector(21.04f, TagCompound::isTagCompound,
+        loadComponentDetector(MC.V_1_21_5, "minecraft:can_break", canBuild);
+        loadComponentDetector(MC.V_1_21_5, "minecraft:can_place_on", canBuild);
+        loadComponentDetector(MC.V_1_21_5, "minecraft:dyed_color", dyedColor -> !TagCompound.isTagCompound(dyedColor));
+        loadComponentDetector(MC.V_1_21_5, "minecraft:attribute_modifiers", TagList::isTagList);
+        loadTextDetector(MC.V_1_21_5, TagCompound::isTagCompound,
                 new String[] {"minecraft:custom_name"},
                 new String[] {"minecraft:item_name"},
                 new String[] {"minecraft:lore"},
@@ -712,10 +756,10 @@ public class ItemData {
                 new String[] {"minecraft:instrument", "description"}
         );
         // 1.21.4
-        loadComponentDetector(21.03f, "minecraft:custom_model_data", TagCompound::isTagCompound);
-        loadComponentDetector(21.03f, "minecraft:equippable", equippable -> TagCompound.get(equippable, "asset_id") != null);
+        loadComponentDetector(MC.V_1_21_4, "minecraft:custom_model_data", TagCompound::isTagCompound);
+        loadComponentDetector(MC.V_1_21_4, "minecraft:equippable", equippable -> TagCompound.get(equippable, "asset_id") != null);
         // 1.21.2
-        loadComponentDetector(21.02f, components ->
+        loadComponentDetector(MC.V_1_21_2, components ->
                 components.containsKey("minecraft:repairable")
                         || components.containsKey("minecraft:enchantable")
                         || components.containsKey("minecraft:consumable")
@@ -728,29 +772,29 @@ public class ItemData {
                         || components.containsKey("minecraft:death_protection")
                         || components.containsKey("minecraft:damage_resistant")
         );
-        loadAttributeDetector(21.02f, modifier -> {
+        loadAttributeDetector(MC.V_1_21_2, modifier -> {
             final String type = (String) TagBase.getValue(modifier.get("type"));
             return !type.startsWith("generic.") && !type.startsWith("player.") && !type.startsWith("zombie.");
         });
-        loadComponentDetector(21.02f, "minecraft:potion_contents", potionContents -> TagCompound.get(potionContents, "custom_name") != null);
+        loadComponentDetector(MC.V_1_21_2, "minecraft:potion_contents", potionContents -> TagCompound.get(potionContents, "custom_name") != null);
         // 1.21.1
-        loadComponentDetector(21.01f, components -> components.containsKey("minecraft:jukebox_playable"));
-        loadComponentDetector(21.01f, "minecraft:food", food -> TagCompound.get(food, "using_converts_to") != null);
-        loadAttributeDetector(21.01f, modifier -> modifier.get("id") != null);
+        loadComponentDetector(MC.V_1_21, components -> components.containsKey("minecraft:jukebox_playable"));
+        loadComponentDetector(MC.V_1_21, "minecraft:food", food -> TagCompound.get(food, "using_converts_to") != null);
+        loadAttributeDetector(MC.V_1_21, modifier -> modifier.get("id") != null);
     }
 
     private static void loadTagDetectors() {
-        TAG_DETECTORS.put(20.02f, tag ->
+        TAG_DETECTORS.put(MC.V_1_20_2, tag ->
                 tag.containsKey("custom_potion_effects")
                         || tag.containsKey("effects")
         );
-        TAG_DETECTORS.put(19.03f, tag -> hasHideFlag(tag, 128));
-        TAG_DETECTORS.put(16.02f, tag -> hasHideFlag(tag, 64));
-        TAG_DETECTORS.put(16.01f, tag ->
+        TAG_DETECTORS.put(MC.V_1_19_4, tag -> hasHideFlag(tag, 128));
+        TAG_DETECTORS.put(MC.V_1_16_2, tag -> hasHideFlag(tag, 64));
+        TAG_DETECTORS.put(MC.V_1_16, tag ->
                 tag.containsKey("SkullOwner")
                         && TagBase.getValue(TagCompound.get(tag.get("SkullOwner"), "Id")) instanceof int[]
         );
-        TAG_DETECTORS.put(14.01f, tag -> {
+        TAG_DETECTORS.put(MC.V_1_14, tag -> {
             if (tag.containsKey("CustomModelData") || tag.containsKey("BlockStateTag")) {
                 return true;
             }
@@ -767,7 +811,7 @@ public class ItemData {
             }
             return false;
         });
-        TAG_DETECTORS.put(13.01f, tag -> {
+        TAG_DETECTORS.put(MC.V_1_13, tag -> {
             if (tag.containsKey("Damage") || tag.containsKey("Enchantments")) {
                 return true;
             }
@@ -788,17 +832,18 @@ public class ItemData {
             }
             return false;
         });
-        TAG_DETECTORS.put(11.01f, tag -> hasEnchantment(tag, 10, 22, 49, 71));
-        TAG_DETECTORS.put(9.01f, tag -> tag.containsKey("Potion") || hasEnchantment(tag, 9, 70));
-        TAG_DETECTORS.put(8.01f, tag ->
+        TAG_DETECTORS.put(MC.V_1_11, tag -> hasEnchantment(tag, 10, 22, 49, 71));
+        TAG_DETECTORS.put(MC.V_1_9, tag -> tag.containsKey("Potion") || hasEnchantment(tag, 9, 70));
+        TAG_DETECTORS.put(MC.V_1_8, tag ->
                 tag.containsKey("CanDestroy")
                         || tag.containsKey("HideFlags")
                         || tag.containsKey("BlockEntityTag")
         );
-        TAG_DETECTORS.put(7.01f, tag -> tag.containsKey("Unbreakable"));
+        // NOTE: This should be 1.7
+        TAG_DETECTORS.put(MC.V_1_8, tag -> tag.containsKey("Unbreakable"));
     }
 
-    private static boolean hasHideFlag(Map<String, Object> tag, int flag) {
+    private static boolean hasHideFlag(@NotNull Map<String, Object> tag, int flag) {
         if (tag.containsKey("HideFlags")) {
             final int flags = (int) TagBase.getValue(tag.get("HideFlags"));
             if ((flags & flag) != flag) {
@@ -809,7 +854,7 @@ public class ItemData {
         return false;
     }
 
-    private static boolean hasEnchantment(Map<String, Object> tag, int... enchants) {
+    private static boolean hasEnchantment(@NotNull Map<String, Object> tag, int... enchants) {
         final Object enchantments = tag.getOrDefault("ench", tag.get("StoredEnchantments"));
         if (enchantments != null) {
             for (Object entry : TagList.getValue(enchantments)) {
@@ -824,14 +869,16 @@ public class ItemData {
         return false;
     }
 
-    private static Object[] append(Object[] array, Object obj) {
+    @NotNull
+    private static Object[] append(@NotNull Object[] array, @NotNull Object obj) {
         final Object[] a = new Object[array.length + 1];
         System.arraycopy(array, 0, a, 0, array.length);
         a[a.length - 1] = obj;
         return a;
     }
 
-    private static Object[] appendFirst(Object[] array, Object obj) {
+    @NotNull
+    private static Object[] appendFirst(@NotNull Object[] array, @NotNull Object obj) {
         final Object[] a = new Object[array.length + 1];
         System.arraycopy(array, 0, a, 1, array.length);
         a[0] = obj;

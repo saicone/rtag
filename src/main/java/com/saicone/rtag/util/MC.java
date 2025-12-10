@@ -224,12 +224,22 @@ public final class MC implements Comparable<MC> {
     }
 
     /**
-     * Get latest supported version.
+     * Get first supported version.
+     *
+     * @return the minimum supported version.
+     */
+    @NotNull
+    public static MC first() {
+        return VALUES.get(0);
+    }
+
+    /**
+     * Get last supported version.
      *
      * @return the maximum supported version.
      */
     @NotNull
-    public static MC latest() {
+    public static MC last() {
         return VALUES.get(VALUES.size() - 1);
     }
 
@@ -653,7 +663,7 @@ public final class MC implements Comparable<MC> {
      * @return         the maximum version, or null if both are null.
      */
     @Nullable
-    @Contract("null, !null -> param2; !null, null -> param1; null, null -> null")
+    @Contract("null, !null -> param2; !null, null -> param1; null")
     @ApiStatus.Experimental
     public static MC max(@Nullable MC version1, @Nullable MC version2) {
         if (version1 == null) {
@@ -672,7 +682,7 @@ public final class MC implements Comparable<MC> {
      * @return         the minimum version, or null if both are null.
      */
     @Nullable
-    @Contract("null, !null -> param2; !null, null -> param1; null, null -> null")
+    @Contract("null, !null -> param2; !null, null -> param1")
     @ApiStatus.Experimental
     public static MC min(@Nullable MC version1, @Nullable MC version2) {
         if (version1 == null) {

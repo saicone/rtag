@@ -3,8 +3,10 @@ package com.saicone.rtag.item.mirror;
 import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.MC;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +40,7 @@ public class IEffectMirror implements ItemMirror {
      * Constructs an IEffectMirror for current server instance version.
      */
     public IEffectMirror() {
-        this(ServerInstance.VERSION);
+        this(MC.version());
     }
 
     /**
@@ -46,8 +48,18 @@ public class IEffectMirror implements ItemMirror {
      *
      * @param version The server version to create keys for.
      */
+    @Deprecated(since = "1.5.14", forRemoval = true)
     public IEffectMirror(float version) {
-        if (version >= 20.02) {
+        this(MC.findReverse(MC::featRevision, version));
+    }
+
+    /**
+     * Constructs an IEffectMirror with specified server version to generate map names.
+     *
+     * @param version the server version to create keys for.
+     */
+    public IEffectMirror(@NotNull MC version) {
+        if (version.isNewerThanOrEquals(MC.V_1_20_2)) {
             this.fromId = "EffectId";
             this.toId = "id";
             this.fromDuration = "EffectDuration";
@@ -68,7 +80,7 @@ public class IEffectMirror implements ItemMirror {
      * @param fromDuration Effect duration key to get.
      * @param toDuration   Effect duration key to set.
      */
-    public IEffectMirror(String fromId, String toId, String fromDuration, String toDuration) {
+    public IEffectMirror(@NotNull String fromId, @NotNull String toId, @NotNull String fromDuration, @NotNull String toDuration) {
         this.fromId = fromId;
         this.toId = toId;
         this.fromDuration = fromDuration;
@@ -76,20 +88,20 @@ public class IEffectMirror implements ItemMirror {
     }
 
     @Override
-    public float getMinVersion() {
-        return 14;
+    public @NotNull MC getMinimumVersion() {
+        return MC.V_1_14;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
-        if (from <= 20.01f && to >= 20.02f && id.equals("minecraft:suspicious_stew")) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (from.isOlderThan(MC.V_1_20_2) && to.isNewerThanOrEquals(MC.V_1_20_2) && id.equals("minecraft:suspicious_stew")) {
             processEffects(components, "Effects", "effects", true);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (to <= 20.01f && from >= 20.02f && id.equals("minecraft:suspicious_stew")) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (to.isOlderThan(MC.V_1_20_2) && from.isNewerThanOrEquals(MC.V_1_20_2) && id.equals("minecraft:suspicious_stew")) {
             processEffects(components, "effects", "Effects", false);
         }
     }
@@ -102,8 +114,9 @@ public class IEffectMirror implements ItemMirror {
      * @param toKey   The final key to save effects.
      * @param useKey  true to convert effect ids to namespaced key.
      */
+    @ApiStatus.Internal
     @SuppressWarnings("unchecked")
-    public void processEffects(Object tag, String fromKey, String toKey, boolean useKey) {
+    public void processEffects(@NotNull Object tag, @NotNull String fromKey, @NotNull String toKey, boolean useKey) {
         final List<Object> effects;
         try {
             effects = (List<Object>) TagCompound.remove(tag, fromKey);
@@ -144,6 +157,8 @@ public class IEffectMirror implements ItemMirror {
      * @param id The effect id.
      * @return   An effect key.
      */
+    @NotNull
+    @ApiStatus.Internal
     @SuppressWarnings("deprecation")
     public String getEffectKey(int id) {
         final PotionEffectType type = PotionEffectType.getById(id);
@@ -159,8 +174,10 @@ public class IEffectMirror implements ItemMirror {
      * @param key The effect key.
      * @return    A effect id.
      */
+    @NotNull
+    @ApiStatus.Internal
     @SuppressWarnings("deprecation")
-    public Integer getEffectId(String key) {
+    public Integer getEffectId(@NotNull String key) {
         final String name = key.replace("minecraft:", "");
         final PotionEffectType type = PotionEffectType.getByName(name);
         if (type != null) {

@@ -1,6 +1,7 @@
 package com.saicone.rtag.item;
 
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.MC;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * ItemMirror interface to make item NBTTagCompound
@@ -11,12 +12,81 @@ import com.saicone.rtag.util.ServerInstance;
 public interface ItemMirror {
 
     /**
+     * Get the maximum compatible version, exclusive.
+     *
+     * @return a version.
+     */
+    default @NotNull MC getMaximumVersion() {
+        return MC.last();
+    }
+
+    /**
+     * Get the minimum compatible version, inclusive.
+     *
+     * @return a version.
+     */
+    default @NotNull MC getMinimumVersion() {
+        return MC.first();
+    }
+
+    /**
+     * Upgrade current item tag compound from lower version.
+     *
+     * @param compound the tag compound that represents item data.
+     * @param id       the item material id.
+     * @param from     the initial version of item data.
+     * @param to       the version to upgrade item data.
+     */
+    default void upgrade(@NotNull Object compound, @NotNull String id, @NotNull MC from, @NotNull MC to) {
+        // empty default method
+    }
+
+    /**
+     * Upgrade current item tag compound from lower version.
+     *
+     * @param compound   the tag compound that represents item data.
+     * @param id         the item material id.
+     * @param components the item components, on older versions this may be the item tag.
+     * @param from       the initial version of item data.
+     * @param to         the version to upgrade item data.
+     */
+    default void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        // empty default method
+    }
+
+    /**
+     * Downgrade current item tag compound from upper version.
+     *
+     * @param compound the tag compound that represents item data.
+     * @param id       the item material id.
+     * @param from     the initial version of item data.
+     * @param to       the version to downgrade item data.
+     */
+    default void downgrade(@NotNull Object compound, @NotNull String id, @NotNull MC from, @NotNull MC to) {
+        // empty default method
+    }
+
+    /**
+     * Downgrade current item tag compound from upper version.
+     *
+     * @param compound   the tag compound that represents item data.
+     * @param id         the item material id.
+     * @param components the item components, on older versions this may be the item tag.
+     * @param from       the initial version of item data.
+     * @param to         the version to downgrade item data.
+     */
+    default void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        // empty default method
+    }
+
+    /**
      * Get the minimum version where compatibility is deprecated.
      *
      * @return A version number.
      */
+    @Deprecated(since = "1.5.14", forRemoval = true)
     default float getDeprecationVersion() {
-        return ServerInstance.MAJOR_VERSION + 1;
+        return getMaximumVersion().featRevision();
     }
 
     /**
@@ -24,8 +94,9 @@ public interface ItemMirror {
      *
      * @return A version number.
      */
-    default float getMinVersion() {
-        return 8;
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    default float getMinVersion0() {
+        return getMinimumVersion().featRevision();
     }
 
     /**
@@ -36,8 +107,9 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void upgrade(Object compound, String id, float from, float to) {
-        // empty default method
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    default void upgrade(@NotNull Object compound, @NotNull String id, float from, float to) {
+        upgrade(compound, id, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
     }
 
     /**
@@ -49,8 +121,9 @@ public interface ItemMirror {
      * @param from       Version specified in compound.
      * @param to         Version to convert.
      */
-    default void upgrade(Object compound, String id, Object components, float from, float to) {
-        // empty default method
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    default void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, float from, float to) {
+        upgrade(compound, id, components, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
     }
 
     /**
@@ -61,8 +134,9 @@ public interface ItemMirror {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
-    default void downgrade(Object compound, String id, float from, float to) {
-        // empty default method
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    default void downgrade(@NotNull Object compound, @NotNull String id, float from, float to) {
+        downgrade(compound, id, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
     }
 
     /**
@@ -74,7 +148,8 @@ public interface ItemMirror {
      * @param from       Version specified in compound.
      * @param to         Version to convert.
      */
-    default void downgrade(Object compound, String id, Object components, float from, float to) {
-        // empty default method
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    default void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, float from, float to) {
+        downgrade(compound, id, components, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
     }
 }

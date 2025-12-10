@@ -4,6 +4,8 @@ import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.MC;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -45,25 +47,26 @@ public class IAttributeMirror implements ItemMirror {
     }
 
     @Override
-    public float getDeprecationVersion() {
-        return 16;
+    public @NotNull MC getMaximumVersion() {
+        return MC.V_1_16;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
-        if (to >= 16f && from < 16f) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (to.isNewerThanOrEquals(MC.V_1_16) && from.isOlderThan(MC.V_1_16)) {
             rename(components, NEW_NAMES);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (from >= 16f && to < 16f && id.equals("minecraft:player_head")) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (from.isNewerThanOrEquals(MC.V_1_16) && to.isOlderThan(MC.V_1_16) && id.equals("minecraft:player_head")) {
             rename(components, OLD_NAMES);
         }
     }
 
-    protected void rename(Object compound, Map<String, String> names) {
+    @ApiStatus.Internal
+    protected void rename(@NotNull Object compound, @NotNull Map<String, String> names) {
         Object modifiers = TagCompound.get(compound, "AttributeModifiers");
         if (modifiers == null) return;
 
@@ -77,6 +80,7 @@ public class IAttributeMirror implements ItemMirror {
     }
 
     @NotNull
+    @ApiStatus.Internal
     public static String rename(@NotNull String type, @NotNull Function<String, String> function) {
         final boolean starts = type.startsWith(PREFIX);
         final String renamed = function.apply(starts ? type.substring(PREFIX.length()) : type);

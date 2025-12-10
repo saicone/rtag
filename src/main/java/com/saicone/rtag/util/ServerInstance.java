@@ -202,17 +202,17 @@ public class ServerInstance {
     public static final int dataVersion = MC.version().dataVersion().orElse(98);
 
     /**
-     * @deprecated Use {@link Release#LEGACY} instead.
+     * @deprecated Use {@link MC#version()} methods instead.
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
-    public static final boolean isLegacy = Release.LEGACY;
+    public static final boolean isLegacy = MC.version().isLegacy();
     /**
-     * @deprecated Use {@link Release#UNIVERSAL} instead.
+     * @deprecated Use {@link MC#version()} methods instead.
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
-    public static final boolean isUniversal = Release.UNIVERSAL;
+    public static final boolean isUniversal = MC.version().isUniversal();
 
     /**
      * @deprecated Use {@link Platform#SPIGOT} instead.

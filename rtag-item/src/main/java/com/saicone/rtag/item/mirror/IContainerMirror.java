@@ -5,6 +5,9 @@ import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.item.ItemTagStream;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.MC;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Set;
@@ -75,26 +78,26 @@ public class IContainerMirror implements ItemMirror {
     }
 
     @Override
-    public float getMinVersion() {
-        return 9;
+    public @NotNull MC getMinimumVersion() {
+        return MC.V_1_9;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
         if (isContainer(from, id)) {
-            processComponents(components, from, to);
+            processContent(components, from, to);
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
         if (isContainer(to, id)) {
-            processComponents(components, from, to);
+            processContent(components, from, to);
         }
     }
 
-    private boolean isContainer(float version, String id) {
-        if (version <= 20.03f) {
+    private boolean isContainer(@NotNull MC version, @NotNull String id) {
+        if (version.isOlderThan(MC.V_1_20_5)) {
             return id.contains("shulker_box");
         } else {
             return CONTAINERS.contains(id);
@@ -102,14 +105,15 @@ public class IContainerMirror implements ItemMirror {
     }
 
     /**
-     * Process current item container components to convert items inside.
+     * Process current item content.
      *
-     * @param components ItemStack components.
-     * @param from       Version specified in compound.
-     * @param to         Version to convert.
+     * @param tag  the item components or tag as tag compound object.
+     * @param from the initial version of item.
+     * @param to   the version to convert its contents.
      */
-    public void processComponents(Object components, float from, float to) {
-        Object container = Rtag.INSTANCE.getExact(components, path);
+    @ApiStatus.Internal
+    public void processContent(@NotNull Object tag, @NotNull MC from, @NotNull MC to) {
+        Object container = Rtag.INSTANCE.getExact(tag, path);
         if (container != null) {
             final List<Object> items = TagList.getValue(container);
             if (slotList) {
@@ -123,5 +127,17 @@ public class IContainerMirror implements ItemMirror {
                 }
             }
         }
+    }
+
+    /**
+     * Process current item container components to convert items inside.
+     *
+     * @param components ItemStack components.
+     * @param from       Version specified in compound.
+     * @param to         Version to convert.
+     */
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public void processComponents(@NotNull Object components, float from, float to) {
+        processContent(components, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
     }
 }

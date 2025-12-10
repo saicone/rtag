@@ -7,9 +7,11 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.ChatComponent;
+import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -81,11 +83,6 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:tooltip_display", new TooltipDisplay());
     }
 
-    @Override
-    public float getDeprecationVersion() {
-        return 20.04f;
-    }
-
     private Iterable<Map.Entry<String, Transformation>> getTransformations(Collection<String> keys) {
         return new Iterable<>() {
             @Override
@@ -120,13 +117,13 @@ public class IComponentMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, float from, float to) {
-        if (to < 20.04f) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull MC from, @NotNull MC to) {
+        if (to.isOlderThan(MC.V_1_20_5)) {
             return;
         }
 
         // Convert old tag to components
-        if (from <= 20.03f) {
+        if (from.isOlderThanOrEquals(MC.V_1_20_4)) {
             // Rename count and convert to int
             final Object count = TagCompound.get(compound, "Count");
             if (count != null) {
@@ -199,7 +196,7 @@ public class IComponentMirror implements ItemMirror {
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
         upgrade(compound, id, from, to);
     }
 
@@ -223,8 +220,8 @@ public class IComponentMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, float from, float to) {
-        if (from < 20.04f) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull MC from, @NotNull MC to) {
+        if (from.isOlderThan(MC.V_1_20_5)) {
             return;
         }
 
@@ -241,7 +238,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         // Convert components to old tag
-        if (to <= 20.03f) {
+        if (to.isOlderThanOrEquals(MC.V_1_20_4)) {
             // Rename count and convert to byte
             final Object count = TagCompound.get(compound, "count");
             if (count != null) {
@@ -290,7 +287,7 @@ public class IComponentMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
         downgrade(compound, id, from, to);
     }
 
@@ -323,14 +320,28 @@ public class IComponentMirror implements ItemMirror {
         /**
          * Upgrade component value from lower version.
          *
+         * @param components the component map from item.
+         * @param id         component ID inside map.
+         * @param component  the component itself.
+         * @param from       the initial version of item data.
+         * @param to         the version to upgrade item data.
+         */
+        default void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            // empty default method
+        }
+
+        /**
+         * Upgrade component value from lower version.
+         *
          * @param components The component map from item.
          * @param id         Component ID inside map.
          * @param component  The component itself.
          * @param from       Version specified in compound.
          * @param to         Version to convert.
          */
+        @Deprecated(since = "1.5.14", forRemoval = true)
         default void upgrade(Object components, String id, Object component, float from, float to) {
-            // empty default method
+            upgrade(components, id, component, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
         }
 
         /**
@@ -341,7 +352,7 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java map.
          * @return           true to continue with conversion or false to delete component.
          */
-        default boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
+        default boolean upgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             return true;
         }
 
@@ -353,7 +364,7 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java list.
          * @return           true to continue with conversion or false to delete component.
          */
-        default boolean upgradeList(Object components, String id, List<Object> value) {
+        default boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             return true;
         }
 
@@ -365,8 +376,21 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java object.
          * @return           true to continue with conversion or false to delete component.
          */
-        default boolean upgradeObject(Object components, String id, Object value) {
+        default boolean upgradeObject(@NotNull Object components, @NotNull String id, @NotNull Object value) {
             return true;
+        }
+
+        /**
+         * Downgrade component value from upper version.
+         *
+         * @param components the component map from item.
+         * @param id         component ID inside map.
+         * @param component  the component itself.
+         * @param from       the initial version of item data.
+         * @param to         the version to downgrade item data.
+         */
+        default void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            // empty default method
         }
 
         /**
@@ -378,8 +402,9 @@ public class IComponentMirror implements ItemMirror {
          * @param from       Version specified in compound.
          * @param to         Version to convert.
          */
+        @Deprecated(since = "1.5.14", forRemoval = true)
         default void downgrade(Object components, String id, Object component, float from, float to) {
-            // empty default method
+            downgrade(components, id, component, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
         }
 
         /**
@@ -390,7 +415,7 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java map.
          * @return           true to continue with conversion or false to delete component.
          */
-        default boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        default boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             return true;
         }
 
@@ -402,7 +427,7 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java list.
          * @return           true to continue with conversion or false to delete component.
          */
-        default boolean downgradeList(Object components, String id, List<Object> value) {
+        default boolean downgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             return true;
         }
 
@@ -414,7 +439,7 @@ public class IComponentMirror implements ItemMirror {
          * @param value      Value of component as Java object.
          * @return           true to continue with conversion or false to delete component.
          */
-        default boolean downgradeObject(Object components, String id, Object value) {
+        default boolean downgradeObject(@NotNull Object components, @NotNull String id, @NotNull Object value) {
             return true;
         }
 
@@ -425,7 +450,7 @@ public class IComponentMirror implements ItemMirror {
          * @param fromKey Origin key to get value from map.
          * @param toKey   New key to set current value.
          */
-        default void move(Map<String, Object> map, String fromKey, String toKey) {
+        default void move(@NotNull Map<String, Object> map, @NotNull String fromKey, @NotNull String toKey) {
             move(map, fromKey, toKey, null);
         }
 
@@ -438,7 +463,7 @@ public class IComponentMirror implements ItemMirror {
          * @param transformation The transformation to apply into value.
          * @return               true if value was moved or false if doesn't exist or was deleted by transformation.
          */
-        default boolean move(Map<String, Object> map, String fromKey, String toKey, Function<Object, Object> transformation) {
+        default boolean move(@NotNull Map<String, Object> map, @NotNull String fromKey, @NotNull String toKey, @Nullable Function<Object, Object> transformation) {
             Object value = map.get(fromKey);
             map.remove(fromKey);
             if (value != null && transformation != null) {
@@ -462,7 +487,7 @@ public class IComponentMirror implements ItemMirror {
          * @param components The component map from item.
          * @param ordinal    Old flag ordinal value.
          */
-        default void setFlag(Object components, int ordinal) {
+        default void setFlag(@NotNull Object components, int ordinal) {
             int bitField = Rtag.INSTANCE.getOptional(components, "minecraft:custom_data", "HideFlags").asInt(0);
             final byte bit = (byte) (1 << ordinal);
             bitField |= bit;
@@ -479,8 +504,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 if (path.length > 0) {
                     final Object jsonComponent = Rtag.INSTANCE.get(component, path);
                     if (jsonComponent != null) {
@@ -498,8 +523,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.04f && to < 21.04f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5)) {
                 if (path.length > 0) {
                     final Object tagComponent = Rtag.INSTANCE.get(component, path);
                     if (tagComponent != null) {
@@ -572,7 +597,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             downgradeTooltip(components, value);
             return true;
         }
@@ -603,15 +628,15 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 upgradeTooltip(components, id, component);
                 Rtag.INSTANCE.set(components, TagCompound.newTag(), id);
             }
         }
 
         @Override
-        public boolean upgradeObject(Object components, String id, Object value) {
+        public boolean upgradeObject(@NotNull Object components, @NotNull String id, @NotNull Object value) {
             if (TRUE.equals(value)) {
                 return Rtag.INSTANCE.set(components, Map.of("show_in_tooltip", true), id);
             } else {
@@ -620,7 +645,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             downgradeTooltip(components, value);
             return Rtag.INSTANCE.set(components, true, id);
         }
@@ -641,15 +666,15 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 upgradeTooltip(components, id, component);
                 Rtag.INSTANCE.set(components, TagCompound.get(component, "levels"), id);
             }
         }
 
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             final Map<String, Integer> levels = new HashMap<>();
             for (Object enchantment : value) {
                 String key = (String) TagBase.getValue(TagCompound.get(enchantment, "id"));
@@ -670,14 +695,14 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.04f && to < 21.04f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5)) {
                 TagCompound.set(components, id, TagCompound.newTag(Map.of("levels", component)));
             }
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             downgradeTooltip(components, value);
             if (value.containsKey("levels")) {
                 final List<Object> enchantments = new ArrayList<>();
@@ -714,15 +739,15 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 upgradeTooltip(components, id, component);
                 Rtag.INSTANCE.set(components, TagCompound.get(component, "predicates"), id);
             }
         }
 
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             final List<Object> predicates;
             // Load saved predicates
             final Object saved = Rtag.INSTANCE.getExact(components, "minecraft:custom_data", "savedPredicates");
@@ -743,14 +768,14 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.04f && to < 21.04f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5)) {
                 TagCompound.set(components, id, TagCompound.newTag(Map.of("predicates", component)));
             }
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             downgradeTooltip(components, value);
             final List<Object> blocks = new ArrayList<>();
             if (value.containsKey("predicates")) {
@@ -783,28 +808,28 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 upgradeTooltip(components, id, component);
                 Rtag.INSTANCE.set(components, TagCompound.get(component, "rgb"), id);
             }
         }
 
         @Override
-        public boolean upgradeObject(Object components, String id, Object value) {
+        public boolean upgradeObject(@NotNull Object components, @NotNull String id, @NotNull Object value) {
             TagCompound.remove(components, id);
             return Rtag.INSTANCE.set(components, value, id, "rgb");
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.04f && to < 21.04f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5)) {
                 TagCompound.set(components, id, TagCompound.newTag(Map.of("rgb", component)));
             }
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             downgradeTooltip(components, value);
             if (value.containsKey("rgb")) {
                 return Rtag.INSTANCE.set(components, value.get("rgb"), id);
@@ -838,8 +863,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21f && from < 21f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21) && from.isOlderThan(MC.V_1_21)) {
                 modifiers(component, map -> {
                     final Object name = map.remove("name");
                     if (name != null) {
@@ -858,7 +883,7 @@ public class IComponentMirror implements ItemMirror {
                     }
                 });
             }
-            if (to >= 21.02f && from < 21.02f) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_2) && from.isOlderThan(MC.V_1_21_2)) {
                 modifiers(component, map -> {
                     final Object type = map.remove("type");
                     if (type != null) {
@@ -871,14 +896,14 @@ public class IComponentMirror implements ItemMirror {
                     }
                 });
             }
-            if (to >= 21.04f && from < 21.04f) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 upgradeTooltip(components, id, component);
                 Rtag.INSTANCE.set(components, TagCompound.get(component, "modifiers"), id);
             }
         }
 
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             for (Object modifier : value) {
                 final Map<String, Object> map = TagCompound.getValue(modifier);
                 move(map, "AttributeName", "type", type -> IAttributeMirror.rename((String) type, s -> {
@@ -915,12 +940,12 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (to < 21.04f && from >= 21.04f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isOlderThan(MC.V_1_21_5) && from.isNewerThanOrEquals(MC.V_1_21_5)) {
                 component = TagCompound.newTag(Map.of("modifiers", component));
                 TagCompound.set(components, id, component);
             }
-            if (to < 21.02f && from >= 21.02f) {
+            if (to.isOlderThan(MC.V_1_21_2) && from.isNewerThanOrEquals(MC.V_1_21_2)) {
                 modifiers(component, map -> {
                     final Object type = map.remove("type");
                     if (type != null) {
@@ -939,7 +964,7 @@ public class IComponentMirror implements ItemMirror {
                     }
                 });
             }
-            if (to < 21f && from >= 21f) {
+            if (to.isOlderThan(MC.V_1_21) && from.isNewerThanOrEquals(MC.V_1_21)) {
                 modifiers(component, map -> {
                     final Object key = map.remove("id");
                     if (key != null) {
@@ -953,7 +978,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             downgradeTooltip(components, value);
             final Object modifiers = modifiers(value, map -> {
                 move(map, "type", "AttributeName", type -> IAttributeMirror.rename((String) type, s -> {
@@ -1007,13 +1032,13 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class ChargedProjectiles implements Transformation {
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             Rtag.INSTANCE.set(components, null, "minecraft:custom_data", "Charged");
             return true;
         }
 
         @Override
-        public boolean downgradeList(Object components, String id, List<Object> value) {
+        public boolean downgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             return Rtag.INSTANCE.set(components, !value.isEmpty(), "minecraft:custom_data", "Charged");
         }
     }
@@ -1025,7 +1050,7 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class MapDecorations implements Transformation {
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             final Map<String, Object> decorations = new HashMap<>();
             for (Object decoration : value) {
                 final Map<String, Object> map = TagCompound.getValue(decoration);
@@ -1047,7 +1072,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             final List<Object> decorations = new ArrayList<>();
             final Map<String, Object> saved = new HashMap<>();
             for (Map.Entry<String, Object> decoration : value.entrySet()) {
@@ -1121,8 +1146,8 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class BookContents extends TextComponentTransformation implements Transformation {
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f && id.equals("minecraft:written_book_content")) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5) && id.equals("minecraft:written_book_content")) {
                 final Object pages = TagCompound.get(component, "pages");
                 if (pages != null) {
                     TagList.getValue(pages).replaceAll(this::upgradeText);
@@ -1131,7 +1156,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean upgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             if (value.containsKey("pages")) {
                 final List<Object> pages = new ArrayList<>();
                 final Map<String, Object> filtered_pages;
@@ -1172,8 +1197,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.04f && to < 21.04f && id.equals("minecraft:written_book_content")) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5) && id.equals("minecraft:written_book_content")) {
                 final Object pages = TagCompound.get(component, "pages");
                 if (pages != null) {
                     TagList.getValue(pages).replaceAll(this::downgradeText);
@@ -1182,7 +1207,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             if (value.containsKey("pages")) {
                 final List<Object> pages = new ArrayList<>();
                 final Map<String, Object> filtered_pages = new HashMap<>();
@@ -1220,7 +1245,7 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class FireworkExplosion implements Transformation {
         @Override
-        public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean upgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             upgradeExplosion(value, false);
             Object saved = Rtag.INSTANCE.getExact(components, "minecraft:custom_data", "savedExplosion");
             if (saved != null) {
@@ -1252,7 +1277,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             final Object saved = downgradeExplosion(value, true, false);
             if (saved != null) {
                 Rtag.INSTANCE.set(components, saved, "minecraft:custom_data", "savedExplosion");
@@ -1313,7 +1338,7 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class Fireworks extends FireworkExplosion {
         @Override
-        public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean upgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             final List<Object> explosions;
             if (value.containsKey("explosions")) {
                 explosions = TagList.getValue(value.get("explosions"));
@@ -1332,7 +1357,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             final List<Object> saved = new ArrayList<>();
             final List<Object> explosions = TagList.getValue(value.get("explosions"));
             final Iterator<Object> iterator = explosions.iterator();
@@ -1357,7 +1382,7 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class Profile implements Transformation {
         @Override
-        public boolean upgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean upgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             // Fix blank name
             if (!value.containsKey("name") || ((String) TagBase.getValue(value.get("name"))).isBlank()) {
                 value.put("name", TagBase.newTag("null"));
@@ -1387,7 +1412,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             if (value.containsKey("properties")) {
                 final Map<String, Object> map = new HashMap<>();
                 final List<Object> properties = TagList.getValue(value.get("properties"));
@@ -1428,12 +1453,12 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class BaseColor implements Transformation {
         @Override
-        public boolean upgradeObject(Object components, String id, Object value) {
+        public boolean upgradeObject(@NotNull Object components, @NotNull String id, @NotNull Object value) {
             return Rtag.INSTANCE.set(components, Color.VALUES[(int) value].name().toLowerCase(), id);
         }
 
         @Override
-        public boolean downgradeObject(Object components, String id, Object value) {
+        public boolean downgradeObject(@NotNull Object components, @NotNull String id, @NotNull Object value) {
             return Rtag.INSTANCE.set(components, Color.ORDINALS.get((String) value), id);
         }
     }
@@ -1445,7 +1470,7 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class BannerPatterns implements Transformation {
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             for (Object compound : value) {
                 final Map<String, Object> map = TagCompound.getValue(compound);
                 move(map, "Pattern", "pattern", pattern -> Pattern.NAMES.get((String) pattern));
@@ -1460,7 +1485,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeList(Object components, String id, List<Object> value) {
+        public boolean downgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             final List<Object> saved = new ArrayList<>();
             for (Object compound : value) {
                 final Map<String, Object> map = TagCompound.getValue(compound);
@@ -1549,7 +1574,7 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class Container implements Transformation {
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             for (int i = 0; i < value.size(); i++) {
                 final Object item = value.get(i);
                 final Map<String, Object> itemValue = TagCompound.getValue(item);
@@ -1569,7 +1594,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeList(Object components, String id, List<Object> value) {
+        public boolean downgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             for (int i = 0; i < value.size(); i++) {
                 final Object slot = value.get(i);
                 final Map<String, Object> slotValue = TagCompound.getValue(slot);
@@ -1586,7 +1611,7 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class Bees implements Transformation {
         @Override
-        public boolean upgradeList(Object components, String id, List<Object> value) {
+        public boolean upgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             for (Object bee : value) {
                 final Map<String, Object> map = TagCompound.getValue(bee);
                 move(map, "EntityData", "entity_data");
@@ -1597,7 +1622,7 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public boolean downgradeList(Object components, String id, List<Object> value) {
+        public boolean downgradeList(@NotNull Object components, @NotNull String id, @NotNull List<Object> value) {
             for (Object bee : value) {
                 final Map<String, Object> map = TagCompound.getValue(bee);
                 move(map, "entity_data", "EntityData");
@@ -1613,8 +1638,8 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class Food implements Transformation {
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.02f && from < 21.02f && id.equals("minecraft:food")) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_2) && from.isOlderThan(MC.V_1_21_2) && id.equals("minecraft:food")) {
                 final Map<String, Object> food = TagCompound.getValue(component);
 
                 final Object eatSeconds = food.remove("eat_seconds");
@@ -1639,8 +1664,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.02f && to < 21.02f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_2) && to.isOlderThan(MC.V_1_21_2)) {
                 if (id.equals("minecraft:consumable")) {
                     final Map<String, Object> consumable = TagCompound.getValue(component);
 
@@ -1678,16 +1703,16 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class DamageResistant implements Transformation {
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.02f && from < 21.02f && id.equals("minecraft:fire_resistant")) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_2) && from.isOlderThan(MC.V_1_21_2) && id.equals("minecraft:fire_resistant")) {
                 TagCompound.remove(components, "minecraft:fire_resistant");
                 Rtag.INSTANCE.set(components, "#minecraft:is_fire", "minecraft:damage_resistant", "types");
             }
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.02f && to < 21.02f && id.equals("minecraft:damage_resistant")) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_2) && to.isOlderThan(MC.V_1_21_2) && id.equals("minecraft:damage_resistant")) {
                 if ("#minecraft:is_fire".equals(TagBase.getValue(TagCompound.get(component, "types")))) {
                     TagCompound.remove(components, "minecraft:damage_resistant");
                     TagCompound.set(components, "minecraft:fire_resistant", TagCompound.newTag());
@@ -1701,8 +1726,8 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class CustomModelData implements Transformation {
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.03f && from < 21.03f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_4) && from.isOlderThan(MC.V_1_21_4)) {
                 TagCompound.remove(components, id);
                 if (component instanceof Number) {
                     TagCompound.set(components, id, TagCompound.newTag(Map.of("floats", TagList.newTag(List.of(((Number) component).floatValue())))));
@@ -1711,8 +1736,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.03f && to < 21.03f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_4) && to.isOlderThan(MC.V_1_21_4)) {
                 TagCompound.remove(components, id);
                 final Object floats = TagCompound.get(component, "floats");
                 if (floats != null) {
@@ -1735,15 +1760,15 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class Equippable implements Transformation {
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.034f && from < 21.03f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_4) && from.isOlderThan(MC.V_1_21_4)) {
                 move(TagCompound.getValue(component), "model", "asset_id");
             }
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.03f && to < 21.03f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_4) && to.isOlderThan(MC.V_1_21_4)) {
                 move(TagCompound.getValue(component), "asset_id", "model");
             }
         }
@@ -1761,8 +1786,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 upgradeTooltip(components, id, component);
             }
         }
@@ -1773,8 +1798,8 @@ public class IComponentMirror implements ItemMirror {
      */
     public static class JukeboxPlayable implements TooltipTransformation {
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 upgradeTooltip(components, id, component);
             }
         }
@@ -1815,15 +1840,15 @@ public class IComponentMirror implements ItemMirror {
         );
 
         @Override
-        public boolean downgradeComponent(Object components, String id, Map<String, Object> value) {
+        public boolean downgradeComponent(@NotNull Object components, @NotNull String id, @NotNull Map<String, Object> value) {
             setFlag(components, 5);
             // Delete component on finish
             return false;
         }
 
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 if (id.equals("minecraft:hide_additional_tooltip")) {
                     hideComponents(components, HIDDEN_COMPONENTS);
                     TagCompound.remove(components, id);
@@ -1835,8 +1860,8 @@ public class IComponentMirror implements ItemMirror {
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.04f && to < 21.04f && id.equals("minecraft:tooltip_display")) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5) && id.equals("minecraft:tooltip_display")) {
                 if (TAG_TRUE.equals(TagCompound.get(component, "hide_tooltip"))) {
                     TagCompound.set(components, "minecraft:hide_tooltip", TagCompound.newTag());
                 }
@@ -1858,15 +1883,15 @@ public class IComponentMirror implements ItemMirror {
 
     public static class Lore extends TextComponentTransformation {
         @Override
-        public void upgrade(Object components, String id, Object component, float from, float to) {
-            if (to >= 21.04f && from < 21.04f) {
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5)) {
                 TagList.getValue(component).replaceAll(this::upgradeText);
             }
         }
 
         @Override
-        public void downgrade(Object components, String id, Object component, float from, float to) {
-            if (from >= 21.04f && to < 21.04f) {
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5)) {
                 TagList.getValue(component).replaceAll(this::downgradeText);
             }
         }

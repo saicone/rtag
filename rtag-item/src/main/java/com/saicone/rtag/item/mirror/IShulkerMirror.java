@@ -1,7 +1,7 @@
 package com.saicone.rtag.item.mirror;
 
 import com.saicone.rtag.item.ItemTagStream;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.MC;
 import org.jetbrains.annotations.ApiStatus;
 
 /**
@@ -32,6 +32,6 @@ public class IShulkerMirror extends IContainerMirror {
      */
     @Deprecated
     public void processTag(Object tag, float from, float to) {
-        processComponents(tag, from, to);
+        processContent(tag, MC.findReverse(MC::featRevision, from), MC.findReverse(MC::featRevision, to));
     }
 }

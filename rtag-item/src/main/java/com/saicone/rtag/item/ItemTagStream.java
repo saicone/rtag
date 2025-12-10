@@ -5,9 +5,11 @@ import com.saicone.rtag.stream.TStream;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.util.ChatComponent;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.MC;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,97 +25,91 @@ public class ItemTagStream extends TStream<ItemStack> {
     /**
      * ItemTagStream public instance adapted for current server version.
      */
-    public static final ItemTagStream INSTANCE = ofVersion(8f, ServerInstance.VERSION);
+    public static final ItemTagStream INSTANCE = valueOf(MC.first(), MC.version());
 
-    private final List<ItemMirror> mirror;
-    private final float version;
-    private final String versionKey;
-
-    /**
-     * Create an item tag stream for provided version range.
-     *
-     * @param minVersion     The minimum version to support.
-     * @param currentVersion The current server version.
-     * @return               A newly generated item tag stream.
-     */
-    public static ItemTagStream ofVersion(float minVersion, float currentVersion) {
-        return ofVersion(minVersion, currentVersion, "rtagDataVersion");
-    }
-
-    /**
-     * Create an item tag stream for provided version range.
-     *
-     * @param minVersion     The minimum version to support.
-     * @param currentVersion The current server version.
-     * @param versionKey     Version key identifier from compound.
-     * @return               A newly generated item tag stream.
-     */
-    public static ItemTagStream ofVersion(float minVersion, float currentVersion, String versionKey) {
-        if (minVersion > currentVersion) {
-            throw new IllegalArgumentException("The minimum supported version cannot be less than current server version");
+    @NotNull
+    public static ItemTagStream valueOf(@NotNull MC min, @NotNull MC target) {
+        if (min.isNewerThan(target)) {
+            throw new IllegalArgumentException("The minimum supported version cannot be less than target version");
         }
 
         final List<ItemMirror> mirrors = new ArrayList<>();
-        final ItemTagStream instance = new ItemTagStream(mirrors, currentVersion, versionKey);
+        final ItemTagStream instance = new ItemTagStream(mirrors, target);
 
-        // Pre-components mirrors
-        if (minVersion <= 20.03f) {
-            if (minVersion <= 20.01f) {
-                mirrors.add(new IPotionMirror(minVersion < 9f));
+        if (min.isComponent()) {
+            mirrors.add(new IComponentMirror());
+            mirrors.add(new IMaterialMirror());
+            mirrors.add(new IContainerMirror(instance, true));
+            mirrors.add(new IBundleMirror(instance, true));
+        } else { // pre-components mirrors
+            if (min.isOlderThan(MC.V_1_20_2)) {
+                mirrors.add(new IPotionMirror(min.isOlderThan(MC.V_1_9)));
             }
-            if (minVersion < 16f) {
+            if (min.isOlderThan(MC.V_1_16)) {
                 mirrors.add(new ISkullOwnerMirror());
                 mirrors.add(new IAttributeMirror());
             }
             mirrors.add(new IMaterialMirror());
-            if (minVersion < 14f) {
-                mirrors.add(new IDisplayMirror(minVersion < 13f));
+            if (min.isOlderThan(MC.V_1_14)) {
+                mirrors.add(new IDisplayMirror(min.isOlderThan(MC.V_1_13)));
             }
-            if (minVersion < 13f || currentVersion < 13f) {
-                mirrors.add(new IEnchantMirror(currentVersion));
+            if (min.isOlderThan(MC.V_1_13) || target.isOlderThan(MC.V_1_13)) {
+                mirrors.add(new IEnchantMirror(target));
             }
 
-            if (currentVersion >= 9f) {
+            if (target.isNewerThanOrEquals(MC.V_1_9)) {
                 mirrors.add(new IContainerMirror(instance, false));
-                if (currentVersion >= 14) {
-                    mirrors.add(new IEffectMirror(currentVersion));
-                    if (currentVersion >= 17f) {
+                if (target.isNewerThanOrEquals(MC.V_1_14)) {
+                    mirrors.add(new IEffectMirror(target));
+                    if (target.isNewerThanOrEquals(MC.V_1_17)) {
                         mirrors.add(new IBundleMirror(instance, false));
                     }
                 }
             }
 
-            if (currentVersion >= 20.04f) {
+            if (target.isComponent()) {
                 // Upgrade any old tag, then convert into component
                 mirrors.add(new IComponentMirror());
             } else {
                 // Convert from component, then downgrade any tag
                 mirrors.add(0, new IComponentMirror());
             }
-        } else {
-            mirrors.add(new IComponentMirror());
-            mirrors.add(new IMaterialMirror());
-            mirrors.add(new IContainerMirror(instance, true));
-            mirrors.add(new IBundleMirror(instance, true));
         }
 
         return instance;
     }
 
+    private final List<ItemMirror> mirror;
+    private final MC targetVersion;
+
+    private String versionKey;
+
     /**
-     * Constructs a simple ItemTagStream without any {@link ItemMirror}.
+     * Constructs a simple ItemTagStream instance.
      */
     public ItemTagStream() {
         this(new ArrayList<>());
     }
 
     /**
-     * Constructs an ItemTagStream with specified {@link ItemMirror} list.
+     * Constructs an ItemTagStream instance with specified parameters.
      *
-     * @param mirror Mirror list.
+     * @param mirror a list containing item mirrors to apply.
      */
-    public ItemTagStream(List<ItemMirror> mirror) {
-        this(mirror, ServerInstance.VERSION, "rtagDataVersion");
+    public ItemTagStream(@NotNull List<ItemMirror> mirror) {
+        this(mirror, MC.version());
+    }
+
+    /**
+     * Constructs an ItemTagStream instance with specified parameters.
+     *
+     * @param mirror        a list containing item mirrors to apply.
+     * @param targetVersion the target version to convert items.
+     */
+    public ItemTagStream(@NotNull List<ItemMirror> mirror, @NotNull MC targetVersion) {
+        this.mirror = mirror;
+        this.targetVersion = targetVersion;
+        this.versionKey = null;
     }
 
     /**
@@ -124,51 +120,31 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param version    Server version.
      * @param versionKey Version key identifier from compound.
      */
-    public ItemTagStream(List<ItemMirror> mirror, float version, String versionKey) {
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public ItemTagStream(@NotNull List<ItemMirror> mirror, float version, @NotNull String versionKey) {
         this.mirror = mirror;
-        this.version = version;
+        this.targetVersion = MC.findReverse(MC::featRevision, version);
         this.versionKey = versionKey;
     }
 
     /**
      * Get current {@link ItemMirror} list.
      *
-     * @return A list of item mirror.
+     * @return a list of item mirror.
      */
+    @NotNull
     public List<ItemMirror> getMirror() {
         return mirror;
     }
 
     /**
-     * Get current server version for this instance.
+     * The target version to convert items.
      *
-     * @return Server version.
+     * @return a version object.
      */
-    public float getVersion() {
-        return version;
-    }
-
-    /**
-     * Get current version number from item compound.
-     *
-     * @param compound NBTTagCompound that represent an item.
-     * @return         A valid version number or null.
-     */
-    public Float getVersion(Object compound) {
-        Object version = TagBase.getValue(TagCompound.get(compound, getVersionKey()));
-        if (version instanceof Number) {
-            return ((Number) version).floatValue();
-        }
-        return ItemData.getItemVersion(compound);
-    }
-
-    /**
-     * Get current version key identifier.
-     *
-     * @return Version key identifier.
-     */
-    public String getVersionKey() {
-        return versionKey;
+    @NotNull
+    public MC getTargetVersion() {
+        return targetVersion;
     }
 
     @Override
@@ -199,8 +175,9 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param item Item to convert.
      * @return     A readable map that represent the provided item.
      */
-    public Map<String, Object> toReadableMap(ItemStack item) {
-        return parseMap(toMap(item), getVersion(), true);
+    @NotNull
+    public Map<String, Object> toReadableMap(@NotNull ItemStack item) {
+        return parseMap(toMap(item), getTargetVersion(), true);
     }
 
     /**
@@ -210,22 +187,24 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param map Map that represent the object.
      * @return    An item representation using readable Map as compound.
      */
-    public ItemStack fromReadableMap(Map<String, Object> map) {
-        if (map.containsKey(getVersionKey())) {
-            return fromMap(parseMap(map, ((Number) map.getOrDefault(getVersionKey(), getVersion())).floatValue(), false));
+    @NotNull
+    public ItemStack fromReadableMap(@NotNull Map<String, Object> map) {
+        final MC version = ItemData.lookupVersion(map);
+        if (version != null) {
+            return fromMap(parseMap(map, version, false));
         } else {
             return fromMap(map);
         }
     }
 
+    @NotNull
     @SuppressWarnings("unchecked")
-    private Map<String, Object> parseMap(Map<String, Object> map, float version, boolean readable) {
-        if (version < 13f) {
+    private Map<String, Object> parseMap(@NotNull Map<String, Object> map, @NotNull MC version, boolean readable) {
+        if (version.isLegacy()) {
             return map;
         }
-        final boolean useComponent = version >= 20.04f;
         final Map<String, Object> components;
-        if (useComponent) {
+        if (version.isComponent()) {
             components = (Map<String, Object>) map.get("components");
         } else {
             final Map<String, Object> tag = (Map<String, Object>) map.get("tag");
@@ -235,14 +214,14 @@ public class ItemTagStream extends TStream<ItemStack> {
 
         if (components != null) {
             // Process name
-            final String nameKey = useComponent ? "minecraft:custom_name" : "Name";
+            final String nameKey = version.isComponent() ? "minecraft:custom_name" : "Name";
             final String name = (String) components.get(nameKey);
             if (name != null) {
                 components.put(nameKey, parseText(name, readable));
             }
-            if (version >= 14f) {
+            if (version.isNewerThanOrEquals(MC.V_1_14)) {
                 // Process lore
-                final List<String> lore = (List<String>) components.get(useComponent ? "minecraft:lore" : "Lore");
+                final List<String> lore = (List<String>) components.get(version.isComponent() ? "minecraft:lore" : "Lore");
                 if (lore != null) {
                     lore.replaceAll(line -> parseText(line, readable));
                 }
@@ -251,7 +230,8 @@ public class ItemTagStream extends TStream<ItemStack> {
         return map;
     }
 
-    private String parseText(String s, boolean readable) {
+    @NotNull
+    private String parseText(@NotNull String s, boolean readable) {
         if (ChatComponent.isChatComponent(s)) {
             if (readable) {
                 return ChatComponent.toString(s);
@@ -267,9 +247,9 @@ public class ItemTagStream extends TStream<ItemStack> {
      *
      * @param compound NBTTagCompound with item information.
      */
-    public void onSave(Object compound) {
+    public void onSave(@Nullable Object compound) {
         if (compound != null) {
-            TagCompound.set(compound, getVersionKey(), TagBase.newTag(getVersion()));
+            TagCompound.set(compound, ItemData.VERSION_KEY, TagBase.newTag(getTargetVersion().dataVersion()));
         }
     }
 
@@ -278,11 +258,13 @@ public class ItemTagStream extends TStream<ItemStack> {
      *
      * @param compound NBTTagCompound with item information.
      */
-    public void onLoad(Object compound) {
-        final Float version = getVersion(compound);
-        if (version != null && !versionMatches(version, getVersion())) {
-            TagCompound.remove(compound, getVersionKey()); // Fix rare serialization exception
-            onLoad(compound, version, getVersion());
+    public void onLoad(@Nullable Object compound) {
+        final MC version = ItemData.lookupVersion(compound);
+        if (version != null && !versionMatches(version, getTargetVersion())) {
+            // Fix rare serialization exception
+            TagCompound.remove(compound, getVersionKey());
+
+            onLoad(compound, version, getTargetVersion());
         }
     }
 
@@ -293,6 +275,127 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
+    public void onLoad(@NotNull Object compound, @NotNull MC from, @NotNull MC to) {
+        String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
+        if (id == null) return;
+
+        Object components = TagCompound.get(compound, from.isComponent() ? "components" : "tag");
+        if (from.isNewerThan(to)) {
+            if (components == null) {
+                for (ItemMirror item : mirror) {
+                    item.downgrade(compound, id, from, to);
+                }
+            } else {
+                for (ItemMirror item : mirror) {
+                    item.downgrade(compound, id, components, from, to);
+                }
+            }
+        } else {
+            if (components == null) {
+                for (ItemMirror item : mirror) {
+                    item.upgrade(compound, id, from, to);
+                }
+            } else {
+                for (ItemMirror item : mirror) {
+                    item.upgrade(compound, id, components, from, to);
+                }
+            }
+        }
+    }
+
+    private boolean versionMatches(@NotNull MC from, @NotNull MC to) {
+        if (from.isOlderThan(MC.V_1_19_3) && to.isOlderThan(MC.V_1_19_3)) {
+            return from.feature() == to.feature();
+        }
+        return from.equals(to);
+    }
+
+    @Override
+    public String listToBase64(List<ItemStack> items) {
+        List<ItemStack> filter = new ArrayList<>();
+        for (ItemStack item : items) {
+            if (item != null && item.getType() != Material.AIR) {
+                filter.add(item);
+            }
+        }
+        return super.listToBase64(filter);
+    }
+
+    /**
+     * Create an item tag stream for provided version range.
+     *
+     * @param minVersion     The minimum version to support.
+     * @param currentVersion The current server version.
+     * @return               A newly generated item tag stream.
+     */
+    @NotNull
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public static ItemTagStream ofVersion(float minVersion, float currentVersion) {
+        return ofVersion(minVersion, currentVersion, "rtagDataVersion");
+    }
+
+    /**
+     * Create an item tag stream for provided version range.
+     *
+     * @param minVersion     The minimum version to support.
+     * @param currentVersion The current server version.
+     * @param versionKey     Version key identifier from compound.
+     * @return               A newly generated item tag stream.
+     */
+    @NotNull
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public static ItemTagStream ofVersion(float minVersion, float currentVersion, @Nullable String versionKey) {
+        final ItemTagStream stream = valueOf(MC.findReverse(MC::featRevision, minVersion), MC.findReverse(MC::featRevision, currentVersion));
+        stream.versionKey = versionKey;
+        return stream;
+    }
+
+    /**
+     * Get current server version for this instance.
+     *
+     * @return Server version.
+     */
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public float getVersion() {
+        return targetVersion.featRevision();
+    }
+
+    /**
+     * Get current version number from item compound.
+     *
+     * @param compound NBTTagCompound that represent an item.
+     * @return         A valid version number or null.
+     */
+    @Nullable
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public Float getVersion(Object compound) {
+        Object version = TagBase.getValue(TagCompound.get(compound, getVersionKey()));
+        if (version instanceof Number) {
+            return ((Number) version).floatValue();
+        }
+        return ItemData.getItemVersion(compound);
+    }
+
+    /**
+     * Get current version key identifier.
+     *
+     * @return Version key identifier.
+     */
+    @NotNull
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public String getVersionKey() {
+        return versionKey == null ? "rtagDataVersion" : versionKey;
+    }
+
+    /**
+     * Executed method when NBTTagCompound used tu build an item.
+     *
+     * @param compound NBTTagCompound with item information.
+     * @param from     Version specified in compound.
+     * @param to       Version to convert.
+     */
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    @SuppressWarnings("all")
     public void onLoad(Object compound, float from, float to) {
         String id = (String) TagBase.getValue(TagCompound.get(compound, "id"));
         if (id == null) return;
@@ -328,21 +431,11 @@ public class ItemTagStream extends TStream<ItemStack> {
      * @param to   Version to convert.
      * @return     true if matches.
      */
+    @Deprecated(since = "1.5.14", forRemoval = true)
     protected boolean versionMatches(float from, float to) {
         if (from < 19.02f && to < 19.02f) {
             return (int) from == (int) to;
         }
         return from == to;
-    }
-
-    @Override
-    public String listToBase64(List<ItemStack> items) {
-        List<ItemStack> filter = new ArrayList<>();
-        for (ItemStack item : items) {
-            if (item != null && item.getType() != Material.AIR) {
-                filter.add(item);
-            }
-        }
-        return super.listToBase64(filter);
     }
 }

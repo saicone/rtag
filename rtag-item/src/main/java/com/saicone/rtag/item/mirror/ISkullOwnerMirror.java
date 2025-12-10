@@ -3,6 +3,9 @@ package com.saicone.rtag.item.mirror;
 import com.saicone.rtag.item.ItemMirror;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
+import com.saicone.rtag.util.MC;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigInteger;
 
@@ -15,14 +18,14 @@ import java.math.BigInteger;
 public class ISkullOwnerMirror implements ItemMirror {
 
     @Override
-    public float getDeprecationVersion() {
-        return 16;
+    public @NotNull MC getMaximumVersion() {
+        return MC.V_1_16;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
         // Since 1.19: Items with old saved player id (< 1.16) cannot be converted automatically
-        if (to >= 19f && from < 16f && (id.equals("minecraft:player_head") || id.equals("minecraft:skull"))) {
+        if (to.isNewerThanOrEquals(MC.V_1_19) && from.isOlderThan(MC.V_1_16) && (id.equals("minecraft:player_head") || id.equals("minecraft:skull"))) {
             Object skullOwner = TagCompound.get(components, "SkullOwner");
             if (skullOwner == null) return;
 
@@ -37,8 +40,8 @@ public class ISkullOwnerMirror implements ItemMirror {
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (from >= 16f && to < 16f && id.equals("minecraft:player_head")) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (from.isNewerThanOrEquals(MC.V_1_16) && to.isOlderThan(MC.V_1_16) && id.equals("minecraft:player_head")) {
             Object skullOwner = TagCompound.get(components, "SkullOwner");
             if (skullOwner == null) return;
 
@@ -58,6 +61,7 @@ public class ISkullOwnerMirror implements ItemMirror {
      * @param array Int array containing the UUID.
      * @return      An old formatted UUID or null.
      */
+    @ApiStatus.Internal
     public static String getHexadecimalUUID(int[] array) {
         if (array.length == 4) {
             StringBuilder builder = new StringBuilder();
@@ -78,6 +82,7 @@ public class ISkullOwnerMirror implements ItemMirror {
      * @param uuid Old formatted UUID.
      * @return     Int array containing the UUID or null.
      */
+    @ApiStatus.Internal
     public static int[] getIntArrayUUID(String uuid) {
         final int[] array = new int[4];
         final String rawUUID = uuid.replace("-", "");

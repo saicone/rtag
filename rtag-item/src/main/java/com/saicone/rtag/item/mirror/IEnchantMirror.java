@@ -5,6 +5,9 @@ import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import com.saicone.rtag.util.EnchantmentTag;
+import com.saicone.rtag.util.MC;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,8 +51,18 @@ public class IEnchantMirror implements ItemMirror {
      *
      * @param version The server version to create keys for.
      */
+    @Deprecated(since = "1.5.14", forRemoval = true)
     public IEnchantMirror(float version) {
-        if (version < 13f) {
+        this(MC.findReverse(MC::featRevision, version));
+    }
+
+    /**
+     * Constructs an IEnchantMirror with specified server versions to create keys automatically.
+     *
+     * @param version the server version to create keys for.
+     */
+    public IEnchantMirror(@NotNull MC version) {
+        if (version.isOlderThan(MC.V_1_13)) {
             // "Enchantments" -> "ench"
             // Enchant Name Enchant ID
             this.map = fromString;
@@ -74,7 +87,7 @@ public class IEnchantMirror implements ItemMirror {
      * @param fromKey Key to get current item enchants.
      * @param toKey   New key to set converted enchants.
      */
-    public IEnchantMirror(Map<Object, Object> map, String bookKey, String fromKey, String toKey) {
+    public IEnchantMirror(@NotNull Map<Object, Object> map, @NotNull String bookKey, @NotNull String fromKey, @NotNull String toKey) {
         this.map = map;
         this.bookKey = bookKey;
         this.fromKey = fromKey;
@@ -91,20 +104,20 @@ public class IEnchantMirror implements ItemMirror {
     }
 
     @Override
-    public float getDeprecationVersion() {
-        return 13;
+    public @NotNull MC getMaximumVersion() {
+        return MC.V_1_13;
     }
 
     @Override
-    public void upgrade(Object compound, String id, Object components, float from, float to) {
-        if (to >= 13f && from < 13f) {
+    public void upgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (to.isNewerThanOrEquals(MC.V_1_13) && from.isOlderThan(MC.V_1_13)) {
             processEnchants(components, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
 
     @Override
-    public void downgrade(Object compound, String id, Object components, float from, float to) {
-        if (from >= 13f && to < 13f) {
+    public void downgrade(@NotNull Object compound, @NotNull String id, @NotNull Object components, @NotNull MC from, @NotNull MC to) {
+        if (from.isNewerThanOrEquals(MC.V_1_13) && to.isOlderThan(MC.V_1_13)) {
             processEnchants(components, id.equalsIgnoreCase("minecraft:enchanted_book"));
         }
     }
@@ -115,7 +128,8 @@ public class IEnchantMirror implements ItemMirror {
      * @param tag  ItemStack tag.
      * @param book True if the tag is from enchanted book.
      */
-    public void processEnchants(Object tag, boolean book) {
+    @ApiStatus.Internal
+    public void processEnchants(@NotNull Object tag, boolean book) {
         Object enchants = TagCompound.get(tag, book ? bookKey : fromKey);
         if (enchants != null) {
             int size = TagList.size(enchants);
