@@ -102,15 +102,18 @@ public class ComponentType {
                     if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
                         registry$components = "aq";
                     }
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) {
                         registry$components = "ao";
                         registry$map = "e";
                     }
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                         registry$components = "am";
                     }
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) { // 1.21.9
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
                         registry$components = "an";
+                    }
+                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_11)) {
+                        registry$components = "am";
                     }
                 }
 

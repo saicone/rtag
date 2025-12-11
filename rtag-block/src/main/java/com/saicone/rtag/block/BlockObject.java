@@ -35,7 +35,7 @@ public class BlockObject {
             EasyLookup.addOBCClass("CraftWorld");
             EasyLookup.addOBCClass("block.CraftBlockState");
 
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 EasyLookup.addNMSClass("world.level.storage.ValueInput");
                 EasyLookup.addNMSClass("world.level.storage.ValueOutput");
             }
@@ -102,27 +102,30 @@ public class BlockObject {
                     save = "m";
                     load = "a";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) { // 1.19.4
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) {
                     save = "o";
                 }
                 if (MC.version().isComponent()) {
                     save = "d";
                     load = "c";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) {
                     getRegistry = "K_";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                     getRegistry = "J_";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                     save = "e";
                     load = "b";
                     getRegistry = "K_";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) { // 1.21.9
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
                     getWorld = "j";
                     getRegistry = "L_";
+                }
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_11)) {
+                    getRegistry = "J_";
                 }
             }
 
@@ -136,7 +139,7 @@ public class BlockObject {
             }
 
             if (MC.version().isComponent()) {
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                     method$save = EasyLookup.method(TILE_ENTITY, save, void.class, "ValueOutput");
                 } else {
                     method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound", "HolderLookup.Provider");
@@ -148,7 +151,7 @@ public class BlockObject {
                 method$save = EasyLookup.method(TILE_ENTITY, save, "NBTTagCompound", "NBTTagCompound");
             }
 
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 method$load = EasyLookup.method(TILE_ENTITY, load, void.class, "ValueInput");
             } else if (MC.version().isComponent()) {
                 method$load = EasyLookup.method(TILE_ENTITY, load, void.class, "NBTTagCompound", "HolderLookup.Provider");
@@ -219,7 +222,7 @@ public class BlockObject {
             if (MC.version().isComponent()) {
                 final Object world = getWorld.invoke(tile);
                 final Object registry = world != null ? getRegistry.invoke(world) : Rtag.getMinecraftRegistry();
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                     final Object output = IOValue.createOutput(ProblemReporter.DISCARDING, registry);
                     save.invoke(tile, output);
                     return IOValue.result(output);
@@ -251,7 +254,7 @@ public class BlockObject {
             if (MC.version().isComponent()) {
                 final Object world = getWorld.invoke(tile);
                 final Object registry = world != null ? getRegistry.invoke(world) : Rtag.getMinecraftRegistry();
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                     load.invoke(tile, IOValue.createInput(ProblemReporter.DISCARDING, registry, tag));
                 } else {
                     load.invoke(tile, tag, registry);

@@ -34,7 +34,7 @@ public class EntityObject {
                 EasyLookup.addNMSClass("core.IRegistryCustom", "RegistryAccess");
             }
 
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 EasyLookup.addNMSClass("world.level.storage.ValueInput");
                 EasyLookup.addNMSClass("world.level.storage.ValueOutput");
             }
@@ -105,92 +105,96 @@ public class EntityObject {
                 if (MC.version().isNewerThanOrEquals(MC.V_1_19)) {
                     getEncodeId = "bn";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) { // 1.19.3
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) {
                     getEncodeId = "bq";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) { // 1.19.4
+                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) {
                     getEncodeId = "bp";
                 }
                 if (MC.version().isNewerThanOrEquals(MC.V_1_20)) {
                     getEncodeId = "br";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) {
                     getEncodeId = "bu";
                     saveAsPassenger = "saveAsPassenger";
                     saveWithoutId = "saveWithoutId";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_20_3)) { // 1.20.3
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_3)) {
                     getEncodeId = "bw";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_20_5)) { // 1.20.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_20_5)) {
                     getEncodeId = "bC";
                 }
                 if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
                     getEncodeId = "bD";
                     registryAccess = "dQ";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) {
                     getEncodeId = "bK";
                     registryAccess = "dY";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) { // 1.21.4
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) {
                     registryAccess = "dX";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
                     getEncodeId = "bI";
                     load = "i";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                     getEncodeId = "bN";
                     load = "e";
                     registryAccess = "eb";
                 }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) { // 1.21.9
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
                     getEncodeId = "bW";
                     load = "d";
                     registryAccess = "ej";
+                }
+                if (MC.version().isNewerThanOrEquals(MC.V_1_21_11)) {
+                    getEncodeId = "ca";
+                    registryAccess = "eo";
                 }
             }
 
             method$getEntity = EasyLookup.staticMethod("CraftEntity", "getEntity", "CraftEntity", "CraftServer", "Entity");
             method$getHandle = EasyLookup.method("CraftEntity", "getHandle", "Entity");
 
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) {
                 method$getEncodeId = EasyLookup.method("Entity", getEncodeId, String.class, boolean.class);
             } else {
                 method$getEncodeId = EasyLookup.method("Entity", getEncodeId, String.class);
             }
 
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 if (ServerInstance.Platform.PAPER) {
                     method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "ValueOutput", boolean.class, boolean.class, boolean.class);
                 } else {
                     method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "ValueOutput", boolean.class);
                 }
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) {
                 method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound", boolean.class, boolean.class, boolean.class);
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) {
                 method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound", boolean.class);
             } else {
                 method$saveAsPassenger = EasyLookup.method("Entity", saveAsPassenger, boolean.class, "NBTTagCompound");
             }
 
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 if (ServerInstance.Platform.PAPER) {
                     method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, void.class, "ValueOutput", boolean.class, boolean.class, boolean.class);
                 } else {
                     method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, void.class, "ValueOutput", boolean.class);
                 }
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) {
                 method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound", boolean.class, boolean.class, boolean.class);
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) {
                 method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound", boolean.class);
             } else {
                 // (1.8) void method
                 method$saveWithoutId = EasyLookup.method("Entity", saveWithoutId, "NBTTagCompound", "NBTTagCompound");
             }
 
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 method$load = EasyLookup.method("Entity", load, void.class, "ValueInput");
             } else {
                 method$load = EasyLookup.method("Entity", load, void.class, "NBTTagCompound");
@@ -286,7 +290,7 @@ public class EntityObject {
      */
     public static String getEncodeId(Object entity, boolean includeNonSaveable) {
         try {
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) {
                 return (String) getEncodeId.invoke(entity, includeNonSaveable);
             } else {
                 return (String) getEncodeId.invoke(entity);
@@ -354,7 +358,7 @@ public class EntityObject {
      */
     public static boolean saveAsPassenger(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         try {
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 final Object registry = registryAccess.invoke(entity);
                 final Object output = IOValue.createOutputWrapping(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), compound);
                 if (ServerInstance.Platform.PAPER) {
@@ -362,9 +366,9 @@ public class EntityObject {
                 } else {
                     return (boolean) saveAsPassenger.invoke(entity, output, includeAll);
                 }
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) {
                 return (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag(), includeAll, includeNonSaveable, forceSerialization);
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) {
                 return (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag(), includeAll);
             } else {
                 final boolean result = (boolean) saveAsPassenger.invoke(entity, TagCompound.newTag());
@@ -403,7 +407,7 @@ public class EntityObject {
      */
     public static Object saveWithoutId(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         try {
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 final Object registry = registryAccess.invoke(entity);
                 final Object output = IOValue.createOutputWrapping(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), compound);
                 if (ServerInstance.Platform.PAPER) {
@@ -412,9 +416,9 @@ public class EntityObject {
                     saveWithoutId.invoke(entity, output, includeAll);
                 }
                 return IOValue.result(output);
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) { // Paper 1.21.4
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_21_4) && ServerInstance.Platform.PAPER) {
                 return saveWithoutId.invoke(entity, compound, includeAll, includeNonSaveable, forceSerialization);
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) {
                 return saveWithoutId.invoke(entity, compound, includeAll);
             } else {
                 saveWithoutId.invoke(entity, compound);
@@ -436,7 +440,7 @@ public class EntityObject {
      */
     public static void load(Object entity, Object tag) {
         try {
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
                 final Object registry = registryAccess.invoke(entity);
                 load.invoke(entity, IOValue.createInput(ProblemReporter.DISCARDING, registry != null ? registry : Rtag.getMinecraftRegistry(), tag));
             } else {
