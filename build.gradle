@@ -60,9 +60,9 @@ subprojects {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.21.10-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.21.11-R0.1-SNAPSHOT'
     compileOnly 'it.unimi.dsi:fastutil:8.5.16'
-    compileOnly('com.github.Rubenicos:DataFixerUpper:8.0') { transitive = false }
+    compileOnly('com.github.Rubenicos:DataFixerUpper:9.0') { transitive = false }
 }
 
 def javadocProjects= [

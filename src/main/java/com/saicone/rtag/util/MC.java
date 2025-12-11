@@ -156,6 +156,10 @@ public final class MC implements Comparable<MC> {
             V_1_21_9  = ver(1, 21, 9).rev(6).data(4554).protocol(773).resource(69.0f, 88.0f),
             V_1_21_10 = ver(1, 21, 10).rev(6).data(4556).protocol(773).resource(69.0f, 88.0f);
 
+    // Mounts of Mayhem
+    public static final MC
+            V_1_21_11  = ver(1, 21, 11).rev(7).data(4671).protocol(774).resource(75.0f, 94.1f);
+
     @NotNull
     private static MC ver(int major, int feature) {
         return new MC(major, feature);

@@ -61,7 +61,7 @@ public class EasyLookup {
             addNMSClass("nbt.NBTTagString", "StringTag");
             if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) {
                 EasyLookup.addNMSClass("core.registries.BuiltInRegistries");
-                EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation");
+                EasyLookup.addNMSClass("resources.MinecraftKey", "ResourceLocation", "Identifier");
             }
             if (MC.version().isComponent()) {
                 addNMSClass("core.component.DataComponentHolder");
@@ -98,7 +98,11 @@ public class EasyLookup {
         try {
             Class.forName(name);
             test = true;
-        } catch (Throwable ignored) { }
+        } catch (Throwable t) {
+            if (DEBUG) {
+                System.out.println("The class '" + name + "' not exists");
+            }
+        }
         return test;
     }
 

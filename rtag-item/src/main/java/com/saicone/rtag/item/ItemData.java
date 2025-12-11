@@ -573,6 +573,15 @@ public class ItemData {
         loadPath("minecraft:wolf/sound_variant", "tag", "components", "minecraft:wolf/sound_variant");
         // 1.21.6 - 25w16a
         loadPath("minecraft:painting/variant", "tag", "components", "minecraft:painting/variant");
+        // 1.21.11 - 25w41a
+        loadPath("minecraft:damage_type", "tag", "components", "minecraft:damage_type");
+        loadPath("minecraft:kinetic_weapon", "tag", "components", "minecraft:kinetic_weapon");
+        loadPath("minecraft:minimum_attack_charge", "tag", "components", "minecraft:minimum_attack_charge");
+        loadPath("minecraft:piercing_weapon", "tag", "components", "minecraft:piercing_weapon");
+        loadPath("minecraft:swing_animation", "tag", "components", "minecraft:swing_animation");
+        loadPath("minecraft:use_effects", "tag", "components", "minecraft:use_effects");
+        // 1.21.11 - pre1
+        loadPath("minecraft:attack_range", "tag", "components", "minecraft:attack_range");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
@@ -696,6 +705,16 @@ public class ItemData {
     }
 
     private static void loadComponentDetectors() {
+        // 1.21.11
+        loadComponentDetector(MC.V_1_21_11, components ->
+                components.containsKey("minecraft:damage_type")
+                        || components.containsKey("minecraft:kinetic_weapon")
+                        || components.containsKey("minecraft:minimum_attack_charge")
+                        || components.containsKey("minecraft:piercing_weapon")
+                        || components.containsKey("minecraft:swing_animation")
+                        || components.containsKey("minecraft:use_effects")
+                        || components.containsKey("minecraft:attack_range")
+        );
         // 1.21.6
         loadComponentDetector(MC.V_1_21_6, components ->
                 components.containsKey("minecraft:painting/variant")

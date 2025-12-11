@@ -1661,10 +1661,28 @@ public class IComponentMirror implements ItemMirror {
                     Rtag.INSTANCE.set(components, effects, "minecraft:consumable", "on_consume_effects");
                 }
             }
+
+            if (to.isNewerThanOrEquals(MC.V_1_21_11) && from.isOlderThan(MC.V_1_21_11) && id.equals("minecraft:consumable")) {
+                final Map<String, Object> consumable = TagCompound.getValue(component);
+
+                final String animation = (String) TagBase.getValue(consumable.get("animation"));
+                if ("spear".equals(animation)) {
+                    consumable.put("animation", TagBase.newTag("trident"));
+                }
+            }
         }
 
         @Override
         public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_1_21_11) && to.isOlderThan(MC.V_1_21_11) && id.equals("minecraft:consumable")) {
+                final Map<String, Object> consumable = TagCompound.getValue(component);
+
+                final String animation = (String) TagBase.getValue(consumable.get("animation"));
+                if ("trident".equals(animation)) {
+                    consumable.put("animation", TagBase.newTag("spear"));
+                }
+            }
+
             if (from.isNewerThanOrEquals(MC.V_1_21_2) && to.isOlderThan(MC.V_1_21_2)) {
                 if (id.equals("minecraft:consumable")) {
                     final Map<String, Object> consumable = TagCompound.getValue(component);

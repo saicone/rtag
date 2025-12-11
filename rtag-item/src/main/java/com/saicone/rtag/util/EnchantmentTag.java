@@ -5,6 +5,8 @@ import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,47 +23,47 @@ public enum EnchantmentTag {
 
     AQUA_AFFINITY(0, 6, "WATER_WORKER"),
     BANE_OF_ARTHROPODS(0, 18, "DAMAGE_ARTHROPODS"),
-    BINDING_CURSE(11, 10, "CURSE_OF_BINDING", "BINDING"),
+    BINDING_CURSE(MC.V_1_11, 10, "CURSE_OF_BINDING", "BINDING"),
     BLAST_PROTECTION(0, 3, "PROTECTION_EXPLOSIONS", "EXPLOSIONS_PROTECTION"),
-    CHANNELING(13, 68),
-    DEPTH_STRIDER(8, 8),
+    CHANNELING(MC.V_1_13, 68),
+    DEPTH_STRIDER(MC.V_1_8, 8),
     EFFICIENCY(0, 32, "DIG_SPEED"),
     FEATHER_FALLING(0, 2, "PROTECTION_FALL", "FALL_PROTECTION"),
     FIRE_ASPECT(0, 20),
     FIRE_PROTECTION(0, 1, "PROTECTION_FIRE"),
     FLAME(1, 50, "ARROW_FIRE", "FIRE_ARROW", "FLAME_ARROW"),
     FORTUNE(0, 35, "LOOT_BONUS_BLOCKS"),
-    FROST_WALKER(9, 9),
-    IMPALING(13, 66),
+    FROST_WALKER(MC.V_1_9, 9),
+    IMPALING(MC.V_1_13, 66),
     INFINITY(1, 51, "ARROW_INFINITE"),
     KNOCKBACK(0, 19),
     LOOTING(0, 21, "LOOT_BONUS_MOBS"),
-    LOYALTY(13, 65),
+    LOYALTY(MC.V_1_13, 65),
     LUCK_OF_THE_SEA(7, 61, "LUCK", "LUCK_OF_SEA"),
     LURE(7, 62),
-    MENDING(9, 70),
-    MULTISHOT(14, 52),
-    PIERCING(14, 53),
+    MENDING(MC.V_1_9, 70),
+    MULTISHOT(MC.V_1_14, 52),
+    PIERCING(MC.V_1_14, 53),
     POWER(1, 48, "ARROW_DAMAGE", "ARROW_POWER"),
     PROJECTILE_PROTECTION(0, 4, "PROTECTION_PROJECTILE"),
     PROTECTION(0, 0, "PROTECTION_ENVIRONMENTAL"),
-    PUNCH(11, 49, "ARROW_KNOCKBACK"),
-    QUICK_CHARGE(14, 54, "QUICKCHARGE"),
+    PUNCH(MC.V_1_11, 49, "ARROW_KNOCKBACK"),
+    QUICK_CHARGE(MC.V_1_14, 54, "QUICKCHARGE"),
     RESPIRATION(0, 5, "OXYGEN"),
-    RIPTIDE(13, 67),
+    RIPTIDE(MC.V_1_13, 67),
     SHARPNESS(0, 16, "DAMAGE_ALL"),
     SILK_TOUCH(0, 33),
     SMITE(0, 17, "DAMAGE_UNDEAD"),
-    SOUL_SPEED(16, 11),
-    SWEEPING(11, 22, "SWEEPING_EDGE"),
-    SWIFT_SNEAK(19, 12),
+    SOUL_SPEED(MC.V_1_16, 11),
+    SWEEPING(MC.V_1_11, 22, "SWEEPING_EDGE"),
+    SWIFT_SNEAK(MC.V_1_19, 12),
     THORNS(4, 7),
     UNBREAKING(0, 34, "DURABILITY"),
-    VANISHING_CURSE(11, 71, "CURSE_OF_VANISHING", "VANISHING"),
-    DENSITY(21, 81),
-    BREACH(21, 82),
-    WIND_BURST(21, 83);
-
+    VANISHING_CURSE(MC.V_1_11, 71, "CURSE_OF_VANISHING", "VANISHING"),
+    DENSITY(MC.V_1_21, 81),
+    BREACH(MC.V_1_21, 82),
+    WIND_BURST(MC.V_1_21, 83),
+    LUNGE(MC.V_1_21_11, 84);
 
     /**
      * Cached values of {@link EnchantmentTag#values()}.
@@ -91,10 +93,10 @@ public enum EnchantmentTag {
         List<EnchantmentTag> legacy = new ArrayList<>();
         List<EnchantmentTag> server = new ArrayList<>();
         for (EnchantmentTag tag : VALUES) {
-            if (tag.getVersion() <= 12) {
+            if (tag.getMinimumVersion().isLegacy()) {
                 legacy.add(tag);
             }
-            if (tag.ver == null || MC.version().isNewerThanOrEquals(tag.ver)) {
+            if (MC.version().isNewerThanOrEquals(tag.getMinimumVersion())) {
                 server.add(tag);
             }
         }
@@ -102,20 +104,24 @@ public enum EnchantmentTag {
         SERVER_VALUES = server.toArray(new EnchantmentTag[0]);
     }
 
-    private final MC ver;
-    private final int version;
+    private final MC minimumVersion;
     private final short id;
     private final String[] aliases;
 
     private final Enchantment enchantment;
 
-    EnchantmentTag(int version, int id, String... aliases) {
-        this(version, (short) id, aliases);
+    private final int version;
+
+    EnchantmentTag(@NotNull MC version, int id, @NotNull String... aliases) {
+        this(version, version.feature(), (short) id, aliases);
     }
 
-    EnchantmentTag(int version, short id, String... aliases) {
-        this.ver = MC.findReverse(MC::feature, version);
-        this.version = version;
+    EnchantmentTag(int version, int id, @NotNull String... aliases) {
+        this(MC.findReverse(MC::feature, version), version, (short) id, aliases);
+    }
+
+    EnchantmentTag(@Nullable MC minimumVersion, int version, short id, @NotNull String... aliases) {
+        this.minimumVersion = minimumVersion == null ? MC.first() : minimumVersion;
         this.id = id;
         this.aliases = aliases;
         Enchantment enchantment = parseEnchantment(name());
@@ -126,6 +132,8 @@ public enum EnchantmentTag {
             }
         }
         this.enchantment = enchantment;
+
+        this.version = version;
     }
 
     @SuppressWarnings("deprecation")
@@ -141,12 +149,13 @@ public enum EnchantmentTag {
     }
 
     /**
-     * Get added version for this enchant.
+     * Get the minimum compatible version for this enchantment.
      *
-     * @return A server version number.
+     * @return
      */
-    public int getVersion() {
-        return version;
+    @NotNull
+    public MC getMinimumVersion() {
+        return minimumVersion;
     }
 
     /**
@@ -286,5 +295,15 @@ public enum EnchantmentTag {
             }
         }
         return null;
+    }
+
+    /**
+     * Get added version for this enchant.
+     *
+     * @return A server version number.
+     */
+    @Deprecated(since = "1.5.14", forRemoval = true)
+    public int getVersion() {
+        return version;
     }
 }
