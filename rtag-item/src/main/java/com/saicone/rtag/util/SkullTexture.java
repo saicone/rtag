@@ -171,7 +171,7 @@ public class SkullTexture {
             // Private method/field
             if (useResolvableProfile) { // +1.21.1 (latest builds)
                 $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", "ResolvableProfile");
-            } else if (MC.version().isOlderThanOrEquals(MC.V_1_15)) {
+            } else if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
                 $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
             } else {
                 $setProfile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
