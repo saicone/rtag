@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class to invoke NBTTagCompound methods across versions.
+ * Class to invoke CompoundTag methods across versions.
  *
  * @author Rubenicos
  */
@@ -71,9 +71,9 @@ public class TagCompound {
     }
 
     /**
-     * Constructs an empty NBTTagCompound.
+     * Constructs an empty CompoundTag.
      *
-     * @return New NBTTagCompound instance.
+     * @return New CompoundTag instance.
      */
     public static Object newTag() {
         try {
@@ -84,10 +84,10 @@ public class TagCompound {
     }
 
     /**
-     * Constructs an NBTTagCompound with provided NBT string.
+     * Constructs an CompoundTag with provided NBT string.
      *
      * @param snbt NBT String with data.
-     * @return     New NBTTagCompound instance.
+     * @return     New CompoundTag instance.
      */
     public static Object newTag(String snbt) {
         try {
@@ -98,10 +98,10 @@ public class TagCompound {
     }
 
     /**
-     * Constructs an NBTTagCompound with provided Map of NBTBase values.
+     * Constructs an CompoundTag with provided Map of tag values.
      *
      * @param map Map with tags.
-     * @return    New NBTTagCompound instance.
+     * @return    New CompoundTag instance.
      */
     public static Object newTag(Map<String, Object> map) {
         if (map == null || map.isEmpty()) {
@@ -119,12 +119,12 @@ public class TagCompound {
     }
 
     /**
-     * Constructs an NBTTagCompound with provided Map of NBTBase values.<br>
+     * Constructs an CompoundTag with provided Map of tag values.<br>
      * This method doesn't provide any safe check and assumes that the provided
-     * map is completely usable to create a new NBTTagCompound.
+     * map is completely usable to create a new CompoundTag.
      *
      * @param map Map with tags.
-     * @return    New NBTTagCompound instance.
+     * @return    New CompoundTag instance.
      */
     public static Object newUncheckedTag(Map<String, Object> map) {
         if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
@@ -147,32 +147,32 @@ public class TagCompound {
     }
 
     /**
-     * Constructs an NBTTagCompound with provided object
+     * Constructs an CompoundTag with provided object
      * and required {@link RtagMirror} to convert Objects.<br>
      * This method can convert any supported object to Map
      * of objects using Gson deserializer.
      *
      * @param mirror RtagMirror to convert objects into tags.
-     * @param object Object that can be converted to NBTTagCompound.
-     * @return       New NBTTagCompound instance.
+     * @param object Object that can be converted to CompoundTag.
+     * @return       New CompoundTag instance.
      * @throws IllegalArgumentException if the object is not supported.
      */
     @SuppressWarnings("unchecked")
     public static Object newTag(RtagMirror mirror, Object object) {
         final Map<String, Object> map = (Map<String, Object>) OptionalType.of(object).as(Map.class);
         if (map == null) {
-            throw new IllegalArgumentException("The object type " + object.getClass().getName() + " cannot be used to create NBTTagCompound tag using TagCompound class");
+            throw new IllegalArgumentException("The object type " + object.getClass().getName() + " cannot be used to create CompoundTag using TagCompound class");
         }
         return newTag(mirror, map);
     }
 
     /**
-     * Constructs an NBTTagCompound with provided Map of Objects
+     * Constructs an CompoundTag with provided Map of Objects
      * and required {@link RtagMirror} to convert Objects.
      *
      * @param mirror RtagMirror to convert objects into tags.
      * @param map    Map with objects.
-     * @return       New NBTTagCompound instance.
+     * @return       New CompoundTag instance.
      */
     public static Object newTag(RtagMirror mirror, Map<String, Object> map) {
         if (map.isEmpty()) {
@@ -187,20 +187,20 @@ public class TagCompound {
     }
 
     /**
-     * Check if the provided object is instance of NBTTagCompound class.
+     * Check if the provided object is instance of CompoundTag class.
      *
      * @param object the object to check.
-     * @return       true if the object is an instance of NBTTagCompound class.
+     * @return       true if the object is an instance of CompoundTag class.
      */
     public static boolean isTagCompound(Object object) {
         return CompoundTag.isInstance(object);
     }
 
     /**
-     * Copy provided NBTTagCompound into new one.
+     * Copy provided CompoundTag into new one.
      *
-     * @param tag NBTTagCompound instance.
-     * @return    A copy of original NBTTagCompound.
+     * @param tag CompoundTag instance.
+     * @return    A copy of original CompoundTag.
      */
     public static Object clone(Object tag) {
         try {
@@ -211,10 +211,10 @@ public class TagCompound {
     }
 
     /**
-     * Copy provided NBTTagCompound into new one without exceptions.
+     * Copy provided CompoundTag into new one without exceptions.
      *
-     * @param tag NBTTagCompound instance.
-     * @return    A copy of original NBTTagCompound.
+     * @param tag CompoundTag instance.
+     * @return    A copy of original CompoundTag.
      */
     public static Object safeClone(Object tag) {
         try {
@@ -228,8 +228,8 @@ public class TagCompound {
     /**
      * Get current tag map.
      *
-     * @param tag NBTTagCompound instance.
-     * @return    A Map of NBTBase Objects.
+     * @param tag CompoundTag instance.
+     * @return    a Map of tags.
      */
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getValue(Object tag) {
@@ -244,7 +244,7 @@ public class TagCompound {
      * Get current tag map with converted values.
      *
      * @param mirror RtagMirror to convert tags.
-     * @param tag    NBTTagCompound instance.
+     * @param tag    CompoundTag instance.
      * @return       A Map of Objects.
      */
     public static Map<String, Object> getValue(RtagMirror mirror, Object tag) {
@@ -256,9 +256,9 @@ public class TagCompound {
     }
 
     /**
-     * Get the provided NBTTagCompound as Json string.
+     * Get the provided CompoundTag as Json string.
      *
-     * @param tag NBTTagCompound instance.
+     * @param tag CompoundTag instance.
      * @return    A Json string.
      */
     @SuppressWarnings("all")
@@ -267,10 +267,10 @@ public class TagCompound {
     }
 
     /**
-     * Get the provided NBTTagCompound as Json string.
+     * Get the provided CompoundTag as Json string.
      *
      * @param gson The Gson instance to use.
-     * @param tag  NBTTagCompound instance.
+     * @param tag  CompoundTag instance.
      * @return     A Json string.
      */
     @SuppressWarnings("all")
@@ -282,7 +282,7 @@ public class TagCompound {
     /**
      * The inverse result of {@link #hasKey(Object, String)}.
      *
-     * @param tag NBTTagCompound instance.
+     * @param tag CompoundTag instance.
      * @param key Key to find.
      * @return    True if key exist.
      */
@@ -295,9 +295,9 @@ public class TagCompound {
     }
 
     /**
-     * Check if NBTTagCompound contains certain key in Map.
+     * Check if CompoundTag contains certain key in Map.
      *
-     * @param tag NBTTagCompound instance.
+     * @param tag CompoundTag instance.
      * @param key Key to find.
      * @return    True if key exist.
      */
@@ -306,9 +306,9 @@ public class TagCompound {
     }
 
     /**
-     * Remove certain key from NBTTagCompound.
+     * Remove certain key from CompoundTag.
      *
-     * @param tag NBTTagCompound instance.
+     * @param tag CompoundTag instance.
      * @param key Key to remove.
      * @return    The previous value associated with key, or null if there was no mapping for key.
      */
@@ -317,9 +317,9 @@ public class TagCompound {
     }
 
     /**
-     * Put certain NBTBase value to NBTTagCompound.
+     * Put certain Tag value to CompoundTag.
      *
-     * @param tag   NBTTagCompound instance.
+     * @param tag   CompoundTag instance.
      * @param key   Value key.
      * @param value Value to put.
      * @return      The previous value associated with key, or null if there was no mapping for key.
@@ -329,10 +329,10 @@ public class TagCompound {
     }
 
     /**
-     * Override the current map of NBTBase inside NBTTagCompound.
+     * Override the current map of tag values inside CompoundTag.
      *
-     * @param tag NBTTagCompound instance.
-     * @param map Map with NBTBase tags.
+     * @param tag CompoundTag instance.
+     * @param map Map with tag objects.
      */
     public static void setValue(Object tag, Map<String, Object> map) {
         if (map.isEmpty()) {
@@ -347,11 +347,11 @@ public class TagCompound {
     }
 
     /**
-     * Merge the provided value into NBTTagCompound.
+     * Merge the provided value into CompoundTag.
      *
-     * @param tag     NBTTagCompound instance.
+     * @param tag     CompoundTag instance.
      * @param value   The value to merge.
-     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param replace True to replace the repeated values inside CompoundTag.
      * @return        true if the value was merged.
      */
     public static boolean merge(Object tag, Object value, boolean replace) {
@@ -359,11 +359,11 @@ public class TagCompound {
     }
 
     /**
-     * Merge the provided value into NBTTagCompound.
+     * Merge the provided value into CompoundTag.
      *
-     * @param tag     NBTTagCompound instance.
+     * @param tag     CompoundTag instance.
      * @param value   The value to merge.
-     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param replace True to replace the repeated values inside CompoundTag.
      * @param deep    True to merge into sub paths instead of main path.
      * @return        true if the value was merged.
      */
@@ -394,20 +394,20 @@ public class TagCompound {
     }
 
     /**
-     * Get NBTBase value associated with key.
+     * Get Tag value associated with key.
      *
-     * @param tag NBTTagCompound instance.
+     * @param tag CompoundTag instance.
      * @param key Value key.
-     * @return    A NBTBase value if exist inside compound, null if not.
+     * @return    A Tag value if exist inside compound, null if not.
      */
     public static Object get(Object tag, String key) {
         return getValue(tag).get(key);
     }
 
     /**
-     * Clear the provided NBTTagCompound tag.
+     * Clear the provided CompoundTag tag.
      *
-     * @param tag NBTTagCompound instance.
+     * @param tag CompoundTag instance.
      */
     public static void clear(Object tag) {
         getValue(tag).clear();

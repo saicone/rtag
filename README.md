@@ -1,6 +1,6 @@
 <h1 align="center">Rtag</h1>
 
-<h4 align="center">The "readable tag" library, an easy way to handle NBTTagCompounds.</h4>
+<h4 align="center">The "readable tag" library, an easy way to handle minecraft data.</h4>
 
 <p align="center">
     <a href="https://saic.one/discord">

@@ -109,7 +109,7 @@ public class IDisplayMirror implements ItemMirror {
     /**
      * Process current NBT tag that contains text inside.
      *
-     * @param tag    NBTTagString instance.
+     * @param tag    StringTag instance.
      * @param toJson True to convert text into Json component.
      * @return       A new tag with converted text value.
      */

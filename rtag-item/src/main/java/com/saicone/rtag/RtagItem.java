@@ -143,7 +143,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     /**
      * Get current item tag or null.
      *
-     * @return A NBTTagCompound.
+     * @return a compound tag.
      */
     public Object getLiteralTag() {
         return this.tag;
@@ -154,7 +154,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      * If this instance has not been edited, it will copy the current tag
      * or create a new one if the current tag is null.
      *
-     * @return A NBTTagCompound.
+     * @return a compound tag.
      */
     @Override
     public Object getTag() {
@@ -255,7 +255,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
     /**
      * Change item tag into new one.<br>
-     * Value must be Map&lt;String, Object&gt; or NBTTagCompound.
+     * Value must be Map&lt;String, Object&gt; or CompoundTag.
      *
      * @param value Object to replace current tag.
      * @return      True if tag has replaced.
@@ -425,7 +425,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         if (tag != null) {
             final List<Object> lore = TagList.getValue(tag);
             for (int i = 0; i < lore.size(); i++) {
-                // NBTTagString -> component as json -> colored string -> fixed component as json -> NBTTagString
+                // StringTag -> component as json -> colored string -> fixed component as json -> StringTag
                 final String line = (String) TagBase.getValue(lore.get(i));
                 if (ChatComponent.isChatComponent(line)) {
                     lore.set(i, TagBase.newTag(ChatComponent.toJson(ChatComponent.toString(line))));
@@ -867,10 +867,10 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     }
 
     /**
-     * Get the NBTTagCompound that represent the provided enchantment.
+     * Get the CompoundTag that represent the provided enchantment.
      *
      * @param enchant Enchantment object.
-     * @return        A NBTTagCompound if the enchantment was found, null otherwise.
+     * @return        a compound tag if the enchantment was found, null otherwise.
      */
     public Object getEnchantment(Object enchant) {
         final EnchantmentTag tag = EnchantmentTag.of(enchant);

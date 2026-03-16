@@ -12,7 +12,7 @@ The `ItemObject` is an utility class that allow to handle Bukkit and Minecraft i
 
 ### Create
 
-Create Minecraft `ItemStack` using `NBTTagCompound`, so it allow to get from different formats.
+Create Minecraft `ItemStack` using `CompoundTag`, so it allow to get from different formats.
 
 ```java
 // Create from compound
@@ -45,10 +45,10 @@ Edit various things of Bukkit and Minecraft `ItemStack`.
 ```java
 Object item = ItemObject.newItem(TagCompound.newTag("{id:\"minecraft:diamond_sword\"}"));
 
-// Save into NBTTagCompound
+// Save into CompoundTag
 Object compound = ItemObject.save(item);
 
-// Get item tag as NBTTagCompound
+// Get item tag as CompoundTag
 Object tag = ItemObject.getCustomDataTag(item);
 // Set item tag
 ItemObject.setCustomDataTag(item, tag);
@@ -88,9 +88,9 @@ Edit various things of Minecraft `Entity`.
 ```java
 Object entity = ...;
 
-// Save into NBTTagCompound
+// Save into CompoundTag
 Object compound = EntityObject.save(entity);
-// Load NBTTagCompound into entity
+// Load CompoundTag into entity
 EntityObject.load(entity, compound);
 ```
 
@@ -100,24 +100,24 @@ The `BlockObject` is an utility class that allow to handle Bukkit and Minecraft 
 
 ### Convert
 
-Convert Bukkit `Block` into Minecraft `TileEntity` (if it's aplicable).
+Convert Bukkit `Block` into Minecraft `BlockEntity` (if it's aplicable).
 
 ```java
 Block block = ...;
 
-// Convert to Minecraft TileEntity
-Object mcTileEntity = BlockObject.getTileEntity(block);
+// Convert to Minecraft BlockEntity
+Object blockEntity = BlockObject.getTileEntity(block);
 ```
 
 ### Edit
 
-Edit various things of Minecraft `TileEntity`.
+Edit various things of Minecraft `BlockEntity`.
 
 ```java
 Object tileEntity = ...;
 
-// Save into NBTTagCompound
+// Save into CompoundTag
 Object compound = BlockObject.save(tileEntity);
-// Load NBTTagCompound into tileEntity
+// Load CompoundTag into tileEntity
 BlockObject.load(tileEntity, compound);
 ```

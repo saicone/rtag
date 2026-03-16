@@ -10,9 +10,9 @@ With Rtag you can set custom objects into NBT tags and get has the required type
 
 By using the Gson library inside Bukkit code, it's possible to convert objets following the next process:
 
-**Serializer (set)**: Custom Object -> Json String -> Map -> NBTTagCompound
+**Serializer (set)**: Custom Object -> Json String -> Map -> CompoundTag
 
-**Deserializer (get)**: NBTTagCompound -> Map -> Json String -> Custom Object
+**Deserializer (get)**: CompoundTag -> Map -> Json String -> Custom Object
 
 ```java
 // Create your custom object

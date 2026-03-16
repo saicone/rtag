@@ -188,9 +188,9 @@ public class ItemObject {
     }
 
     /**
-     * Create ItemStack from NBTTagCompound.
+     * Create ItemStack from CompoundTag.
      *
-     * @param compound NBTTagCompound that represent the item.
+     * @param compound CompoundTag that represent the item.
      * @return         A new ItemStack.
      */
     @SuppressWarnings("unchecked")
@@ -263,10 +263,10 @@ public class ItemObject {
     }
 
     /**
-     * Save current Item tag into new NBTTagCompound.
+     * Save current Item tag into new CompoundTag.
      *
      * @param item ItemStack instance.
-     * @return     A NBTTagCompound that represent the item.
+     * @return     a compound tag that represent the item.
      */
     @SuppressWarnings("unchecked")
     public static Object save(Object item) {
@@ -284,13 +284,13 @@ public class ItemObject {
     }
 
     /**
-     * Load NBTTagCompound into ItemStack.
+     * Load CompoundTag into ItemStack.
      *
      * @deprecated Since Minecraft 1.20.5, the safe-way to load data into item is applying a data component patch.
      * @see #apply(Object, Object)
      *
      * @param item     ItemStack instance.
-     * @param compound The NBTTagCompound to load.
+     * @param compound The CompoundTag to load.
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
@@ -348,7 +348,7 @@ public class ItemObject {
 
     /**
      * Apply data component into ItemStack.<br>
-     * On versions before 1.20.5 this method load NBTTagCompound into item.
+     * On versions before 1.20.5 this method load CompoundTag into item.
      *
      * @param item      ItemStack instance.
      * @param component The data component to apply into.
@@ -486,7 +486,7 @@ public class ItemObject {
     }
 
     /**
-     * Get current NBTTagCompound from custom data component.<br>
+     * Get current CompoundTag from custom data component.<br>
      * On versions before 1.20.5 this method return item tag.
      *
      * @param item ItemStack instance.
@@ -505,13 +505,13 @@ public class ItemObject {
     }
 
     /**
-     * Get current NBTTagCompound.
+     * Get current CompoundTag.
      *
      * @deprecated To get item tag-like data use {@link #getCustomDataTag(Object)} instead.
      * @see #getCustomDataTag(Object)
      *
      * @param item ItemStack instance.
-     * @return     The NBTTagCompound inside provided item.
+     * @return     The CompoundTag inside provided item.
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
@@ -548,7 +548,7 @@ public class ItemObject {
      * On versions before 1.20.5 this method replace item tag.
      *
      * @param item ItemStack instance.
-     * @param tag  NBTTagCompound to put into custom data component.
+     * @param tag  CompoundTag to put into custom data component.
      */
     public static void setCustomDataTag(Object item, Object tag) {
         if (MC.version().isComponent()) {
@@ -563,13 +563,13 @@ public class ItemObject {
     }
 
     /**
-     * Overwrite current NBTTagCompound.
+     * Overwrite current CompoundTag.
      *
      * @deprecated To set item tag-like data use {@link #setCustomDataTag(Object, Object)} instead.
      * @see #setCustomDataTag(Object, Object)
      *
      * @param item ItemStack instance.
-     * @param tag  NBTTagCompound to put into item.
+     * @param tag  CompoundTag to put into item.
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated

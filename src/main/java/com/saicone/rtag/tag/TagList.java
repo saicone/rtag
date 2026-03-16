@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
- * Class to invoke NBTTagList methods across versions.
+ * Class to invoke ListTag methods across versions.
  *
  * @author Rubenicos
  */
@@ -59,9 +59,9 @@ public class TagList {
     }
 
     /**
-     * Constructs an empty NBTTagList.
+     * Constructs an empty ListTag.
      *
-     * @return New NBTTagList instance.
+     * @return New ListTag instance.
      */
     public static Object newTag() {
         try {
@@ -72,10 +72,10 @@ public class TagList {
     }
 
     /**
-     * Constructs an NBTTagList with provided List of NBTBase.
+     * Constructs an ListTag with provided List of tags.
      *
-     * @param list List with NBTBase values.
-     * @return     New NBTTagList instance.
+     * @param list List with Tag values.
+     * @return     New ListTag instance.
      * @param <T>  List type parameter.
      */
     public static <T> Object newTag(List<T> list) {
@@ -94,12 +94,12 @@ public class TagList {
     }
 
     /**
-     * Constructs an NBTTagList with provided List of NBTBase.<br>
+     * Constructs an ListTag with provided List of tags.<br>
      * This method doesn't provide any safe check and assumes that the provided
-     * list is completely usable to create a new NBTTagList.
+     * list is completely usable to create a new ListTag.
      *
-     * @param list List with NBTBase values.
-     * @return     New NBTTagList instance.
+     * @param list List with Tag values.
+     * @return     New ListTag instance.
      * @param <T>  List type parameter.
      */
     public static <T> Object newUncheckedTag(List<T> list) {
@@ -127,12 +127,12 @@ public class TagList {
     }
 
     /**
-     * Constructs an NBTTagList with provided List of any type
+     * Constructs an ListTag with provided List of any type
      * and required {@link RtagMirror} to convert Objects.
      *
      * @param mirror RtagMirror to convert objects into tags.
      * @param list   List with objects.
-     * @return       New NBTTagList instance.
+     * @return       New ListTag instance.
      * @param <T>    List type parameter.
      */
     public static <T> Object newTag(RtagMirror mirror, List<T> list) {
@@ -147,20 +147,20 @@ public class TagList {
     }
 
     /**
-     * Check if the provided object is instance of NBTTagList class.
+     * Check if the provided object is instance of ListTag class.
      *
      * @param object the object to check.
-     * @return       true if the object is an instance of NBTTagList class.
+     * @return       true if the object is an instance of ListTag class.
      */
     public static boolean isTagList(Object object) {
         return ListTag.isInstance(object);
     }
 
     /**
-     * Copy provided NBTTagList into new one.
+     * Copy provided ListTag into new one.
      *
-     * @param tag NBTTagList instance.
-     * @return    A copy of original NBTTagList.
+     * @param tag ListTag instance.
+     * @return    A copy of original ListTag.
      */
     public static Object clone(Object tag) {
         try {
@@ -171,11 +171,11 @@ public class TagList {
     }
 
     /**
-     * Copy provided NBTTagList into new one using a list filter.
+     * Copy provided ListTag into new one using a list filter.
      *
-     * @param tag    NBTTagList instance.
+     * @param tag    ListTag instance.
      * @param filter Object filter.
-     * @return       A filtered copy of original NBTTagList.
+     * @return       A filtered copy of original ListTag.
      */
     public static Object clone(Object tag, BiPredicate<Object, Integer> filter) {
         final List<Object> list = getValue(tag);
@@ -195,8 +195,8 @@ public class TagList {
     /**
      * Get current tag list.
      *
-     * @param tag NBTTagList instance.
-     * @return    A list of NBTBase objects.
+     * @param tag ListTag instance.
+     * @return    a list of tags.
      */
     @SuppressWarnings("unchecked")
     public static List<Object> getValue(Object tag) {
@@ -213,7 +213,7 @@ public class TagList {
      * @see #getValue(Object)
      *
      * @param mirror RtagMirror to convert tags.
-     * @param tag    NBTTagList instance.
+     * @param tag    ListTag instance.
      * @return       A list of objects.
      */
     public static List<Object> getValue(RtagMirror mirror, Object tag) {
@@ -229,8 +229,8 @@ public class TagList {
     /**
      * Get current tag type that represent tag list.
      *
-     * @param tag NBTTagList instance.
-     * @return    A NBTBase object type.
+     * @param tag ListTag instance.
+     * @return    A Tag object type.
      *
      * @see TagBase#getTypeId(Object)
      */
@@ -258,7 +258,7 @@ public class TagList {
     /**
      * Get the size of elements inside list.
      *
-     * @param tag NBTTagList instance.
+     * @param tag ListTag instance.
      * @return    Size of list inside.
      */
     public static int size(Object tag) {
@@ -266,21 +266,21 @@ public class TagList {
     }
 
     /**
-     * Check if current NBTTagList value contains NBTBase object.
+     * Check if current ListTag value contains Tag object.
      *
-     * @param listTag NBTTagList instance.
-     * @param tag     NBTBase object.
-     * @return        true if the list contains the NBTBase object.
+     * @param listTag ListTag instance.
+     * @param tag     Tag object.
+     * @return        true if the list contains the Tag object.
      */
     public static boolean contains(Object listTag, Object tag) {
         return getValue(listTag).contains(tag);
     }
 
     /**
-     * Add NBTBase tag.
+     * Add tag object.
      *
-     * @param listTag NBTTagList instance.
-     * @param tag     NBTBase tag to add.
+     * @param listTag ListTag instance.
+     * @param tag     tag object to add.
      */
     public static void add(Object listTag, Object tag) {
         // List are heterogeneous since 1.21.5
@@ -296,10 +296,10 @@ public class TagList {
     }
 
     /**
-     * Add multiple NBTBase tags.
+     * Add multiple tag objects.
      *
-     * @param listTag NBTTagList instance.
-     * @param tags    NBTBase tags to add.
+     * @param listTag ListTag instance.
+     * @param tags    tag objects to add.
      */
     public static void add(Object listTag, Object... tags) {
         // List are heterogeneous since 1.21.5
@@ -318,9 +318,9 @@ public class TagList {
     }
 
     /**
-     * Remove NBTBase tag.
+     * Remove tag object.
      *
-     * @param tag   NBTTagList instance.
+     * @param tag   ListTag instance.
      * @param index The index of the tag to be removed
      * @return      Removed tag.
      */
@@ -329,9 +329,9 @@ public class TagList {
     }
 
     /**
-     * Set NBTBase tag at index.
+     * Set tag object at index.
      *
-     * @param listTag NBTTagList instance.
+     * @param listTag ListTag instance.
      * @param index   Index of element to replace.
      * @param tag     Tag value to set.
      */
@@ -340,10 +340,10 @@ public class TagList {
     }
 
     /**
-     * Change the current NBTBase type inside NBTTagList.
+     * Change the current Tag type inside ListTag.
      *
-     * @param tag  NBTTagList instance.
-     * @param type NBTBase object type.
+     * @param tag  ListTag instance.
+     * @param type Tag object type.
      *
      * @see TagBase#getTypeId(Object)
      */
@@ -365,10 +365,10 @@ public class TagList {
     }
 
     /**
-     * Override the current NBTBase list inside NBTTagList.
+     * Override the current Tag list inside ListTag.
      *
-     * @param tag  NBTTagList instance.
-     * @param list List with NBTBase values.
+     * @param tag  ListTag instance.
+     * @param list List with Tag values.
      */
     public static void setValue(Object tag, List<Object> list) {
         if (list.isEmpty()) {
@@ -387,11 +387,11 @@ public class TagList {
     }
 
     /**
-     * Get NBTBase tag from index.
+     * Get tag object from index.
      *
-     * @param tag   NBTTagList instance.
+     * @param tag   ListTag instance.
      * @param index Index of the tag to return.
-     * @return      A NBTBase instance.
+     * @return      A Tag instance.
      */
     public static Object get(Object tag, int index) {
         final List<Object> value = getValue(tag);
@@ -399,9 +399,9 @@ public class TagList {
     }
 
     /**
-     * Clear a NBTTagList and reset list type.
+     * Clear a ListTag and reset list type.
      *
-     * @param tag NBTTagList instance.
+     * @param tag ListTag instance.
      */
     public static void clear(Object tag) {
         getValue(tag).clear();

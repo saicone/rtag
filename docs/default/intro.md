@@ -10,28 +10,28 @@ The Named Binary Tag (NBT) format is a tree data structure used by Minecraft to 
 
 The NBT format is commonly used to save Minecraft objects like Worlds, Items, Entities... etc.
 
-The NBT classes inside Minecraft code extends `NBTBase` and reference the common Java objects: `NBTTagString`, `NBTTagInt`, `NBTTagLong`, `NBTTagList`... etc. The main NBT class would be `NBTTagCompound` which refers to a Java Map and is the basic object to store NBT objects with their respective key (`Map<String, NBTBase>`).
+The NBT classes inside Minecraft code extends `Tag` and reference the common Java objects: `StringTag`, `IntTag`, `LongTag`, `ListTag`... etc. The main NBT class would be `CompoundTag` which refers to a Java Map and is the basic object to store NBT objects with their respective key (`Map<String, Tag>`).
 
 ## Compatible objects
 
 The NBT objects defined by their type IDs are:
 
-1. **NBTTagByte**: Same has `byte` in Java.
-2. **NBTTagShort**: Same has `short` in Java.
-3. **NBTTagInt**: Same has `int` in Java.
-4. **NBTTagLong**: Same has `long` in Java.
-5. **NBTTagFloat**: Same has `float` in Java.
-6. **NBTTagDouble**: Same has `double` in Java.
-7. **NBTTagByteArray**: Same has `byte[]` in Java.
-8. **NBTTagString**: Same has `String` in Java.
-9. **NBTTagList**: Same has `List<NBTBase>` in Java.
-10. **NBTTagCompound**: Same has `Map<String, NBTBase>` in Java.
-11. **NBTTagIntArray**: Same has `int[]` in Java.
-12. **NBTTagLongArray**: Same has `long[]` in Java (Added on MC 1.12).
+1. **ByteTag**: Same has `byte` in Java.
+2. **ShortTag**: Same has `short` in Java.
+3. **IntTag**: Same has `int` in Java.
+4. **LongTag**: Same has `long` in Java.
+5. **FloatTag**: Same has `float` in Java.
+6. **DoubleTag**: Same has `double` in Java.
+7. **ByteArrayTag**: Same has `byte[]` in Java.
+8. **StringTag**: Same has `String` in Java.
+9. **ListTag**: Same has `List<Tag>` in Java.
+10. **CompoundTag**: Same has `Map<String, Tag>` in Java.
+11. **IntArrayTag**: Same has `int[]` in Java.
+12. **LongArrayTag**: Same has `long[]` in Java (Added on MC 1.12).
 
 :::info Boolean object
 
-As you can see the booleans are not compatible, because are saved as `byte` (`NBTTagByte`).
+As you can see the booleans are not compatible, because are saved as `byte` (`ByteTag`).
 
 So take in count that Java by default cannot convert `byte` as `boolean` (You will see a better explanation next).
 
@@ -49,15 +49,15 @@ So it has been a frequent problem for developers that use NBT directly instead o
 
 ## Rtag Magic
 
-To simplify NBT usage, the Rtag (readable tag) library provide an easy way to handle NBTTagCompounds and the other compatible objects.
+To simplify NBT usage, the Rtag (readable tag) library provide an easy way to handle tags.
 
-Rtag (try to) convert any Java object into `NBTBase` and viceversa, in order to handle NBT as normal objects in a easy way.
+Rtag (try to) convert any Java object into `Tag` and viceversa, in order to handle NBT as normal objects in a easy way.
 
 ```java
 // GET - You will see as normal object
-NBTBase -> Object
-// SET - The server will save as NBTBase object
-Object -> NBTBase
+Tag -> Object
+// SET - The server will save as Tag object
+Object -> Tag
 ```
 
 Currently limited by `boolean` conversion, so it's suggested to get them as `byte` or run an [explicit conversion](feature/types.md#conversion).

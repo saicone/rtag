@@ -13,7 +13,7 @@ Para entender esta página deberías ver la información sobre [Objetos de Tag](
 :::
 
 
-Las rutas con una estructura de datos de árbol utilizadas en Rtag son bastante simples, así que hay una forma más compleja de manejar las ediciones mediante funciones que aceptan cualquier objeto de `NBTTagCompound` y `NBTTagList` mientras la ruta es resuelta.
+Las rutas con una estructura de datos de árbol utilizadas en Rtag son bastante simples, así que hay una forma más compleja de manejar las ediciones mediante funciones que aceptan cualquier objeto de `CompoundTag` y `ListTag` mientras la ruta es resuelta.
 
 ## Como usarlo
 
@@ -41,7 +41,7 @@ Es imposible para una estructura de datos de árbol obtener el valor `value` o e
 
 En un caso normal deberías obtener la lista entera e iterar sobre esta para revisar cual valor tiene `EPIC` en el `id`, lo cual gastaría muchos recursos debido a que Rtag convetirá la lista entera en objetos normales incluyendo valores que no se utilizarán en la operación.
 
-Para resolver eso puedes utilizar rutas funcionales al proveer una función que itera el `NBTTagList` directamente.
+Para resolver eso puedes utilizar rutas funcionales al proveer una función que itera el `ListTag` directamente.
 
 ```java
 // Preparar la función

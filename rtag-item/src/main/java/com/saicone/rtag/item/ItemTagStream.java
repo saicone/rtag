@@ -285,9 +285,9 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     /**
-     * Executed method when NBTTagCompound is extracted from item.
+     * Executed method when CompoundTag is extracted from item.
      *
-     * @param compound NBTTagCompound with item information.
+     * @param compound CompoundTag with item information.
      */
     public void onSave(@Nullable Object compound) {
         if (compound != null) {
@@ -296,9 +296,9 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     /**
-     * Executed method when NBTTagCompound used tu build an item.
+     * Executed method when CompoundTag used tu build an item.
      *
-     * @param compound NBTTagCompound with item information.
+     * @param compound CompoundTag with item information.
      */
     public void onLoad(@Nullable Object compound) {
         MC version = null;
@@ -320,9 +320,9 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     /**
-     * Executed method when NBTTagCompound used tu build an item.
+     * Executed method when CompoundTag used tu build an item.
      *
-     * @param compound NBTTagCompound with item information.
+     * @param compound CompoundTag with item information.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */
@@ -414,7 +414,7 @@ public class ItemTagStream extends TStream<ItemStack> {
     /**
      * Get current version number from item compound.
      *
-     * @param compound NBTTagCompound that represent an item.
+     * @param compound CompoundTag that represent an item.
      * @return         A valid version number or null.
      */
     @Nullable
@@ -439,9 +439,9 @@ public class ItemTagStream extends TStream<ItemStack> {
     }
 
     /**
-     * Executed method when NBTTagCompound used tu build an item.
+     * Executed method when CompoundTag used tu build an item.
      *
-     * @param compound NBTTagCompound with item information.
+     * @param compound CompoundTag with item information.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
      */

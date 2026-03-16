@@ -13,7 +13,7 @@ To understand this page you should see [Tag Objects guide](../advanced/tags.md).
 :::
 
 
-The tree-like paths used by Rtag is quite simple, so there is a more complex way to handle edits with functions that accept `NBTTagCompound` and `NBTTagList` objects while the path is resolved.
+The tree-like paths used by Rtag is quite simple, so there is a more complex way to handle edits with functions that accept `CompoundTag` and `ListTag` objects while the path is resolved.
 
 ## Usage
 
@@ -41,7 +41,7 @@ It's impossible for a tree-like path to get the `value` of id `EPIC`, because it
 
 In a normal case you should get the entire list and iterate hover to check what value has `EPIC` in `id`, which is quite expensive because Rtag will convert the entire list into normal objects including unused values in the operation.
 
-To solve that you can use functional paths by using a function that iterate hover `NBTTagList` directly.
+To solve that you can use functional paths by using a function that iterate hover `ListTag` directly.
 
 ```java
 // Prepare the function

@@ -179,7 +179,7 @@ public class IMaterialMirror implements ItemMirror {
      * Resolve material of the item, this method checks if the ID needs
      * to be converted.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   item representation as CompoundTag.
      * @param id         ID of the item.
      * @param damage     Damage amount.
      * @param components Item components.
@@ -225,7 +225,7 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Resolver current item compound with new material to set.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param material   Material to set.
      * @param components Item components.
      * @param from       Version specified in compound.
@@ -246,7 +246,7 @@ public class IMaterialMirror implements ItemMirror {
      * method removes old damage tag if the conversion
      * is across legacy-flat.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param components Item components.
      * @param damage     Damage amount to set.
      * @param from       Version specified in compound
@@ -281,7 +281,7 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Get current item damage depending on item version.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param components Item components.
      * @param version    Version of the item.
      * @return           A integer representing item damage.
@@ -325,7 +325,7 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Get current item entity, method for legacy SPAWN_EGG items.
      *
-     * @param compound Item NBTTagCompound.
+     * @param compound Item CompoundTag.
      * @param version  Item version
      * @return         A string representing entity id.
      */
@@ -394,7 +394,7 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Resolve an ItemStack if it contains "savedID" inside custom data component.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param id         ID of the item.
      * @param damage     Damage amount.
      * @param components Item components.
@@ -410,7 +410,7 @@ public class IMaterialMirror implements ItemMirror {
      * Resolve material of the item, this method checks if the ID needs
      * to be converted.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param id         ID of the item.
      * @param damage     Damage amount.
      * @param components Item components.
@@ -425,7 +425,7 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Resolver current item compound with new material to set.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param material   Material to set.
      * @param components Item components.
      * @param from       Version specified in compound.
@@ -441,7 +441,7 @@ public class IMaterialMirror implements ItemMirror {
      * method removes old damage tag if the conversion
      * is across legacy-flat.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param components Item components.
      * @param damage     Damage amount to set.
      * @param from       Version specified in compound
@@ -455,7 +455,7 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Get current item damage depending on item version.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param components Item components.
      * @param version    Version of the item.
      * @return           A integer representing item damage.
@@ -468,7 +468,7 @@ public class IMaterialMirror implements ItemMirror {
     /**
      * Get current item entity, method for legacy SPAWN_EGG items.
      *
-     * @param compound Item NBTTagCompound.
+     * @param compound Item CompoundTag.
      * @param version  Item version
      * @return         A string representing entity id.
      */

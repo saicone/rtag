@@ -4,7 +4,7 @@ title: Características
 description: Opciones extra que ofrece Rtag
 ---
 
-Rtag tiene una variedad de opciones para manejar los NBTTagCompound.
+Rtag tiene una variedad de opciones para manejar los CompoundTag.
 
 ```mdx-code-block
 import DocCardList from '@theme/DocCardList';

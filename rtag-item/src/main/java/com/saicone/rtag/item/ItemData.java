@@ -204,7 +204,7 @@ public class ItemData {
     /**
      * Get current version number from item compound.
      *
-     * @param compound NBTTagCompound that represent an item.
+     * @param compound CompoundTag that represent an item.
      * @return         A valid version number or null.
      */
     @Nullable

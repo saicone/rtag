@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: Rtag
-description: The "readable tag" library, an easy way to handle NBTTagCompounds.
+description: The "readable tag" library, an easy way to handle minecraft data.
 ---
 
 Welcome to Rtag wiki, here you find information about Rtag usage, including the usages with Minecraft server customization.

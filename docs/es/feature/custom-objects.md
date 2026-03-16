@@ -10,9 +10,9 @@ Con Rtag puedes establecer objetos custom como NBT y obtenerlos según el tipo d
 
 Al usar la librería Gson dentro del código de Bukkit, es posible (de)serializar objetos mediante el siguiente proceso:
 
-**Serializer (establecer)**: Objeto custom -> String en Json -> Map -> NBTTagCompound
+**Serializer (establecer)**: Objeto custom -> String en Json -> Map -> CompoundTag
 
-**Deserializer (obtener)**: NBTTagCompound -> Map -> String en Json -> Objeto custom
+**Deserializer (obtener)**: CompoundTag -> Map -> String en Json -> Objeto custom
 
 ```java
 // Crear tu objeto custom

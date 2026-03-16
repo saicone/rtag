@@ -10,28 +10,28 @@ El NBT por sus siglas en inglés significa "Etiqueta Binaria con Nombre" (Named 
 
 El formato de NBT es comúnmente utilizado para guardar objetos de Minecraft como mundos, items, entidades... etc.
 
-Los classes de NBT dentro del código de Minecraft están extendidos por `NBTBase` y hacen referencia a objetos normales de Java: `NBTTagString`, `NBTTagInt`, `NBTTagLong`, `NBTTagList`... etc. El class principal de las estructuras de datos NBT sería el `NBTTagCompound` que se refiere a un Map en Java y es el objeto básico para guardar objetos NBT con sus respectivas keys (llaves) en un `Map<String, NBTBase>`.
+Los classes de NBT dentro del código de Minecraft están extendidos por `Tag` y hacen referencia a objetos normales de Java: `StringTag`, `IntTag`, `LongTag`, `ListTag`... etc. El class principal de las estructuras de datos NBT sería el `CompoundTag` que se refiere a un Map en Java y es el objeto básico para guardar objetos NBT con sus respectivas keys (llaves) en un `Map<String, Tag>`.
 
 ## Objetos compatibles
 
 Los objetos NBT definidos por su número de ID son:
 
-1. **NBTTagByte**: Lo mismo que `byte` en Java.
-2. **NBTTagShort**: Lo mismo que `short` en Java.
-3. **NBTTagInt**: Lo mismo que `int` en Java.
-4. **NBTTagLong**: Lo mismo que `long` en Java.
-5. **NBTTagFloat**: Lo mismo que `float` en Java.
-6. **NBTTagDouble**: Lo mismo que `double` en Java.
-7. **NBTTagByteArray**: Lo mismo que `byte[]` en Java.
-8. **NBTTagString**: Lo mismo que `String` en Java.
-9. **NBTTagList**: Lo mismo que `List<NBTBase>` en Java.
-10. **NBTTagCompound**: Lo mismo que `Map<String, NBTBase>` en Java.
-11. **NBTTagIntArray**: Lo mismo que `int[]` en Java.
-12. **NBTTagLongArray**: Lo mismo que `long[]` en Java (Agregado en MC 1.12).
+1. **ByteTag**: Lo mismo que `byte` en Java.
+2. **ShortTag**: Lo mismo que `short` en Java.
+3. **IntTag**: Lo mismo que `int` en Java.
+4. **LongTag**: Lo mismo que `long` en Java.
+5. **FloatTag**: Lo mismo que `float` en Java.
+6. **DoubleTag**: Lo mismo que `double` en Java.
+7. **ByteArrayTag**: Lo mismo que `byte[]` en Java.
+8. **StringTag**: Lo mismo que `String` en Java.
+9. **ListTag**: Lo mismo que `List<Tag>` en Java.
+10. **CompoundTag**: Lo mismo que `Map<String, Tag>` en Java.
+11. **IntArrayTag**: Lo mismo que `int[]` en Java.
+12. **LongArrayTag**: Lo mismo que `long[]` en Java (Agregado en MC 1.12).
 
 :::info ¿Y el objeto de boolean?
 
-Seguramente notaste que los booleans no son compatibles, eso es porque son guardados como `byte` (`NBTTagByte`).
+Seguramente notaste que los booleans no son compatibles, eso es porque son guardados como `byte` (`ByteTag`).
 
 Así que toma en cuenta que Java por defecto no puede convertir un `byte` en `boolean` de manera automática (pero si al revés jaja), verás una mejor explicación después.
 
@@ -49,15 +49,15 @@ Así que ha sido un problema frecuente para los desarrolladores que utilizan el 
 
 ## La magia de Rtag
 
-Para simplificar el uso de NBT, la librería Rtag explicada en inglés como "Tag legible" (readable tag) proveé una forma fácil para manejar los NBTTagCompound y los otros objetos compatibles.
+Para simplificar el uso de NBT, la librería Rtag explicada en inglés como "Tag legible" (readable tag) proveé una forma fácil para manejar los CompoundTag y los otros objetos compatibles.
 
-Rtag hace (o lo intenta) una conversión de cualquier objeto de Java en un `NBTBase` y viceversa, y de esta manera manejar los NBT como si fueran objetos normales de java en una forma fácil.
+Rtag hace (o lo intenta) una conversión de cualquier objeto de Java en un `Tag` y viceversa, y de esta manera manejar los NBT como si fueran objetos normales de java en una forma fácil.
 
 ```java
 // OBTENER - Lo verás como un objeto normal
-NBTBase -> Object
-// ESTABLECER - El servidor lo guardará como un objeto NBTBase
-Object -> NBTBase
+Tag -> Object
+// ESTABLECER - El servidor lo guardará como un objeto Tag
+Object -> Tag
 ```
 
 Actualmente limitado por la conversión de `boolean`, así que es sugerido obtenerlos como `byte` o ejecutar una [conversión explícita](feature/types.md#conversión).

@@ -85,20 +85,20 @@ public class BlockObject {
     }
 
     /**
-     * Check if the provided object is instance of Minecraft TileEntity.
+     * Check if the provided object is instance of Minecraft BlockEntity.
      *
      * @param object the object to check.
-     * @return       true if the object is an instance of Minecraft TileEntity.
+     * @return       true if the object is an instance of Minecraft BlockEntity.
      */
     public static boolean isTileEntity(Object object) {
         return BlockEntity.isInstance(object);
     }
 
     /**
-     * Get provided Bukkit Block and convert into Minecraft TileEntity.
+     * Get provided Bukkit Block and convert into Minecraft BlockEntity.
      *
      * @param block Block to convert.
-     * @return      A Minecraft TileEntity.
+     * @return      A Minecraft BlockEntity.
      * @throws IllegalArgumentException if block state is not a CraftBlockState.
      */
     public static Object getTileEntity(Block block) throws IllegalArgumentException {
@@ -107,7 +107,7 @@ public class BlockObject {
             try {
                 return Level_getBlockEntity.invoke(CraftWorld_getHandle.invoke(loc.getWorld()), BlockPos$new.invoke(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
             } catch (Throwable t) {
-                throw new RuntimeException("Cannot convert Bukkit Block into Minecraft TileEntity", t);
+                throw new RuntimeException("Cannot convert Bukkit Block into Minecraft BlockEntity", t);
             }
         } else {
             throw new IllegalArgumentException("The provided block state isn't a CraftBlockState");
@@ -115,10 +115,10 @@ public class BlockObject {
     }
 
     /**
-     * Save Minecraft TileEntity into new NBTTagCompound.
+     * Save Minecraft BlockEntity into new CompoundTag.
      *
-     * @param tile TileEntity instance.
-     * @return     A NBTTagCompound that represent the tile.
+     * @param tile BlockEntity instance.
+     * @return     a compound tag that represent the tile.
      */
     public static Object save(Object tile) {
         try {
@@ -147,10 +147,10 @@ public class BlockObject {
     }
 
     /**
-     * Load NBTTagCompound into Minecraft TileEntity.
+     * Load CompoundTag into Minecraft BlockEntity.
      *
-     * @param tile TileEntity instance.
-     * @param tag  The NBTTagCompound to load.
+     * @param tile BlockEntity instance.
+     * @param tag  The CompoundTag to load.
      */
     public static void load(Object tile, Object tag) {
         try {

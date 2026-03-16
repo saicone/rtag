@@ -4,7 +4,7 @@ title: RtagEditor
 description: Main object to edit NBT easily
 ---
 
-The `RtagEditor` instances convert a Bukkit object into Minecraft server object and provide an easy way to edit the tag (NBTTagCompound) inside, using a Rtag instance as helper.
+The `RtagEditor` instances convert a Bukkit object into Minecraft server object and provide an easy way to edit the tag (CompoundTag) inside, using a Rtag instance as helper.
 
 ## Edit
 

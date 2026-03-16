@@ -104,7 +104,7 @@ public class ChatComponent {
     }
 
     /**
-     * Check if the provided object is instance of IChatBaseComponent<br>
+     * Check if the provided object is instance of chat component<br>
      * or is a String that follow the ChatComponent format.
      *
      * @param object the object to check.
@@ -130,11 +130,11 @@ public class ChatComponent {
     }
 
     /**
-     * Convert json component string to IChatBaseComponent.<br>
+     * Convert json component string to chat component.<br>
      * Supports any old representation of text component.
      *
      * @param json json to convert.
-     * @return     a IChatBaseComponent instance.
+     * @return     a chat component instance.
      */
     public static Object fromJson(String json) {
         try {
@@ -312,10 +312,10 @@ public class ChatComponent {
     }
 
     /**
-     * Convert string to IChatBaseComponent.
+     * Convert string to chat component.
      *
      * @param string Json to convert.
-     * @return       A IChatBaseComponent instance.
+     * @return       A chat component instance.
      */
     public static Object fromString(String string) {
         try {
@@ -330,11 +330,11 @@ public class ChatComponent {
     }
 
     /**
-     * Convert nbt to IChatBaseComponent.<br>
+     * Convert nbt to chat component.<br>
      * Supports newer representation of text component on older server versions.
      *
      * @param tag nbt to convert.
-     * @return    a IChatBaseComponent instance.
+     * @return    a chat component instance.
      */
     public static Object fromTag(Object tag) {
         final Object currentTag;
@@ -529,9 +529,9 @@ public class ChatComponent {
     }
 
     /**
-     * Convert String or IChatBaseComponent to json component.
+     * Convert String or chat component to json component.
      *
-     * @param component String or IChatBaseComponent to convert.
+     * @param component String or chat component to convert.
      * @return          A json component.
      * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
@@ -545,7 +545,7 @@ public class ChatComponent {
         }
         Objects.requireNonNull(component, "The provided object cannot be null");
         if (!Component.isInstance(component)) {
-            throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
+            throw new IllegalArgumentException("The provided object isn't an chat component");
         }
         try {
             if (MC.version().isComponent()) {
@@ -560,9 +560,9 @@ public class ChatComponent {
     }
 
     /**
-     * Convert String or IChatBaseComponent to json component.
+     * Convert String or chat component to json component.
      *
-     * @param component String or IChatBaseComponent to convert.
+     * @param component String or chat component to convert.
      * @return          A json component or null.
      * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
@@ -574,9 +574,9 @@ public class ChatComponent {
     }
 
     /**
-     * Convert json String or IChatBaseComponent to string.
+     * Convert json String or chat component to string.
      *
-     * @param component Json String or IChatBaseComponent to convert.
+     * @param component Json String or chat component to convert.
      * @return          A string with old format.
      * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
@@ -590,7 +590,7 @@ public class ChatComponent {
         }
         Objects.requireNonNull(component, "The provided object cannot be null");
         if (!Component.isInstance(component)) {
-            throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
+            throw new IllegalArgumentException("The provided object isn't an chat component");
         }
         try {
             return (String) CraftChatMessage_fromComponent.invoke(component);
@@ -600,9 +600,9 @@ public class ChatComponent {
     }
 
     /**
-     * Convert json String or IChatBaseComponent to string.
+     * Convert json String or chat component to string.
      *
-     * @param component Json String or IChatBaseComponent to convert.
+     * @param component Json String or chat component to convert.
      * @return          A string with old format or null.
      * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
@@ -614,16 +614,16 @@ public class ChatComponent {
     }
 
     /**
-     * Convert IChatBaseComponent to nbt.
+     * Convert chat component to nbt.
      *
-     * @param component IChatBaseComponent to convert.
+     * @param component chat component to convert.
      * @return          a nbt object.
      * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */
     public static Object toTag(Object component) {
         Objects.requireNonNull(component, "The provided object cannot be null");
         if (!Component.isInstance(component)) {
-            throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
+            throw new IllegalArgumentException("The provided object isn't an chat component");
         }
         if (MC.version().isComponent()) {
             try {
@@ -638,9 +638,9 @@ public class ChatComponent {
     }
 
     /**
-     * Convert IChatBaseComponent to nbt.
+     * Convert chat component to nbt.
      *
-     * @param component IChatBaseComponent to convert.
+     * @param component chat component to convert.
      * @return          a nbt object or null.
      * @throws IllegalArgumentException if component is not a valid ChatComponent.
      */

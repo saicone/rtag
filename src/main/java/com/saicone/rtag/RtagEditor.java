@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 /**
  * RtagEditor abstract class who edit any object
- * with NBTTagCompound inside.<br>
+ * with CompoundTag inside.<br>
  * Also provide methods to easy-edit object tags
  * using a {@link Rtag} instance.
  *
@@ -43,7 +43,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      *
      * @param rtag          Rtag parent.
      * @param typeObject    Editor type object that can be converted to literal object.
-     * @param literalObject Object instance with NBTTagCompound inside.
+     * @param literalObject Object instance with CompoundTag inside.
      */
     public RtagEditor(Rtag rtag, T typeObject, Object literalObject) {
         this.rtag = rtag;
@@ -57,8 +57,8 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      *
      * @param rtag          Rtag parent.
      * @param typeObject    Editor type object that can be converted to literal object.
-     * @param literalObject Object instance with NBTTagCompound inside.
-     * @param tag           NBTTagCompound object to edit.
+     * @param literalObject Object instance with CompoundTag inside.
+     * @param tag           CompoundTag object to edit.
      */
     public RtagEditor(Rtag rtag, T typeObject, Object literalObject, Object tag) {
         this.rtag = rtag;
@@ -92,7 +92,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * @deprecated To get current object use {@link #getLiteralObject()} instead.
      * @see #getLiteralObject()
      *
-     * @return An object with NBTTagCompound inside.
+     * @return An object with CompoundTag inside.
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
@@ -113,7 +113,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * Get current literal object.<br>
      * In most cases this is a Minecraft server object.
      *
-     * @return An object with NBTTagCompound inside.
+     * @return An object with CompoundTag inside.
      */
     public Object getLiteralObject() {
         return literalObject;
@@ -123,14 +123,14 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * Get type object as literal one.
      *
      * @param typeObject Editor type object that can be converted to literal object.
-     * @return           An object with NBTTagCompound inside.
+     * @return           An object with CompoundTag inside.
      */
     public abstract Object getLiteralObject(T typeObject);
 
     /**
      * Get current tag.
      *
-     * @return A NBTTagCompound.
+     * @return a compound tag.
      */
     public Object getTag() {
         return tag;
@@ -139,8 +139,8 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
     /**
      * Get current tag inside type or literal object.
      *
-     * @param object Object instance with NBTTagCompound inside.
-     * @return       A NBTTagCompound.
+     * @param object Object instance with CompoundTag inside.
+     * @return       a compound tag.
      */
     public abstract Object getTag(Object object);
 
@@ -263,7 +263,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
     }
 
     /**
-     * Add value to an NBTTagList on specified path inside current object tag.<br>
+     * Add value to an ListTag on specified path inside current object tag.<br>
      * See {@link Rtag#add(Object, Object, Object...)} for more information.
      *
      * @param value Value to add.
@@ -332,7 +332,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
 
     /**
      * Change object tag into new one.<br>
-     * Value must be Map&lt;String, Object&gt; or NBTTagCompound.
+     * Value must be Map&lt;String, Object&gt; or CompoundTag.
      *
      * @param value Object to replace current tag.
      * @return      True if tag has replaced.
@@ -429,7 +429,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * Merge the provided value at provided path.
      *
      * @param value   The value to merge.
-     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param replace True to replace the repeated values inside CompoundTag.
      * @param path    Final value path to merge into.
      * @return        true if the value was merged.
      */
@@ -452,7 +452,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
      * Merge the provided value at provided path using deep method.
      *
      * @param value   The value to merge.
-     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param replace True to replace the repeated values inside CompoundTag.
      * @param path    Final value path to merge into.
      * @return        true if the value was merged.
      */
@@ -598,7 +598,7 @@ public abstract class RtagEditor<T, EditorT extends RtagEditor<T, EditorT>> {
     }
 
     /**
-     * Get exact NBTBase value without any conversion,
+     * Get exact Tag value without any conversion,
      * from the specified path inside current tag.<br>
      * See {@link Rtag#getExact(Object, Object...)} for more information.
      *

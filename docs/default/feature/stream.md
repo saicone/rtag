@@ -6,7 +6,7 @@ description: Convert NBT into different types of data and viceversa
 
 ## Information
 
-Rtag has the option to save any NBTTagCompound into different ways:
+Rtag has the option to save any CompoundTag into different ways:
 
 * File
 * [Base64](https://en.wikipedia.org/wiki/Base64)
@@ -22,7 +22,7 @@ Including compatibility with serializable objects.
 Any byte array serialization (probably saved as Base64) is compatible if it's made by the following methods:
 
 1. Using `BukkitObjectInputStream` to save objects as type object or `byte[]`.
-2. Using `NBTCompressedStreamTools` to save objects as `NBTTagCompound`, `NBTTagList` or `NBTTagByteArray` inside bytes.
+2. Using `NbtIo` to save objects as `CompoundTag`, `ListTag` or `ByteArrayTag` inside bytes.
 3. NBT objects saved with GZIP format.
 4. NBT objects saved inside other NBT object (like nbt list or byte array).
 
@@ -30,7 +30,7 @@ Any byte array serialization (probably saved as Base64) is compatible if it's ma
 
 ## TagCompound Data
 
-The TagCompound class includes the "DATA" interface, an easy way to convert any NBTTagCompound into File, Base64, Bytes, Map and String.
+The TagCompound class includes the "DATA" interface, an easy way to convert any CompoundTag into File, Base64, Bytes, Map and String.
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -40,7 +40,7 @@ import TabItem from '@theme/TabItem';
 <TabItem value="file" label="File" default>
 
 ```java
-// NBTTagCompound from anywhere
+// CompoundTag from anywhere
 Object compound = ...;
 
 // Convert into File
@@ -54,7 +54,7 @@ Object tagCompound = TStream.COMPOUND.fromFile(file);
 <TabItem value="base64" label="Base64">
 
 ```java
-// NBTTagCompound from anywhere
+// CompoundTag from anywhere
 Object compound = ...;
 
 // Convert into Base64
@@ -68,7 +68,7 @@ Object tagCompound = TStream.COMPOUND.fromBase64(base64)[0]; // Return array
 <TabItem value="bytes" label="Bytes">
 
 ```java
-// NBTTagCompound from anywhere
+// CompoundTag from anywhere
 Object compound = ...;
 
 // Convert into bytes
@@ -82,7 +82,7 @@ Object tagCompound = TStream.COMPOUND.fromBytes(bytes);
 <TabItem value="map" label="Map">
 
 ```java
-// NBTTagCompound from anywhere
+// CompoundTag from anywhere
 Object compound = ...;
 
 // Convert into map
@@ -96,7 +96,7 @@ Object tagCompound = TStream.COMPOUND.fromMap(map);
 <TabItem value="string" label="String">
 
 ```java
-// NBTTagCompound from anywhere
+// CompoundTag from anywhere
 Object compound = ...;
 
 // Convert into snbt

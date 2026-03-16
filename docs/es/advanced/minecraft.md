@@ -12,7 +12,7 @@ El class `ItemObject` sirve para manejar items de Bukkit y Minecraft utilizando 
 
 ### Crear
 
-Crear un `ItemStack` de Minecraft utilizando un `NBTTagCompound`, también mediante otros formatos.
+Crear un `ItemStack` de Minecraft utilizando un `CompoundTag`, también mediante otros formatos.
 
 ```java
 // Crear utilizando un compound
@@ -45,10 +45,10 @@ Editar varias cosas de los `ItemStack` de Bukkit y Minecraft.
 ```java
 Object item = ItemObject.newItem(TagCompound.newTag("{id:\"minecraft:diamond_sword\"}"));
 
-// Guardar los datos del item en un NBTTagCompound
+// Guardar los datos del item en un CompoundTag
 Object compound = ItemObject.save(item);
 
-// Obtener el tag del item como un NBTTagCompound
+// Obtener el tag del item como un CompoundTag
 Object tag = ItemObject.getCustomDataTag(item);
 // Reemplazar el tag del item
 ItemObject.setCustomDataTag(item, tag);
@@ -90,9 +90,9 @@ Editar varias cosas de los `Entity` de Minecraft.
 ```java
 Object entity = ...;
 
-// Guardar los datos de la entidad en un NBTTagCompound
+// Guardar los datos de la entidad en un CompoundTag
 Object compound = EntityObject.save(entity);
-// Cargar los datos en una entidad utilizando un NBTTagCompound
+// Cargar los datos en una entidad utilizando un CompoundTag
 EntityObject.load(entity, compound);
 ```
 
@@ -102,24 +102,24 @@ El class `BlockObject` sirve para manejar bloques de Bukkit y Minecraft utilizan
 
 ### Convertir
 
-Convertir cualquier `Block` de Bukkit en un `TileEntity` de Minecraft (solo si es aplicable).
+Convertir cualquier `Block` de Bukkit en un `BlockEntity` de Minecraft (solo si es aplicable).
 
 ```java
 Block block = ...;
 
-// Convertir en un TileEntity de Minecraft
-Object mcTileEntity = BlockObject.getTileEntity(block);
+// Convertir en un BlockEntity de Minecraft
+Object blockEntity = BlockObject.getTileEntity(block);
 ```
 
 ### Editar
 
-Editar varias cosas de los `TileEntity` de Minecraft.
+Editar varias cosas de los `BlockEntity` de Minecraft.
 
 ```java
 Object tileEntity = ...;
 
-// Guardar los datos del TileEntity en un NBTTagCompound
+// Guardar los datos del BlockEntity en un CompoundTag
 Object compound = BlockObject.save(tileEntity);
-// Cargar los datos en un TileEntity utilizando un NBTTagCompound
+// Cargar los datos en un BlockEntity utilizando un CompoundTag
 BlockObject.load(tileEntity, compound);
 ```

@@ -13,7 +13,7 @@ import java.util.Map;
 public interface RtagDeserializer<T> {
 
     /**
-     * The unique ID to detect any NBTTagCompound who can be converted
+     * The unique ID to detect any CompoundTag who can be converted
      * to object type on {@link Rtag#getTagValue(Object)} (Object)} operations.<br>
      * "Out" means the value inside will be obtained from tag.<br>
      *
@@ -28,7 +28,7 @@ public interface RtagDeserializer<T> {
      * Method who be invoked to convert any {@link Map} to
      * current object type.
      *
-     * @param compound A NBTTagCompound as {@link Map} instance.
+     * @param compound a compound tag as {@link Map} instance.
      * @return         A deserialized object.
      */
     T deserialize(Map<String, Object> compound);

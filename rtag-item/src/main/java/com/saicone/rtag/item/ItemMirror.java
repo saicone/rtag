@@ -4,7 +4,7 @@ import com.saicone.rtag.util.MC;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * ItemMirror interface to make item NBTTagCompound
+ * ItemMirror interface to make item CompoundTag
  * compatible with actual server version.
  *
  * @author Rubenicos
@@ -100,9 +100,9 @@ public interface ItemMirror {
     }
 
     /**
-     * Upgrade current NBTTagCompound from lower version.
+     * Upgrade current CompoundTag from lower version.
      *
-     * @param compound Item NBTTagCompound.
+     * @param compound Item CompoundTag.
      * @param id       Item material identifier.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
@@ -113,9 +113,9 @@ public interface ItemMirror {
     }
 
     /**
-     * Upgrade current NBTTagCompound from lower version.
+     * Upgrade current CompoundTag from lower version.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param id         Item material identifier.
      * @param components Item components.
      * @param from       Version specified in compound.
@@ -127,9 +127,9 @@ public interface ItemMirror {
     }
 
     /**
-     * Downgrade current NBTTagCompound from upper version.
+     * Downgrade current CompoundTag from upper version.
      *
-     * @param compound Item NBTTagCompound.
+     * @param compound Item CompoundTag.
      * @param id       Item material identifier.
      * @param from     Version specified in compound.
      * @param to       Version to convert.
@@ -140,9 +140,9 @@ public interface ItemMirror {
     }
 
     /**
-     * Downgrade current NBTTagCompound from upper version.
+     * Downgrade current CompoundTag from upper version.
      *
-     * @param compound   Item NBTTagCompound.
+     * @param compound   Item CompoundTag.
      * @param id         Item material identifier.
      * @param components Item components.
      * @param from       Version specified in compound.

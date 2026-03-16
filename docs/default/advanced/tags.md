@@ -49,10 +49,10 @@ Object value = TagBase.getValue(mirror, nbtObject);
 
 ## TagList
 
-It's a more specific class to handle `NBTTagList` objects as java `List<NBTBase>`, so it has the same methods mentioned on `TagBase` but only for NBT lists.
+It's a more specific class to handle `ListTag` objects as java `List<Tag>`, so it has the same methods mentioned on `TagBase` but only for NBT lists.
 
 ```java
-// Create NBTTagList object
+// Create ListTag object
 Object nbtList = TagList.newTag();
 
 // Add value
@@ -64,7 +64,7 @@ int size = TagList.size(nbtList);
 // Get from index
 Object nbtObject = TagList.get(nbtList, 0); // index: 0
 
-// Get the value inside NBTTagList, a List of NBTBase
+// Get the value inside ListTag, a List of tags
 List<Object> value = TagList.getValue(nbtList);
 
 // Clear list
@@ -73,12 +73,12 @@ TagList.clear(nbtList);
 
 ## TagCompound
 
-It's a more specific class to handle `NBTTagCompound` objects as java `Map<String, NBTBase>`, so it has the same methods mentioned on `TagBase` but only for NBT compounds.
+It's a more specific class to handle `CompoundTag` objects as java `Map<String, Tag>`, so it has the same methods mentioned on `TagBase` but only for NBT compounds.
 
 ```java
-// Create NBTTagCompound object
+// Create CompoundTag object
 Object nbtCompound = TagCompound.newTag();
-// Or create NBTTagCompound using SNBT (it's also compatible with Json)
+// Or create CompoundTag using SNBT (it's also compatible with Json)
 Object nbtCompound = TagCompound.newTag("{greeting:\"Hello\",someValue:123}");
 
 // Add value
@@ -90,10 +90,10 @@ int size = TagCompound.getValue(nbtCompound).size();
 // Get from key
 Object nbtObject = TagCompound.get(nbtCompound, "greeting");
 
-// Get the value inside NBTTagCompound, a Map of NBTBase
+// Get the value inside CompoundTag, a Map of tag values
 Map<String, Object> value = TagCompound.getValue(nbtCompound);
 
-// Get the NBTTagCompound as Json String
+// Get the CompoundTag as Json String
 String json = TagCompound.getJson(nbtCompound);
 
 // Clear compound

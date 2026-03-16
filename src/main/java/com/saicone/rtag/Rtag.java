@@ -17,7 +17,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
- * <p>Rtag class to edit NBTTagCompound &amp; NBTTagList objects.<br>
+ * <p>Rtag class to edit CompoundTag &amp; ListTag objects.<br>
  * Uses a tree-like path format to find the required tag
  * instead of creating multiple classes for deep-tags.<br></p>
  *
@@ -148,12 +148,12 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Add value to an NBTTagList on specified path inside tag.<br>
+     * Add value to an ListTag on specified path inside tag.<br>
      * Note that empty path returns false because this method is
      * only made for lists inside compounds or lists.<br>
      * See {@link #get(Object, Object...)} for path information.
      *
-     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag   Tag instance, can be CompoundTag or ListTag.
      * @param value Value to add.
      * @param path  Final list path to add the specified value.
      * @return      true if value was added.
@@ -181,7 +181,7 @@ public class Rtag extends RtagMirror {
      * If you want something like "remove", just put a null value.<br>
      * See {@link #get(Object, Object...)} for path information.
      *
-     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag   Tag instance, can be CompoundTag or ListTag.
      * @param value Value to set.
      * @param path  Final value path to set.
      * @return      true if the value was set.
@@ -205,7 +205,7 @@ public class Rtag extends RtagMirror {
     /**
      * Set value to exact NBTTag list or compound.
      *
-     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag   Tag instance, can be CompoundTag or ListTag.
      * @param value Value to set.
      * @param key   Key associated with value.
      * @return      true if the value was set.
@@ -229,11 +229,11 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Merge the provided value with NBTTagCompound at provided path.
+     * Merge the provided value with CompoundTag at provided path.
      *
-     * @param tag     Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag     Tag instance, can be CompoundTag or ListTag.
      * @param value   The value to merge.
-     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param replace True to replace the repeated values inside CompoundTag.
      * @param path    Final value path to merge into.
      * @return        true if the value was merged.
      */
@@ -242,11 +242,11 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Merge the provided value with NBTTagCompound at provided path using deep method.
+     * Merge the provided value with CompoundTag at provided path using deep method.
      *
-     * @param tag     Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag     Tag instance, can be CompoundTag or ListTag.
      * @param value   The value to merge.
-     * @param replace True to replace the repeated values inside NBTTagCompound.
+     * @param replace True to replace the repeated values inside CompoundTag.
      * @param path    Final value path to merge into.
      * @return        true if the value was merged.
      */
@@ -257,7 +257,7 @@ public class Rtag extends RtagMirror {
     /**
      * Move tag from specified path to any path.
      *
-     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag   Tag instance, can be CompoundTag or ListTag.
      * @param from  Path to get the value.
      * @param to    Path to set the value.
      * @return      true if the value was moved.
@@ -269,7 +269,7 @@ public class Rtag extends RtagMirror {
     /**
      * Move tag from specified path to any path.
      *
-     * @param tag   Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag   Tag instance, can be CompoundTag or ListTag.
      * @param from  Path to get the value.
      * @param to    Path to set the value.
      * @param clear True to clear empty paths.
@@ -304,7 +304,7 @@ public class Rtag extends RtagMirror {
     /**
      * Remove value from exact NBTTag list or compound.
      *
-     * @param tag Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag Tag instance, can be CompoundTag or ListTag.
      * @param key Key associated with value.
      * @return    true if the value is removed (or don't exist).
      */
@@ -327,15 +327,15 @@ public class Rtag extends RtagMirror {
      * <b>Path format</b>
      * <p>Rtag uses a tree-like format for paths, every object inside
      * path can be {@link Integer} or {@link String} and will used
-     * to obtain the last possible NBTBase instance.<br>
-     * Path like ["normal", "path", "asd"] will look inside the NBTTagCompound
+     * to obtain the last possible Tag instance.<br>
+     * Path like ["normal", "path", "asd"] will look inside the CompoundTag
      * for "normal" key, if value assigned for that key is instance of
-     * NBTTagCompound will look inside for the next key in path.<br>
+     * CompoundTag will look inside for the next key in path.<br>
      * If current path key is instance of Integer and the current
-     * value that Rtag looking at is instance of NBTTagList, will get
+     * value that Rtag looking at is instance of ListTag, will get
      * list index value for that path key.</p>
      *
-     * @param tag  Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag  Tag instance, can be CompoundTag or ListTag.
      * @param path Final value path to get.
      * @param <T>  Object type to cast the value.
      * @return     The value assigned to specified path, null if not
@@ -348,7 +348,7 @@ public class Rtag extends RtagMirror {
     /**
      * Same has {@link #get(Object, Object...)} but save the value into {@link OptionalType}.
      *
-     * @param tag  Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag  Tag instance, can be CompoundTag or ListTag.
      * @param path Final value path to get.
      * @return     The value assigned to specified path has {@link OptionalType}.
      */
@@ -357,10 +357,10 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Get exact NBTBase value without any conversion, from the specified path inside tag.<br>
+     * Get exact Tag value without any conversion, from the specified path inside tag.<br>
      * See {@link #get(Object, Object...)} for path information.
      *
-     * @param tag  Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag  Tag instance, can be CompoundTag or ListTag.
      * @param path Final value path to get.
      * @return     The value assigned to specified path, null if not exist.
      */
@@ -369,12 +369,12 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Get exact NBTBase value without any conversion, from the specified path inside tag.<br>
+     * Get exact Tag value without any conversion, from the specified path inside tag.<br>
      * See {@link #get(Object, Object...)} for path information.
      *
-     * @param tag           Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag           Tag instance, can be CompoundTag or ListTag.
      * @param path          Final value path to get.
-     * @param listPredicate Predicate to set new NBTTagList if NBTTagCompound doesn't contain key.
+     * @param listPredicate Predicate to set new ListTag if CompoundTag doesn't contain key.
      * @return              The value assigned to specified path or null.
      */
     @SuppressWarnings("unchecked")
@@ -418,12 +418,12 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Get and test exact NBTBase value without any conversion, from the specified path inside tag.<br>
+     * Get and test exact Tag value without any conversion, from the specified path inside tag.<br>
      * See {@link #get(Object, Object...)} for path information.
      *
-     * @param tag           Tag instance, can be NBTTagCompound or NBTTagList.
+     * @param tag           Tag instance, can be CompoundTag or ListTag.
      * @param path          Final value path to get.
-     * @param listPredicate Predicate to set new NBTTagList if NBTTagCompound doesn't contain key.
+     * @param listPredicate Predicate to set new ListTag if CompoundTag doesn't contain key.
      * @param predicate     Consumer that accept non-null value.
      * @return              true if the value was consumed.
      */
@@ -436,10 +436,10 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Convert any NBTBase tag to exact regular Java object
+     * Convert any tag object to exact regular Java object
      * or custom by deserializer without any cast.
      *
-     * @param tag NBTBase tag.
+     * @param tag tag object.
      * @return    Converted value or null.
      */
     @SuppressWarnings("unchecked")
@@ -456,11 +456,11 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Convert any object to NBTBase tag.<br>
+     * Convert any object to tag object.<br>
      * This method first check for any serializer and then use the current {@link RtagMirror}.
      *
      * @param object Object to convert.
-     * @return       Converted object instance of NBTBase or null.
+     * @return       a converted object instance as tag representation or null.
      */
     @Override
     public Object newTag(Object object) {
@@ -477,13 +477,13 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Convert any object to NBTBase tag.
+     * Convert any object to tag object.
      *
      * @deprecated To create tag object use {@link #newTag(Object)} instead.
      * @see #newTag(Object)
      *
      * @param object Object to convert.
-     * @return       NBTBase tag or null.
+     * @return       tag object or null.
      */
     @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     @Deprecated
@@ -492,13 +492,13 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Convert any NBTBase tag to regular Java object or custom by deserializer.<br>
+     * Convert any tag object to regular Java object or custom by deserializer.<br>
      * This method will cast the object to the type you're looking for.
      *
      * @see #getTagValue(Object)
      * @see OptionalType#cast(Object) 
      * 
-     * @param tag NBTBase tag.
+     * @param tag tag object.
      * @param <T> Object type to cast the value.
      * @return    Converted value, null if any error occurs.
      */
@@ -509,7 +509,7 @@ public class Rtag extends RtagMirror {
     }
 
     /**
-     * Convert any NBTBase tag to regular Java object.
+     * Convert any tag object to regular Java object.
      *
      * @deprecated To get tag value without conversion use {@link #getTagValue(Object)} instead.
      * @see #getTagValue(Object)

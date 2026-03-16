@@ -16,16 +16,16 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Tag stream class to handle NBTTagCompound
+ * Tag stream class to handle CompoundTag
  * with writeable and readable objects.<br>
  * The TStream instance provide easy methods
  * handle objects has bytes.
  * <h2>Write</h2>
- * Object -&gt; NBTTagCompound -&gt; Bytes<br>
+ * Object -&gt; CompoundTag -&gt; Bytes<br>
  * With bytes you can write to file or convert
  * into Base64 String.
  * <h2>Read</h2>
- * Bytes -&gt; NBTTagCompound -&gt; Object<br>
+ * Bytes -&gt; CompoundTag -&gt; Object<br>
  * You can read bytes from file or Base64.
  *
  * @author Rubenicos
@@ -45,7 +45,7 @@ public class TStream<T> {
     };
 
     /**
-     * Clone provided object by extract NBTTagCompound
+     * Clone provided object by extract CompoundTag
      * and use it to build new object.
      *
      * @param object Object to copy.
@@ -56,20 +56,20 @@ public class TStream<T> {
     }
 
     /**
-     * Extract object information into NBTTagCompound.
+     * Extract object information into CompoundTag.
      *
      * @param object Object to extract.
-     * @return       A NBTTagCompound with object information.
+     * @return       a compound tag with object information.
      */
     public Object extract(T object)  {
         return object;
     }
 
     /**
-     * Build object type using an NBTTagCompound.
+     * Build object type using an CompoundTag.
      *
-     * @param compound NBTTagCompound with object information.
-     * @return         A new object with NBTTagCompound parameters.
+     * @param compound CompoundTag with object information.
+     * @return         A new object with CompoundTag parameters.
      */
     @SuppressWarnings("unchecked")
     public T build(Object compound) {
@@ -77,10 +77,10 @@ public class TStream<T> {
     }
 
     /**
-     * Convert object into NBTTagCompound.
+     * Convert object into CompoundTag.
      *
      * @param object Object to convert.
-     * @return       A NBTTagCompound representing the object.
+     * @return       a compound tag representing the object.
      */
     public Object toCompound(T object) {
         if (object == null) {
@@ -95,21 +95,21 @@ public class TStream<T> {
     }
 
     /**
-     * Consume new objects if it can be created from NBTBase object.<br>
-     * Only compatible with NBTTagByteArray, NBTTagList and NBTTagCompound.
+     * Consume new objects if it can be created from Tag object.<br>
+     * Only compatible with ByteArrayTag, ListTag and CompoundTag.
      *
-     * @param nbt      NBTBase instance.
+     * @param nbt      Tag instance.
      * @param consumer The consumer that accept non-null objects.
      */
     public void fromBase(Object nbt, Consumer<T> consumer) {
         switch (TagBase.getTypeId(nbt)) {
-            case 7: // NBTTagByteArray
+            case 7: // ByteArrayTag
                 fromBytes((byte[]) TagBase.getValue(nbt), consumer);
                 break;
-            case 9: // NBTTagList
+            case 9: // ListTag
                 fromList(nbt, consumer);
                 break;
-            case 10: // NBTTagCompound
+            case 10: // CompoundTag
                 fromCompound(nbt, consumer);
                 break;
             default:
@@ -118,10 +118,10 @@ public class TStream<T> {
     }
 
     /**
-     * Create new object from NBTTagCompound.
+     * Create new object from CompoundTag.
      *
-     * @param compound NBTTagCompound instance.
-     * @return         A new object with NBTTagCompound parameters, null otherwise.
+     * @param compound CompoundTag instance.
+     * @return         A new object with CompoundTag parameters, null otherwise.
      */
     public T fromCompound(Object compound) {
         if (TagCompound.isTagCompound(compound)) {
@@ -143,9 +143,9 @@ public class TStream<T> {
     }
 
     /**
-     * Consume new object if it can be created from NBTTagCompound.
+     * Consume new object if it can be created from CompoundTag.
      *
-     * @param compound NBTTagCompound instance.
+     * @param compound CompoundTag instance.
      * @param consumer The consumer that accept non-null objects.
      */
     public void fromCompound(Object compound, Consumer<T> consumer) {
@@ -156,22 +156,22 @@ public class TStream<T> {
     }
 
     /**
-     * Consume new objects if it can be created from NBTTagList object.<br>
-     * Only compatible with list types of NBTTagByteArray, NBTTagList and NBTTagCompound.
+     * Consume new objects if it can be created from ListTag object.<br>
+     * Only compatible with list types of ByteArrayTag, ListTag and CompoundTag.
      *
-     * @param list     NBTTagList instance.
+     * @param list     ListTag instance.
      * @param consumer The consumer that accept non-null objects.
      */
     public void fromList(Object list, Consumer<T> consumer) {
         for (Object o : TagList.getValue(list)) {
             switch (TagBase.getTypeId(o)) {
-                case 7: // NBTTagByteArray
+                case 7: // ByteArrayTag
                     fromBytes((byte[]) TagBase.getValue(o), consumer);
                     break;
-                case 9: // NBTTagList
+                case 9: // ListTag
                     fromList(o, consumer);
                     break;
-                case 10: // NBTTagCompound
+                case 10: // CompoundTag
                     fromCompound(o, consumer);
                     break;
                 default:
@@ -203,7 +203,7 @@ public class TStream<T> {
     /**
      * Write provided object into file.<br>
      * Provided file must be exist.<br>
-     * This method first convert provided object into NBTTagCompound,
+     * This method first convert provided object into CompoundTag,
      * then write compound into FileOutputStream.
      *
      * @param object Object to write.
@@ -257,9 +257,9 @@ public class TStream<T> {
 
     /**
      * Convert object into bytes.<br>
-     * This method first convert provided object into NBTTagCompound,
+     * This method first convert provided object into CompoundTag,
      * then write compound into ByteArrayOutputStream.<br>
-     * Object -&gt; NBTTagCompound -&gt; Bytes
+     * Object -&gt; CompoundTag -&gt; Bytes
      *
      * @param object Object to convert.
      * @return       A byte array that represent the object.
@@ -291,7 +291,7 @@ public class TStream<T> {
     /**
      * Get object by read provided NBT String.
      *
-     * @param snbt A NBTTagCompound string.
+     * @param snbt a compound tag string.
      * @return     An object representation using NBT String as compound.
      */
     public T fromString(String snbt) {
@@ -379,11 +379,11 @@ public class TStream<T> {
     /**
      * Get object from bytes.<br>
      * This method first read the bytes with ByteArrayInputStream to
-     * get an NBTTagCompound and convert it into object.<br>
-     * Bytes -&gt; NBTTagCompound -&gt; Object
+     * get an CompoundTag and convert it into object.<br>
+     * Bytes -&gt; CompoundTag -&gt; Object
      *
      * @param bytes Bytes to read.
-     * @return      A NBTTagCompound converted to object.
+     * @return      a compound tag converted to object.
      */
     public T fromBytes(byte[] bytes) {
         try {
@@ -396,9 +396,9 @@ public class TStream<T> {
 
     /**
      * Consume new objects if it can be created from byte array.<br>
-     * This method detect any NBTTagCompound inside provided bytes and convert into current
+     * This method detect any CompoundTag inside provided bytes and convert into current
      * instance object using the detected compression format, it is also compatible with
-     * any saved object inside NBTTagByteArray, NBTTagList and BukkitObjectInputStream.
+     * any saved object inside ByteArrayTag, ListTag and BukkitObjectInputStream.
      *
      * @param bytes    Byte array to read.
      * @param consumer The consumer that accept non-null objects.

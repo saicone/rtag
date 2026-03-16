@@ -6,7 +6,7 @@ description: Convierte NBT en otros tipos de datos y viceversa
 
 ## Información
 
-Rtag tiene la opción de guardar los NBTTagCompound en diferentes formas:
+Rtag tiene la opción de guardar los CompoundTag en diferentes formas:
 
 * Archivos
 * [Base64](https://en.wikipedia.org/wiki/Base64)
@@ -22,7 +22,7 @@ Incluyendo compatibilidad con objetos serializables.
 Cualquier serialización que haya convertido un objeto en un array de bytes (probablemente guardado en Base64) es compatible si está hecha con los siguientes métodos:
 
 1. Usando un `BukkitObjectInputStream` para guardar los objetos como el tipo requerido o como `byte[]`.
-2. Usando el class `NBTCompressedStreamTools` para guardar los objetos como `NBTTagCompound`, `NBTTagList` o `NBTTagByteArray` en bytes.
+2. Usando el class `NbtIo` para guardar los objetos como `CompoundTag`, `ListTag` o `ByteArrayTag` en bytes.
 3. Objetos NBT guardados con el formato GZIP.
 4. Objetos NBT guardados dentro de otro objeto NBT (como una lista de nbt o un array de bytes nbt).
 
@@ -30,7 +30,7 @@ Cualquier serialización que haya convertido un objeto en un array de bytes (pro
 
 ## TagCompound Data
 
-El class TagCompound incluido en Rtag contiene una forma fácil para convertir y obtener cualquier NBTTagCompound desde Archivo, Base64, Bytes, Map y String.
+El class TagCompound incluido en Rtag contiene una forma fácil para convertir y obtener cualquier CompoundTag desde Archivo, Base64, Bytes, Map y String.
 
 ```mdx-code-block
 import Tabs from '@theme/Tabs';
@@ -40,7 +40,7 @@ import TabItem from '@theme/TabItem';
 <TabItem value="file" label="Archivo" default>
 
 ```java
-// NBTTagCompound desde cualquer parte
+// CompoundTag desde cualquer parte
 Object compound = ...;
 
 // Convertirlo en un archivo
@@ -54,7 +54,7 @@ Object tagCompound = TStream.COMPOUND.fromFile(file);
 <TabItem value="base64" label="Base64">
 
 ```java
-// NBTTagCompound desde cualquer parte
+// CompoundTag desde cualquer parte
 Object compound = ...;
 
 // Convertirlo en Base64
@@ -68,7 +68,7 @@ Object tagCompound = TStream.COMPOUND.fromBase64(base64)[0]; // Devuelve un arra
 <TabItem value="bytes" label="Bytes">
 
 ```java
-// NBTTagCompound desde cualquer parte
+// CompoundTag desde cualquer parte
 Object compound = ...;
 
 // Convertirlo en un array de bytes
@@ -82,7 +82,7 @@ Object tagCompound = TStream.COMPOUND.fromBytes(bytes);
 <TabItem value="map" label="Map">
 
 ```java
-// NBTTagCompound desde cualquer parte
+// CompoundTag desde cualquer parte
 Object compound = ...;
 
 // Convertirlo en un Map
@@ -96,7 +96,7 @@ Object tagCompound = TStream.COMPOUND.fromMap(map);
 <TabItem value="string" label="String">
 
 ```java
-// NBTTagCompound desde cualquer parte
+// CompoundTag desde cualquer parte
 Object compound = ...;
 
 // Convertirlo en un SNBT

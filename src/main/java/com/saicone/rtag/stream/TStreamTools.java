@@ -11,7 +11,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Class to invoke NBTCompressedStreamTools methods across versions.
+ * Class to invoke NbtIo methods across versions.
  *
  * @author Rubenicos
  */
@@ -83,9 +83,9 @@ public class TStreamTools {
     }
 
     /**
-     * Get a NBTReadLimiter instance with no limit to read NBT data.
+     * Get a NbtAccounter instance with no limit to read NBT data.
      *
-     * @return A NBTReadLimiter instance.
+     * @return A NbtAccounter instance.
      */
     public static Object getReadLimiter() {
         return READ_LIMITER.get();
@@ -212,10 +212,10 @@ public class TStreamTools {
     }
 
     /**
-     * Read NBTBase from file.
+     * Read Tag from file.
      *
      * @param file File to read.
-     * @return     A NBTBase instance.
+     * @return     A Tag instance.
      * @throws IOException if root object is not a nbt tag.
      */
     public static Object read(File file) throws IOException {
@@ -225,10 +225,10 @@ public class TStreamTools {
     }
 
     /**
-     * Read NBTBase from byte array.
+     * Read Tag from byte array.
      *
      * @param bytes The byte array to read.
-     * @return      A NBTBase instance.
+     * @return      A Tag instance.
      * @throws IOException if root object is not a nbt tag.
      */
     public static Object read(byte[] bytes) throws IOException {
@@ -238,10 +238,10 @@ public class TStreamTools {
     }
 
     /**
-     * Read NBTBase from InputStream.
+     * Read Tag from InputStream.
      *
      * @param input InputStream to read.
-     * @return      A NBTBase instance.
+     * @return      A Tag instance.
      * @throws IOException if root object is not a nbt tag.
      */
     public static Object read(InputStream input) throws IOException {
@@ -251,10 +251,10 @@ public class TStreamTools {
     }
 
     /**
-     * Read NBTBase from DataInputStream.
+     * Read Tag from DataInputStream.
      *
      * @param input DataInputStream to read.
-     * @return      A NBTBase instance.
+     * @return      A Tag instance.
      * @throws IOException if root object is not a nbt tag.
      */
     public static Object read(DataInputStream input) throws IOException {
@@ -262,10 +262,10 @@ public class TStreamTools {
     }
 
     /**
-     * Read NBTBase from DataInput.
+     * Read Tag from DataInput.
      *
      * @param input DataInput to read.
-     * @return      A NBTBase instance.
+     * @return      A Tag instance.
      * @throws IOException if root object is not a nbt tag.
      */
     public static Object read(DataInput input) throws IOException {
@@ -284,7 +284,7 @@ public class TStreamTools {
     }
 
     /**
-     * Write NBTBase to File.
+     * Write Tag to File.
      *
      * @param tag  The tag to write.
      * @param file File to write in.
@@ -297,7 +297,7 @@ public class TStreamTools {
     }
 
     /**
-     * Write NBTBase to OutputStream.
+     * Write Tag to OutputStream.
      *
      * @param tag  The tag to write.
      * @param output OutputStream to write in.
@@ -310,7 +310,7 @@ public class TStreamTools {
     }
 
     /**
-     * Write NBTBase to DataOutputStream.
+     * Write Tag to DataOutputStream.
      *
      * @param tag    The tag to write.
      * @param output DataOutputStream to write in.
@@ -321,7 +321,7 @@ public class TStreamTools {
     }
 
     /**
-     * Write NBTBase to DataOutput.
+     * Write Tag to DataOutput.
      *
      * @param tag    The tag to write.
      * @param output DataOutput to write in.

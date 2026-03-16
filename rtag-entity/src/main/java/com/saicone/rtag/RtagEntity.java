@@ -167,7 +167,7 @@ public class RtagEntity extends RtagEditor<Entity, RtagEntity> {
     }
 
     /**
-     * Get the NBTTagCompound of the given attribute name.
+     * Get the CompoundTag of the given attribute name.
      *
      * @param name Minecraft attribute name.
      * @return     the raw full attribute if was found, null otherwise.

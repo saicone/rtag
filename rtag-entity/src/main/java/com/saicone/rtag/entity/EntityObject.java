@@ -180,18 +180,18 @@ public class EntityObject {
     }
 
     /**
-     * Save provided entity into newly generated NBTTagCompound.<br>
+     * Save provided entity into newly generated CompoundTag.<br>
      * This method will try to include entity ID as part of compound.
      *
      * @param entity the entity to save.
-     * @return       a NBTTagCompound that represent the entity.
+     * @return       a compound tag that represent the entity.
      */
     public static Object save(Object entity) {
         return save(entity, TagCompound.newTag(), true, false, false);
     }
 
     /**
-     * Save provided entity into newly generated NBTTagCompound.<br>
+     * Save provided entity into newly generated CompoundTag.<br>
      * This method will try to include entity ID as part of compound.
      *
      * @param entity             the entity to save.
@@ -199,7 +199,7 @@ public class EntityObject {
      * @param includeAll         true to include entity position data.
      * @param includeNonSaveable true to include any entity id even if it should not be serialized.
      * @param forceSerialization save any entity even
-     * @return                   a NBTTagCompound that represent the entity.
+     * @return                   a compound tag that represent the entity.
      */
     public static Object save(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         saveWithoutId(entity, compound, includeAll, includeNonSaveable, forceSerialization);
@@ -262,19 +262,19 @@ public class EntityObject {
     }
 
     /**
-     * Save provided entity into newly generated NBTTagCompound.<br>
+     * Save provided entity into newly generated CompoundTag.<br>
      * As its name says, this method doesn't generate the 'id' key.
      *
      * @param entity   the entity instance.
      * @param compound the tag compound that will receive entity data.
-     * @return         a NBTTagCompound that represent the entity.
+     * @return         a compound tag that represent the entity.
      */
     public static Object saveWithoutId(Object entity, Object compound) {
         return saveWithoutId(entity, compound, true, false, false);
     }
 
     /**
-     * Save provided entity into newly generated NBTTagCompound.<br>
+     * Save provided entity into newly generated CompoundTag.<br>
      * As its name says, this method doesn't generate the 'id' key.
      *
      * @param entity             the entity instance.
@@ -282,7 +282,7 @@ public class EntityObject {
      * @param includeAll         true to include entity position data.
      * @param includeNonSaveable true to include any entity id even if it should not be serialized.
      * @param forceSerialization true to include non-persistent entity data.
-     * @return                   a NBTTagCompound that represent the entity.
+     * @return                   a compound tag that represent the entity.
      */
     public static Object saveWithoutId(Object entity, Object compound, boolean includeAll, boolean includeNonSaveable, boolean forceSerialization) {
         try {
@@ -312,10 +312,10 @@ public class EntityObject {
     }
 
     /**
-     * Load NBTTagCompound into entity.
+     * Load CompoundTag into entity.
      *
      * @param entity Entity instance.
-     * @param tag    The NBTTagCompound to load.
+     * @param tag    The CompoundTag to load.
      */
     public static void load(Object entity, Object tag) {
         try {

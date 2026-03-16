@@ -21,15 +21,15 @@ import java.util.Map;
 public class RtagMirror {
 
     /**
-     * NBTBase class object.
+     * Tag class object.
      */
     protected static final Class<?> TAG_BASE = Lookup.SERVER.importClass("net.minecraft.nbt.Tag").get();
     /**
-     * NBTTagCompound class object.
+     * CompoundTag class object.
      */
     protected static final Class<?> TAG_COMPOUND = Lookup.SERVER.importClass("net.minecraft.nbt.CompoundTag").get();
     /**
-     * NBTTagList class object.
+     * ListTag class object.
      */
     protected static final Class<?> TAG_LIST = Lookup.SERVER.importClass("net.minecraft.nbt.ListTag").get();
 
@@ -88,10 +88,10 @@ public class RtagMirror {
     }
 
     /**
-     * Convert any object to NBTBase tag.
+     * Convert any object to tag object.
      *
      * @param object Object to convert.
-     * @return       Converted NBTBase or null;
+     * @return       the object as its tag representation or null.
      */
     @SuppressWarnings("unchecked")
     public Object newTag(Object object) {
@@ -107,10 +107,10 @@ public class RtagMirror {
     }
 
     /**
-     * Copy any NBTBase object into new one.
+     * Copy any Tag object into new one.
      *
      * @param tag Tag to copy.
-     * @return    A NBTBase tag with the same value.
+     * @return    A tag object with the same value.
      */
     public Object clone(Object tag) {
         if (TAG_BASE.isInstance(tag)) {
@@ -127,7 +127,7 @@ public class RtagMirror {
     }
 
     /**
-     * Convert any NBTBase tag to regular Java object.
+     * Convert any tag object to regular Java object.
      *
      * @param tag Tag to convert.
      * @return    Converted object.

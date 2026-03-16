@@ -54,7 +54,7 @@ String sameObject = (String) mirror.getTagValue(nbtTag);
 
 ## Instancia principal de Rtag
 
-Es el propio Rtag, con esta instancia puedes editar cualquier `NBTTagCompound` y `NBTTagList` de una manera simple, puedes agregar y remover objetos utilizando una estructura de datos de árbol para las rutas.
+Es el propio Rtag, con esta instancia puedes editar cualquier `CompoundTag` y `ListTag` de una manera simple, puedes agregar y remover objetos utilizando una estructura de datos de árbol para las rutas.
 
 Incluyendo compatibilidad con objetos custom al registrar un (de)serializador.
 
@@ -64,7 +64,7 @@ Rtag rtag = new Rtag();
 // Usar la instancia pública
 Rtag rtag = Rtag.INSTANCE;
 
-// Un objeto NBTTagCompound
+// Un objeto CompoundTag
 Object compound = ...;
 
 String str = "My String";

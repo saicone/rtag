@@ -53,7 +53,7 @@ String sameObject = (String) mirror.getTagValue(nbtTag);
 
 ## Main Rtag instance
 
-It's the Rtag itself, with this instance you can edit any `NBTTagCompound` and `NBTTagList` in a simple way, you can add and remove objects using a tree-like path format.
+It's the Rtag itself, with this instance you can edit any `CompoundTag` and `ListTag` in a simple way, you can add and remove objects using a tree-like path format.
 
 Including compatibility with custom objects by registering an object (de)serializer.
 
@@ -63,7 +63,7 @@ Rtag rtag = new Rtag();
 // Use public instance
 Rtag rtag = Rtag.INSTANCE;
 
-// NBTTagCompound object
+// CompoundTag object
 Object compound = ...;
 
 String str = "My String";

@@ -1,7 +1,7 @@
 ---
 sidebar_position: 1
 title: Rtag
-description: La librería de "leer NBTTagCompound" en una forma fácil.
+description: La librería para manejar datos de Minecraft de forma sencilla.
 ---
 
 Bienvenid@ a la wiki de Rtag, aquí encontrarás información sobre como utilizar Rtag además de sus posibilidades dentro de la "customización" de un servidor de Minecraft.

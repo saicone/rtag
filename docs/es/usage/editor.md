@@ -4,7 +4,7 @@ title: RtagEditor
 description: El objeto principal para editar NBT fácilmente
 ---
 
-Las instancias de `RtagEditor` (editor de tags) convierten un objeto de Bukkit en uno del servidor de Minecraft y proveen una forma de editar el tag (NBTTagCompound) dentro, usando una instancia de Rtag para manejar las operaciones con NBT.
+Las instancias de `RtagEditor` (editor de tags) convierten un objeto de Bukkit en uno del servidor de Minecraft y proveen una forma de editar el tag (CompoundTag) dentro, usando una instancia de Rtag para manejar las operaciones con NBT.
 
 ## Editar
 

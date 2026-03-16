@@ -51,10 +51,10 @@ Object value = TagBase.getValue(mirror, nbtObject);
 
 ## TagList
 
-Es un class más específico para manejar cualquier `NBTTagList` como si fuera en java un `List<NBTBase>`, tambíén tiene los métodos mencionados anteriormente del class `TagBase`, pero solo funcionan para las listas de NBT.
+Es un class más específico para manejar cualquier `ListTag` como si fuera en java un `List<Tag>`, tambíén tiene los métodos mencionados anteriormente del class `TagBase`, pero solo funcionan para las listas de NBT.
 
 ```java
-// Crear un NBTTagList
+// Crear un ListTag
 Object nbtList = TagList.newTag();
 
 // Agregar un valor
@@ -66,7 +66,7 @@ int size = TagList.size(nbtList);
 // Obtener un valor desde su posición
 Object nbtObject = TagList.get(nbtList, 0); // posición: 0
 
-// Obtener el valor dentro de la instancia de NBTTagList, una lista de NBTBase
+// Obtener el valor dentro de la instancia de ListTag, una lista de Tag
 List<Object> value = TagList.getValue(nbtList);
 
 // Limpiar la lista
@@ -75,12 +75,12 @@ TagList.clear(nbtList);
 
 ## TagCompound
 
-Es un class más específico para manejar cualquier `NBTTagCompound` como si fuera en java un `Map<String, NBTBase>`, tambíén tiene los métodos mencionados anteriormente del class `TagBase`, pero solo funcionan para los NBTTagCompound.
+Es un class más específico para manejar cualquier `CompoundTag` como si fuera en java un `Map<String, Tag>`, tambíén tiene los métodos mencionados anteriormente del class `TagBase`, pero solo funcionan para los CompoundTag.
 
 ```java
-// Crear un NBTTagCompound
+// Crear un CompoundTag
 Object nbtCompound = TagCompound.newTag();
-// O crear un NBTTagCompound utilizando un SNBT (también es compatible con json)
+// O crear un CompoundTag utilizando un SNBT (también es compatible con json)
 Object nbtCompound = TagCompound.newTag("{greeting:\"Hello\",someValue:123}");
 
 // Agregar un valor
@@ -92,10 +92,10 @@ int size = TagCompound.getValue(nbtCompound).size();
 // Obtener un valor utilizando su key
 Object nbtObject = TagCompound.get(nbtCompound, "greeting");
 
-// Obtener el valor dentro de la instancia de NBTTagCompound, un Map de NBTBase
+// Obtener el valor dentro de la instancia de CompoundTag, un Map de Tag
 Map<String, Object> value = TagCompound.getValue(nbtCompound);
 
-// Obtener el NBTTagCompound como si fuera un String en formato Json
+// Obtener el CompoundTag como si fuera un String en formato Json
 String json = TagCompound.getJson(nbtCompound);
 
 // Limpiar el compound
