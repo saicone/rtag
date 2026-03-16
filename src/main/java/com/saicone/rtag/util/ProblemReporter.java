@@ -1,5 +1,6 @@
 package com.saicone.rtag.util;
 
+import com.saicone.rtag.util.reflect.Lookup;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.reflect.Proxy;
@@ -22,20 +23,15 @@ public interface ProblemReporter {
         private static Object discarding() {
             if (MC.version().isNewerThanOrEquals(MC.V_1_20_3)) {
                 try {
-                    final Class<?> ProblemReporter = EasyLookup.addNMSClass("util.ProblemReporter");
-
-                    String discarding = "a";
-                    if (ServerInstance.Type.MOJANG_MAPPED) {
-                        discarding = "DISCARDING";
-                    }
-
+                    final Lookup.AClass<?> ProblemReporter = Lookup.SERVER.importClass("net.minecraft.util.ProblemReporter");
                     if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
-                        return ProblemReporter.getDeclaredField(discarding).get(null);
+                        return ProblemReporter.field(ProblemReporter, "DISCARDING").getValue();
                     } else {
-                        return Proxy.newProxyInstance(ProblemReporter.getClassLoader(), new Class[] { ProblemReporter }, (proxy, method, args) -> {
+                        final Class<?> clazz = ProblemReporter.get();
+                        return Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, (proxy, method, args) -> {
                             if (method.getReturnType().equals(void.class)) {
                                 return null;
-                            } else if (method.getReturnType().isAssignableFrom(ProblemReporter)) {
+                            } else if (method.getReturnType().isAssignableFrom(clazz)) {
                                 return proxy;
                             }
 

@@ -1,6 +1,7 @@
 package com.saicone.rtag.util;
 
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -18,6 +19,8 @@ import java.util.Map;
  *
  * @author Rubenicos
  */
+@Deprecated
+@ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
 public class EasyLookup {
 
     private static final boolean DEBUG = "true".equals(System.getProperty("saicone.easylookup.debug"));

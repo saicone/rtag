@@ -1,13 +1,13 @@
 package com.saicone.rtag.data;
 
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.reflect.Lookup;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Modifier;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,10 +19,16 @@ import java.util.Set;
 @ApiStatus.Experimental
 public class DataComponent {
 
-    private static final Class<?> COMPONENT_HOLDER = EasyLookup.classById("DataComponentHolder");
-    private static final Class<?> COMPONENT_MAP = EasyLookup.classById("DataComponentMap");
-    private static final Class<?> COMPONENT_MAP_PATCH = EasyLookup.classById("PatchedDataComponentMap");
-    private static final Class<?> COMPONENT_PATCH = EasyLookup.classById("DataComponentPatch");
+    // import
+    private static final Lookup.AClass<?> DataComponentGetter = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentGetter");
+    private static final Lookup.AClass<?> DataComponentHolder = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentHolder");
+    private static final Lookup.AClass<?> DataComponentMap = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentMap");
+    private static final Lookup.AClass<?> DataComponentMap$Builder = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentMap$Builder");
+    private static final Lookup.AClass<?> DataComponentMap$Builder$SimpleMap = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentMap$Builder$SimpleMap");
+    private static final Lookup.AClass<?> DataComponentPatch = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentPatch");
+    private static final Lookup.AClass<?> DataComponentPatch$Builder = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentPatch$Builder");
+    private static final Lookup.AClass<?> DataComponentType = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentType");
+    private static final Lookup.AClass<?> PatchedDataComponentMap = Lookup.SERVER.importClass("net.minecraft.core.component.PatchedDataComponentMap");
 
     DataComponent() {
     }
@@ -36,11 +42,11 @@ public class DataComponent {
      * @throws IllegalArgumentException if the provided component is not a compatible data component type.
      */
     public static Object get(Object component, Object type) throws IllegalArgumentException {
-        if (COMPONENT_HOLDER.isInstance(component)) {
+        if (DataComponentHolder.isInstance(component)) {
             return Holder.get(component, type);
-        } else if (COMPONENT_MAP.isInstance(component)) {
+        } else if (DataComponentMap.isInstance(component)) {
             return Map.get(component, type);
-        } else if (COMPONENT_PATCH.isInstance(component)) {
+        } else if (DataComponentPatch.isInstance(component)) {
             return Patch.get(component, type).orElse(null);
         } else {
             throw new IllegalArgumentException("The object type " + component.getClass().getName() + " is not supported");
@@ -56,11 +62,11 @@ public class DataComponent {
      * @throws IllegalArgumentException if the provided component is not a compatible data component type.
      */
     public static Optional<Object> getOptional(Object component, Object type) throws IllegalArgumentException {
-        if (COMPONENT_HOLDER.isInstance(component)) {
+        if (DataComponentHolder.isInstance(component)) {
             return Optional.ofNullable(Holder.get(component, type));
-        } else if (COMPONENT_MAP.isInstance(component)) {
+        } else if (DataComponentMap.isInstance(component)) {
             return Optional.ofNullable(Map.get(component, type));
-        } else if (COMPONENT_PATCH.isInstance(component)) {
+        } else if (DataComponentPatch.isInstance(component)) {
             return Patch.get(component, type);
         } else {
             throw new IllegalArgumentException("The object type " + component.getClass().getName() + " is not supported");
@@ -73,43 +79,11 @@ public class DataComponent {
      */
     @ApiStatus.Experimental
     public static class Holder {
-        private static final MethodHandle GET_COMPONENTS;
-        private static final MethodHandle GET;
-        private static final MethodHandle HAS;
 
-        static {
-            // Methods
-            MethodHandle method$getComponents = null;
-            MethodHandle method$get = null;
-            MethodHandle method$has = null;
-            if (MC.version().isComponent()) {
-                // Old names
-                String getComponents = "a";
-                String get = "a";
-                String has = "b";
-                // New names
-                if (ServerInstance.Type.MOJANG_MAPPED) {
-                    getComponents = "getComponents";
-                    get = "get";
-                    has = "has";
-                } else {
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
-                        has = "c";
-                    }
-                }
-
-                try {
-                    method$getComponents = EasyLookup.method(COMPONENT_HOLDER, getComponents, COMPONENT_MAP);
-                    method$get = EasyLookup.method(COMPONENT_HOLDER, get, Object.class, "DataComponentType");
-                    method$has = EasyLookup.method(COMPONENT_HOLDER, has, boolean.class, "DataComponentType");
-                } catch (NoSuchMethodException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-            GET_COMPONENTS = method$getComponents;
-            GET = method$get;
-            HAS = method$has;
-        }
+        // declare
+        private static final MethodHandle DataComponentHolder_getComponents = DataComponentHolder.method(DataComponentMap, "getComponents").handle();
+        private static final MethodHandle DataComponentHolder_get = DataComponentHolder.method(Object.class, "get", DataComponentType).handle();
+        private static final MethodHandle DataComponentHolder_has = DataComponentHolder.method(boolean.class, "has", DataComponentType).handle();
 
         Holder() {
         }
@@ -121,11 +95,7 @@ public class DataComponent {
          * @return       a DataComponentMap provided by holder.
          */
         public static Object getComponents(Object holder) {
-            try {
-                return GET_COMPONENTS.invoke(holder);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get component map from component holder", t);
-            }
+            return Lookup.invoke(DataComponentHolder_getComponents, holder);
         }
 
         /**
@@ -136,11 +106,7 @@ public class DataComponent {
          * @return       the component declared type from data component cache if exists, null otherwise.
          */
         public static Object get(Object holder, Object type) {
-            try {
-                return GET.invoke(holder, type);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get component type from component holder", t);
-            }
+            return Lookup.invoke(DataComponentHolder_get, holder, type);
         }
 
         /**
@@ -151,11 +117,7 @@ public class DataComponent {
          * @return       true if holder contains the provided component type.
          */
         public static boolean has(Object holder, Object type) {
-            try {
-                return (boolean) HAS.invoke(holder, type);
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
-            }
+            return Lookup.invoke(DataComponentHolder_has, holder, type);
         }
     }
 
@@ -169,78 +131,25 @@ public class DataComponent {
         /**
          * An empty DataComponentMap instance.
          */
-        public static final Object EMPTY;
+        public static final Object EMPTY = DataComponentMap.field(Modifier.STATIC, DataComponentMap, "EMPTY").getValue();
 
-        private static final MethodHandle GET_MAP;
-        private static final MethodHandle GET;
-        private static final MethodHandle KEY_SET;
-        private static final MethodHandle BUILDER;
-        private static final MethodHandle BUILDER_MAP;
-        private static final MethodHandle BUILDER_BUILD;
-
+        // declare
+        private static final MethodHandle DataComponentGetter_get;
         static {
-            // Constants
-            Object const$empty = null;
-            // Getters
-            MethodHandle get$map = null;
-            MethodHandle get$builder$map = null;
-            // Methods
-            MethodHandle method$get = null;
-            MethodHandle method$keySet = null;
-            MethodHandle method$builder = null;
-            MethodHandle method$builder$build = null;
-            if (MC.version().isComponent()) {
-                // Old names
-                String empty = "a";
-                String map = "c";
-                String get = "a";
-                String keySet = "b";
-
-                String builder = "a";
-                String builder$map = "a";
-                String builder$build = "a";
-
-                // New names
-                if (ServerInstance.Type.MOJANG_MAPPED) {
-                    empty = "EMPTY";
-                    map = "map";
-                    get = "get";
-                    keySet = "keySet";
-
-                    builder = "builder";
-                    builder$map = "map";
-                    builder$build = "build";
-                }
-
-                try {
-                    const$empty = COMPONENT_MAP.getDeclaredField(empty).get(null);
-
-                    // Private field
-                    get$map = EasyLookup.unreflectGetter("DataComponentMap.SimpleMap", map);
-                    // Private field
-                    get$builder$map = EasyLookup.unreflectSetter("DataComponentMap.Builder", builder$map);
-
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
-                        EasyLookup.addNMSClass("core.component.DataComponentGetter");
-                        method$get = EasyLookup.method("DataComponentGetter", get, Object.class, "DataComponentType");
-                    } else {
-                        method$get = EasyLookup.method(COMPONENT_MAP, get, Object.class, "DataComponentType");
-                    }
-                    method$keySet = EasyLookup.method(COMPONENT_MAP, keySet, Set.class);
-                    method$builder = EasyLookup.staticMethod(COMPONENT_MAP, builder, "DataComponentMap.Builder");
-                    method$builder$build = EasyLookup.method("DataComponentMap.Builder", builder$build, COMPONENT_MAP);
-                } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
-                }
+            if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
+                DataComponentGetter_get = DataComponentGetter.method(Object.class, "get", DataComponentType).handle();
+            } else {
+                DataComponentGetter_get = DataComponentMap.method(Object.class, "get", DataComponentType).handle();
             }
-            EMPTY = const$empty;
-            GET_MAP = get$map;
-            BUILDER_MAP = get$builder$map;
-            GET = method$get;
-            KEY_SET = method$keySet;
-            BUILDER = method$builder;
-            BUILDER_BUILD = method$builder$build;
         }
+
+        private static final MethodHandle DataComponentMap_keySet = DataComponentMap.method(Set.class, "keySet").handle();
+        private static final MethodHandle DataComponentMap_builder = DataComponentMap.method(Modifier.STATIC, DataComponentMap$Builder, "builder").handle();
+
+        private static final MethodHandle DataComponentMap$Builder$get_map = DataComponentMap$Builder.field(Reference2ObjectMap.class, "map").getter();
+        private static final MethodHandle DataComponentMap$Builder_build = DataComponentMap$Builder.method(DataComponentMap, "build").handle();
+
+        private static final MethodHandle DataComponentMap$Builder$SimpleMap$get_map = DataComponentMap$Builder$SimpleMap.field(Reference2ObjectMap.class, "map").getter();
 
         Map() {
         }
@@ -253,15 +162,11 @@ public class DataComponent {
         @SuppressWarnings("unchecked")
         public static Builder<Object> builder() {
             try {
-                final Object build = BUILDER.invoke();
-                return new Builder<>(build, (Reference2ObjectMap<Object, Object>) BUILDER_MAP.invoke(build)) {
+                final Object build = DataComponentMap_builder.invoke();
+                return new Builder<>(build, (Reference2ObjectMap<Object, Object>) DataComponentMap$Builder$get_map.invoke(build)) {
                     @Override
                     public Object build() {
-                        try {
-                            return BUILDER_BUILD.invoke(build);
-                        } catch (Throwable t) {
-                            throw new RuntimeException("Cannot build component map from builder", t);
-                        }
+                        return Lookup.invoke(DataComponentMap$Builder_build, build);
                     }
                 };
             } catch (Throwable t) {
@@ -297,11 +202,7 @@ public class DataComponent {
          * @return     the component declared type from data component cache if exists, null otherwise.
          */
         public static Object get(Object map, Object type) {
-            try {
-                return GET.invoke(map, type);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get component type from component map", t);
-            }
+            return Lookup.invoke(DataComponentGetter_get, map, type);
         }
 
         /**
@@ -321,13 +222,8 @@ public class DataComponent {
          * @param map the map to get the value itself.
          * @return    a Reference2ObjectMap inside component map.
          */
-        @SuppressWarnings("unchecked")
         public static Reference2ObjectMap<Object, Object> getValue(Object map) {
-            try {
-                return (Reference2ObjectMap<Object, Object>) GET_MAP.invoke(map);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get map field from component map", t);
-            }
+            return Lookup.invoke(DataComponentMap$Builder$SimpleMap$get_map, map);
         }
 
         /**
@@ -336,13 +232,8 @@ public class DataComponent {
          * @param map the map to get the key set.
          * @return    set full of DataComponentType objects.
          */
-        @SuppressWarnings("unchecked")
         public static Set<Object> keySet(Object map) {
-            try {
-                return (Set<Object>) KEY_SET.invoke(map);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get keySet from component map", t);
-            }
+            return Lookup.invoke(DataComponentMap_keySet, map);
         }
     }
 
@@ -353,52 +244,12 @@ public class DataComponent {
      */
     @ApiStatus.Experimental
     public static class MapPatch {
-        private static final MethodHandle SET_MAP_FIELD;
-        private static final MethodHandle GET_MAP_FIELD;
-        private static final MethodHandle SET;
-        private static final MethodHandle REMOVE;
 
-        static {
-            // Getters
-            MethodHandle get$map = null;
-            // Setters
-            MethodHandle set$map = null;
-            // Methods
-            MethodHandle method$set = null;
-            MethodHandle method$remove = null;
-            if (MC.version().isComponent()) {
-                // Old names
-                String map = "d";
-                String set = "b";
-                String remove = "d";
-
-                // New names
-                if (ServerInstance.Type.MOJANG_MAPPED) {
-                    map = "patch";
-                    set = "set";
-                    remove = "remove";
-                } else {
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) { // 1.21.3
-                        remove = "e";
-                    }
-                }
-
-                try {
-                    // Private field
-                    get$map = EasyLookup.unreflectGetter(COMPONENT_MAP_PATCH, map);
-                    set$map = EasyLookup.unreflectSetter(COMPONENT_MAP_PATCH, map);
-
-                    method$set = EasyLookup.method(COMPONENT_MAP_PATCH, set, Object.class, "DataComponentType", Object.class);
-                    method$remove = EasyLookup.method(COMPONENT_MAP_PATCH, remove, Object.class, "DataComponentType");
-                } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
-                }
-            }
-            SET_MAP_FIELD = set$map;
-            GET_MAP_FIELD = get$map;
-            SET = method$set;
-            REMOVE = method$remove;
-        }
+        // declare
+        private static final MethodHandle PatchedDataComponentMap$get_patch = PatchedDataComponentMap.field(Reference2ObjectMap.class, "patch").getter();
+        private static final MethodHandle PatchedDataComponentMap$set_patch = PatchedDataComponentMap.field(Reference2ObjectMap.class, "patch").setter();
+        private static final MethodHandle PatchedDataComponentMap_set = PatchedDataComponentMap.method(Object.class, "set", DataComponentType, Object.class).handle();
+        private static final MethodHandle PatchedDataComponentMap_remove = PatchedDataComponentMap.method(Object.class, "remove", DataComponentType).handle();
 
         MapPatch() {
         }
@@ -409,13 +260,8 @@ public class DataComponent {
          * @param map the patched map to get the value itself.
          * @return    a Reference2ObjectMap inside patched map.
          */
-        @SuppressWarnings("unchecked")
         public static Reference2ObjectMap<Object, Object> getValue(Object map) {
-            try {
-                return (Reference2ObjectMap<Object, Object>) GET_MAP_FIELD.invoke(map);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get map field from component map", t);
-            }
+            return Lookup.invoke(PatchedDataComponentMap$get_patch, map);
         }
 
         /**
@@ -427,11 +273,7 @@ public class DataComponent {
          * @return      the value that was set before in patched map, null otherwise.
          */
         public static Object set(Object map, Object type, Object value) {
-            try {
-                return SET.invoke(map, type, value);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set component type value to component map", t);
-            }
+            return Lookup.invoke(PatchedDataComponentMap_set, map, type, value);
         }
 
         /**
@@ -441,11 +283,7 @@ public class DataComponent {
          * @param value a Reference2ObjectMap with DataComponentType as keys and declared objects has values.
          */
         public static void setValue(Object map, Reference2ObjectMap<Object, Object> value) {
-            try {
-                SET_MAP_FIELD.invoke(map, value);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set map field to component map", t);
-            }
+            Lookup.invoke(PatchedDataComponentMap$set_patch, map, value);
         }
 
         /**
@@ -456,11 +294,7 @@ public class DataComponent {
          * @return     the value that was set before in patched map, null otherwise.
          */
         public static Object remove(Object map, Object type) {
-            try {
-                return REMOVE.invoke(map, type);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot remove component type value from component map", t);
-            }
+            return Lookup.invoke(PatchedDataComponentMap_remove, map, type);
         }
     }
 
@@ -475,70 +309,15 @@ public class DataComponent {
         /**
          * An empty DataComponentPatch instance.
          */
-        public static final Object EMPTY;
+        public static final Object EMPTY = DataComponentPatch.field(Modifier.STATIC, DataComponentPatch, "EMPTY").getValue();
 
-        private static final MethodHandle SET_MAP_FIELD;
-        private static final MethodHandle GET_MAP_FIELD;
-        private static final MethodHandle BUILDER;
-        private static final MethodHandle BUILDER_MAP;
-        private static final MethodHandle BUILDER_BUILD;
+        // declare
+        private static final MethodHandle DataComponentPatch$get_map = DataComponentPatch.field(Reference2ObjectMap.class, "map").getter();
+        private static final MethodHandle DataComponentPatch$set_map = DataComponentPatch.field(Reference2ObjectMap.class, "map").setter();
+        private static final MethodHandle DataComponentPatch_builder = DataComponentPatch.method(Modifier.STATIC, DataComponentPatch$Builder, "builder").handle();
 
-        static {
-            // Constants
-            Object const$empty = null;
-            // Getters
-            MethodHandle get$map = null;
-            MethodHandle get$builder$map = null;
-            // Setters
-            MethodHandle set$map = null;
-            // Methods
-            MethodHandle method$builder = null;
-            MethodHandle method$builder$build = null;
-            if (MC.version().isComponent()) {
-                // Old names
-                String empty = "a";
-                String map = "d";
-
-                String builder = "a";
-                String builder$map = "a";
-                String builder$build = "a";
-
-                // New names
-                if (ServerInstance.Type.MOJANG_MAPPED) {
-                    empty = "EMPTY";
-                    map = "map";
-
-                    builder = "builder";
-                    builder$map = "map";
-                    builder$build = "build";
-                } else {
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
-                        map = "e";
-                    }
-                }
-
-                try {
-                    const$empty = COMPONENT_PATCH.getDeclaredField(empty).get(null);
-
-                    // Private field
-                    get$map = EasyLookup.unreflectGetter(COMPONENT_PATCH, map);
-                    set$map = EasyLookup.unreflectSetter(COMPONENT_PATCH, map);
-                    // Private field
-                    get$builder$map = EasyLookup.unreflectGetter("DataComponentPatch.Builder", builder$map);
-
-                    method$builder = EasyLookup.staticMethod(COMPONENT_PATCH, builder, "DataComponentPatch.Builder");
-                    method$builder$build = EasyLookup.method("DataComponentPatch.Builder", builder$build, COMPONENT_PATCH);
-                } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
-                }
-            }
-            EMPTY = const$empty;
-            SET_MAP_FIELD = set$map;
-            GET_MAP_FIELD = get$map;
-            BUILDER = method$builder;
-            BUILDER_MAP = get$builder$map;
-            BUILDER_BUILD = method$builder$build;
-        }
+        private static final MethodHandle DataComponentPatch$Builder$get_map = DataComponentPatch$Builder.field(Reference2ObjectMap.class, "map").getter();
+        private static final MethodHandle DataComponentPatch$Builder_build = DataComponentPatch$Builder.method(DataComponentPatch, "build").handle();
 
         Patch() {
         }
@@ -551,8 +330,8 @@ public class DataComponent {
         @SuppressWarnings("unchecked")
         public static Builder<Optional<?>> builder() {
             try {
-                final Object build = BUILDER.invoke();
-                return new Builder<>(build, (Reference2ObjectMap<Object, Optional<?>>) BUILDER_MAP.invoke(build)) {
+                final Object build = DataComponentPatch_builder.invoke();
+                return new Builder<>(build, (Reference2ObjectMap<Object, Optional<?>>) DataComponentPatch$Builder$get_map.invoke(build)) {
                     @Override
                     public Builder<Optional<?>> remove(Object type) {
                         getMap().put(type, Optional.empty());
@@ -561,11 +340,7 @@ public class DataComponent {
 
                     @Override
                     public Object build() {
-                        try {
-                            return BUILDER_BUILD.invoke(build);
-                        } catch (Throwable t) {
-                            throw new RuntimeException("Cannot build component patch from builder", t);
-                        }
+                        return Lookup.invoke(DataComponentPatch$Builder_build, build);
                     }
                 };
             } catch (Throwable t) {
@@ -591,13 +366,8 @@ public class DataComponent {
          * @param patch the patch to get the value itself.
          * @return      a Reference2ObjectMap inside component patch.
          */
-        @SuppressWarnings("unchecked")
         public static Reference2ObjectMap<Object, Optional<?>> getValue(Object patch) {
-            try {
-                return (Reference2ObjectMap<Object, Optional<?>>) GET_MAP_FIELD.invoke(patch);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get map field from component patch", t);
-            }
+            return Lookup.invoke(DataComponentPatch$get_map, patch);
         }
 
         /**
@@ -637,11 +407,7 @@ public class DataComponent {
          * @param value a Reference2ObjectMap with DataComponentType as keys and wrapped declared objects has values.
          */
         public static void setValue(Object patch, Reference2ObjectMap<Object, Optional<?>> value) {
-            try {
-                SET_MAP_FIELD.invoke(patch, value);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set map field to component patch", t);
-            }
+            Lookup.invoke(DataComponentPatch$set_map, patch, value);
         }
     }
 

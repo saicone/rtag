@@ -3,12 +3,13 @@ package com.saicone.rtag;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
 import com.saicone.rtag.util.ThrowableFunction;
+import com.saicone.rtag.util.reflect.Lookup;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +40,11 @@ import java.util.function.Predicate;
  */
 public class Rtag extends RtagMirror {
 
+    // import
+    private static final Lookup.AClass<?> RegistryAccess = Lookup.SERVER.importClass("net.minecraft.core.RegistryAccess");
+    private static final Lookup.AClass<?> Unit = Lookup.SERVER.importClass("net.minecraft.util.Unit");
+    private static final Lookup.AClass<?> CraftRegistry = Lookup.SERVER.importClass("org.bukkit.craftbukkit.CraftRegistry");
+
     private static final BiPredicate<Integer, Object[]> addPredicate = (index, path) -> path.length == index || path[index] instanceof Integer;
     private static final BiPredicate<Integer, Object[]> setPredicate = (index, path) -> path.length > index && path[index] instanceof Integer;
 
@@ -52,31 +58,24 @@ public class Rtag extends RtagMirror {
      */
     @ApiStatus.Experimental
     public static final Object UNIT;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_14)) {
+            UNIT = Unit.getEnumValues()[0];
+        } else {
+            UNIT = new Object();
+        }
+    }
     private static final Object REGISTRY;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_20)) {
+            REGISTRY = CraftRegistry.method(Modifier.STATIC, RegistryAccess, "getMinecraftRegistry").invoke();
+        } else {
+            REGISTRY = null;
+        }
+    }
 
     private final Map<String, RtagDeserializer<Object>> deserializers = new HashMap<>();
     private final Map<Class<?>, RtagSerializer<Object>> serializers = new HashMap<>();
-
-    static {
-        Object unit = new Object();
-        Object registry = null;
-        if (MC.version().isNewerThanOrEquals(MC.V_1_14)) {
-            try {
-                unit = ((Object[]) EasyLookup.addNMSClass("util.Unit").getDeclaredMethod("values").invoke(null))[0];
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-            if (MC.version().isNewerThanOrEquals(MC.V_1_20)) {
-                try {
-                    registry = EasyLookup.addOBCClass("CraftRegistry").getDeclaredMethod("getMinecraftRegistry").invoke(null);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
-            }
-        }
-        UNIT = unit;
-        REGISTRY = registry;
-    }
 
     /**
      * Get a globalized registry from Bukkit registry.

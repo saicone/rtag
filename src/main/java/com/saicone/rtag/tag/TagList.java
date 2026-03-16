@@ -1,9 +1,8 @@
 package com.saicone.rtag.tag;
 
 import com.saicone.rtag.RtagMirror;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.reflect.Lookup;
 
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
@@ -17,83 +16,44 @@ import java.util.function.BiPredicate;
  */
 public class TagList {
 
-    private static final Class<?> NBT_LIST = EasyLookup.classById("NBTTagList");
+    // import
+    private static final Lookup.AClass<?> ListTag = Lookup.SERVER.importClass("net.minecraft.nbt.ListTag");
+    private static final Lookup.AClass<?> Tag = Lookup.SERVER.importClass("net.minecraft.nbt.Tag");
 
-    private static final MethodHandle newEmpty;
-    private static final MethodHandle newList;
-    private static final MethodHandle clone;
-    private static final MethodHandle getTypeField;
-    private static final MethodHandle setTypeField;
-    private static final MethodHandle getListField;
-    private static final MethodHandle setListField;
-
+    // declare
+    private static final MethodHandle ListTag$new = ListTag.constructor().handle();
+    private static final MethodHandle ListTag$new_list;
     static {
-        // Constructors
-        MethodHandle new$EmptyList = null;
-        MethodHandle new$List = null;
-        // Methods
-        MethodHandle method$clone = null;
-        // Getters
-        MethodHandle get$type = null;
-        MethodHandle get$list = null;
-        // Setters
-        MethodHandle set$type = null;
-        MethodHandle set$list = null;
-        try {
-            // Old names
-            String clone = "clone";
-            String type = "type";
-            String list = "list";
-            // New names
-            if (ServerInstance.Type.MOJANG_MAPPED) {
-                clone = "copy";
-            } else {
-                if (MC.version().isBetween(MC.V_1_10, MC.V_1_13_2)) {
-                    clone = "d";
-                }
-                if (MC.version().isUniversal()) {
-                    type = "w";
-                    list = "c";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
-                    clone = "d";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) { // 1.19.4
-                    clone = "e";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
-                    list = "v";
-                    clone = "g";
-                }
-            }
-
-            new$EmptyList = EasyLookup.constructor(NBT_LIST);
-            // Private constructor
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
-                new$List = EasyLookup.constructor(NBT_LIST, List.class);
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
-                new$List = EasyLookup.constructor(NBT_LIST, List.class, byte.class);
-            }
-            // (1.8 -  1.9) return NBTBase
-            method$clone = EasyLookup.method(NBT_LIST, clone, NBT_LIST);
-            // Private fields
-            if (MC.version().isOlderThan(MC.V_1_21_5)) {
-                get$type = EasyLookup.getter(NBT_LIST, type, byte.class);
-                set$type = EasyLookup.setter(NBT_LIST, type, byte.class);
-            }
-            get$list = EasyLookup.getter(NBT_LIST, list, List.class);
-            set$list = EasyLookup.setter(NBT_LIST, list, List.class);
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
+            ListTag$new_list = ListTag.constructor(List.class).handle();
+        } else if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
+            ListTag$new_list = ListTag.constructor(List.class, byte.class).handle();
+        } else {
+            ListTag$new_list = null;
         }
-        newEmpty = new$EmptyList;
-        newList = new$List;
-        clone = method$clone;
-        getTypeField = get$type;
-        setTypeField = set$type;
-        getListField = get$list;
-        setListField = set$list;
     }
+    private static final MethodHandle ListTag_copy;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_10)) {
+            ListTag_copy = ListTag.method(ListTag, "copy").handle();
+        } else {
+            ListTag_copy = ListTag.method(Tag, "copy").handle();
+        }
+    }
+    private static final MethodHandle ListTag$get_type;
+    private static final MethodHandle ListTag$set_type;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
+            // Mojang introduces heterogeneous lists
+            ListTag$get_type = null;
+            ListTag$set_type = null;
+        } else {
+            ListTag$get_type = ListTag.field(byte.class, "type").getter();
+            ListTag$set_type = ListTag.field(byte.class, "type").setter();
+        }
+    }
+    private static final MethodHandle ListTag$get_list = ListTag.field(byte.class, "list").getter();
+    private static final MethodHandle ListTag$set_list = ListTag.field(byte.class, "list").setter();
 
     TagList() {
     }
@@ -105,7 +65,7 @@ public class TagList {
      */
     public static Object newTag() {
         try {
-            return newEmpty.invoke();
+            return ListTag$new.invoke();
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -146,16 +106,16 @@ public class TagList {
         try {
             // List are heterogeneous since 1.21.5
             if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
-                return newList.invoke(list);
+                return ListTag$new_list.invoke(list);
             }
             final byte type = TagBase.getTypeId(list.get(0));
             if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
-                return newList.invoke(list, type);
+                return ListTag$new_list.invoke(list, type);
             } else {
                 Object tag = newTag();
-                setTypeField.invoke(tag, type);
+                ListTag$set_type.invoke(tag, type);
                 try {
-                    setListField.invoke(tag, list);
+                    ListTag$set_list.invoke(tag, list);
                 } catch (ClassCastException e) {
                     getValue(tag).addAll(list);
                 }
@@ -193,7 +153,7 @@ public class TagList {
      * @return       true if the object is an instance of NBTTagList class.
      */
     public static boolean isTagList(Object object) {
-        return NBT_LIST.isInstance(object);
+        return ListTag.isInstance(object);
     }
 
     /**
@@ -204,7 +164,7 @@ public class TagList {
      */
     public static Object clone(Object tag) {
         try {
-            return clone.invoke(tag);
+            return ListTag_copy.invoke(tag);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -241,7 +201,7 @@ public class TagList {
     @SuppressWarnings("unchecked")
     public static List<Object> getValue(Object tag) {
         try {
-            return (List<Object>) getListField.invoke(tag);
+            return (List<Object>) ListTag$get_list.invoke(tag);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -289,7 +249,7 @@ public class TagList {
 
     private static byte getType0(Object tag) {
         try {
-            return (byte) getTypeField.invoke(tag);
+            return (byte) ListTag$get_type.invoke(tag);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -398,7 +358,7 @@ public class TagList {
 
     private static void setType0(Object tag, byte type) {
         try {
-            setTypeField.invoke(tag, type);
+            ListTag$set_type.invoke(tag, type);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -417,9 +377,9 @@ public class TagList {
             try {
                 if (MC.version().isOlderThan(MC.V_1_21_5)) {
                     final byte type = TagBase.getTypeId(list.get(0));
-                    setTypeField.invoke(tag, type);
+                    ListTag$set_type.invoke(tag, type);
                 }
-                setListField.invoke(tag, list);
+                ListTag$set_list.invoke(tag, list);
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }

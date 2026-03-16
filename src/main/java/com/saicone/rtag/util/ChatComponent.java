@@ -18,10 +18,12 @@ import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
+import com.saicone.rtag.util.reflect.Lookup;
 import jdk.jfr.Experimental;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,22 +38,6 @@ import java.util.StringJoiner;
  */
 @SuppressWarnings("deprecation")
 public class ChatComponent {
-
-    // Import reflected classes
-    static {
-        try {
-            EasyLookup.addNMSClass("network.chat.IChatBaseComponent", "Component");
-            if (MC.version().isOlderThan(MC.V_1_21_6)) { // Since 1.21.6 this class doesn't exist
-                EasyLookup.addNMSClassId("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer", "network.chat.Component$Serializer");
-            }
-            EasyLookup.addOBCClass("util.CraftChatMessage");
-            if (MC.version().isComponent()) {
-                EasyLookup.addNMSClass("network.chat.ComponentSerialization");
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Default color palette for pretty nbt.
@@ -70,80 +56,48 @@ public class ChatComponent {
      */
     public static final String[] NBT_PALETTE_MINIMESSAGE = new String[] { "<white>", "<aqua>", "<green>", "<gold>", "<red>" };
 
-    private static final Class<?> CHAT_BASE_COMPONENT;
-
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private static final char[] RAW_SUFFIX = new char[] { '\0', 'b', 's', '\0', 'L', 'f', 'd', 'B', '\0', '\0', '\0', 'I', 'L' };
 
-    private static final MethodHandle fromString;
-    private static final MethodHandle fromComponent;
-    // pre 1.20.5
-    private static final MethodHandle fromJson;
-    private static final MethodHandle toJson;
-    // since 1.20.5
+    // import
+    private static final Lookup.AClass<?> Component = Lookup.SERVER.importClass("net.minecraft.network.chat.Component");
+    private static final Lookup.AClass<?> Component$Serializer = Lookup.SERVER.importClass("net.minecraft.network.chat.Component$Serializer");
+    private static final Lookup.AClass<?> ComponentSerialization = Lookup.SERVER.importClass("net.minecraft.network.chat.ComponentSerialization");
+    private static final Lookup.AClass<?> MutableComponent = Lookup.SERVER.importClass("net.minecraft.network.chat.MutableComponent");
+    private static final Lookup.AClass<?> CraftChatMessage = Lookup.SERVER.importClass("org.bukkit.craftbukkit.util.CraftChatMessage");
+
+    // declare
+    private static final MethodHandle CraftChatMessage_fromString;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
+            CraftChatMessage_fromString = CraftChatMessage.method(Modifier.STATIC, Component, "fromStringOrNull", String.class).handle();
+        } else {
+            CraftChatMessage_fromString = CraftChatMessage.method(Modifier.STATIC, Component.getArray(), "fromString", String.class).handle();
+        }
+    }
+    private static final MethodHandle CraftChatMessage_fromComponent = CraftChatMessage.method(Modifier.STATIC, String.class, "fromComponent", Component).handle();
+
+    private static final MethodHandle Component$Serializer_fromJson;
+    private static final MethodHandle Component$Serializer_toJson;
     /**
      * Component codec.
      */
     @Experimental
     public static final Object CODEC;
-
     static {
-        // CraftChatMessage util class
-        MethodHandle method$fromString = null;
-        MethodHandle method$fromComponent = null;
-        // ChatSerializer MC class
-        MethodHandle method$fromJson = null;
-        MethodHandle method$toJson = null;
-        // ComponentSerialization
-        MethodHandle component$codec = null;
-        try {
-            // Old names
-            String fromJson = "a";
-            String toJson = "a";
-            String codec = "a";
-            // New names
-            if (ServerInstance.Type.MOJANG_MAPPED) {
-                fromJson = "fromJson";
-                toJson = "toJson";
-                codec = "CODEC";
-            }
-
-            if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
-                method$fromString = EasyLookup.staticMethod("CraftChatMessage", "fromStringOrNull", "IChatBaseComponent", String.class);
+        if (MC.version().isComponent()) {
+            Component$Serializer_fromJson = null;
+            Component$Serializer_toJson = null;
+            CODEC = ComponentSerialization.field(Modifier.STATIC, Codec.class, "CODEC").getValue();
+        } else {
+            if (MC.version().isNewerThanOrEquals(MC.V_1_16)) {
+                Component$Serializer_fromJson = Component$Serializer.method(Modifier.STATIC, MutableComponent, "fromJson", String.class).handle();
             } else {
-                // Unreflect reason:
-                // Return IChatBaseComponent array
-                method$fromString = EasyLookup.unreflectMethod("CraftChatMessage", "fromString", String.class);
+                Component$Serializer_fromJson = Component$Serializer.method(Modifier.STATIC, Component, "fromJson", String.class).handle();
             }
-            method$fromComponent = EasyLookup.staticMethod("CraftChatMessage", "fromComponent", String.class, "IChatBaseComponent");
-
-            if (MC.version().isComponent()) {
-                component$codec = EasyLookup.staticGetter("ComponentSerialization", codec, Codec.class);
-            } else {
-                // Unreflect reason:
-                // (1.8 - 1.15) return IChatBaseComponent
-                // Other versions return IChatMutableComponent
-                method$fromJson = EasyLookup.unreflectMethod("ChatSerializer", fromJson, String.class);
-                method$toJson = EasyLookup.staticMethod("ChatSerializer", toJson, String.class, "IChatBaseComponent");
-            }
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
+            Component$Serializer_toJson = Component$Serializer.method(Modifier.STATIC, String.class, "toJson", Component).handle();
+            CODEC = null;
         }
-        CHAT_BASE_COMPONENT = EasyLookup.classById("IChatBaseComponent");
-        fromString = method$fromString;
-        fromComponent = method$fromComponent;
-        fromJson = method$fromJson;
-        toJson = method$toJson;
-
-        Object componentCodec = null;
-        if (component$codec != null) {
-            try {
-                componentCodec = component$codec.invoke();
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-        CODEC = componentCodec;
     }
 
     ChatComponent() {
@@ -171,7 +125,7 @@ public class ChatComponent {
             }
             return false;
         } else {
-            return CHAT_BASE_COMPONENT.isInstance(object);
+            return Component.isInstance(object);
         }
     }
 
@@ -204,7 +158,7 @@ public class ChatComponent {
                 }
                 return Serialization.parseJson(element);
             } else {
-                return fromJson.invoke(json);
+                return Component$Serializer_fromJson.invoke(json);
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);
@@ -366,9 +320,9 @@ public class ChatComponent {
     public static Object fromString(String string) {
         try {
             if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
-                return fromString.invoke(string);
+                return CraftChatMessage_fromString.invoke(string);
             } else {
-                return string == null || string.isEmpty() ? null : ((Object[]) fromString.invoke(string))[0];
+                return string == null || string.isEmpty() ? null : ((Object[]) CraftChatMessage_fromString.invoke(string))[0];
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);
@@ -590,7 +544,7 @@ public class ChatComponent {
             return toJson(o);
         }
         Objects.requireNonNull(component, "The provided object cannot be null");
-        if (!CHAT_BASE_COMPONENT.isInstance(component)) {
+        if (!Component.isInstance(component)) {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
         try {
@@ -598,7 +552,7 @@ public class ChatComponent {
                 final JsonElement element = Serialization.encodeJson(component);
                 return GSON.toJson(element);
             } else {
-                return (String) toJson.invoke(component);
+                return (String) Component$Serializer_toJson.invoke(component);
             }
         } catch (Throwable t) {
             throw new RuntimeException(t);
@@ -635,11 +589,11 @@ public class ChatComponent {
             return toString(o);
         }
         Objects.requireNonNull(component, "The provided object cannot be null");
-        if (!CHAT_BASE_COMPONENT.isInstance(component)) {
+        if (!Component.isInstance(component)) {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
         try {
-            return (String) fromComponent.invoke(component);
+            return (String) CraftChatMessage_fromComponent.invoke(component);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -668,7 +622,7 @@ public class ChatComponent {
      */
     public static Object toTag(Object component) {
         Objects.requireNonNull(component, "The provided object cannot be null");
-        if (!CHAT_BASE_COMPONENT.isInstance(component)) {
+        if (!Component.isInstance(component)) {
             throw new IllegalArgumentException("The provided object isn't an IChatBaseComponent");
         }
         if (MC.version().isComponent()) {

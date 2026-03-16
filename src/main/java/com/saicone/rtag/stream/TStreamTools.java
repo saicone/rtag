@@ -1,11 +1,11 @@
 package com.saicone.rtag.stream;
 
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.reflect.Lookup;
 
 import java.io.*;
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Modifier;
 import java.util.function.Supplier;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -17,105 +17,50 @@ import java.util.zip.GZIPOutputStream;
  */
 public class TStreamTools {
 
-    // Import reflected classes
+    // import
+    private static final Lookup.AClass<?> Tag = Lookup.SERVER.importClass("net.minecraft.nbt.Tag");
+    private static final Lookup.AClass<?> NbtIo = Lookup.SERVER.importClass("net.minecraft.nbt.NbtIo");
+    private static final Lookup.AClass<?> NbtAccounter = Lookup.SERVER.importClass("net.minecraft.nbt.NbtAccounter");
+    private static final Lookup.AClass<?> FastBufferedInputStream = Lookup.SERVER.importClass("net.minecraft.util.FastBufferedInputStream");
+
+    // declare
+    private static final boolean USE_FAST_STREAM = MC.version().isNewerThanOrEquals(MC.V_1_18);
+    private static final boolean NETWORK_RECODE = MC.version().isNewerThanOrEquals(MC.V_1_20_2);
+
+    private static final MethodHandle FastBufferedInputStream$new;
     static {
-        try {
-            EasyLookup.addNMSClass("nbt.NBTCompressedStreamTools", "NbtIo");
-            EasyLookup.addNMSClass("nbt.NBTReadLimiter", "NbtAccounter");
-            if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
-                EasyLookup.addNMSClass("util.FastBufferedInputStream");
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        if (USE_FAST_STREAM) {
+            FastBufferedInputStream$new = FastBufferedInputStream.constructor(InputStream.class).handle();
+        } else {
+            FastBufferedInputStream$new = null;
+        }
+    }
+
+    private static final MethodHandle NbtIo_readUnnamedTag;
+    static {
+        if (NETWORK_RECODE) {
+            NbtIo_readUnnamedTag = NbtIo.method(Modifier.STATIC, Tag, "readUnnamedTag", DataInput.class, NbtAccounter).handle();
+        } else {
+            NbtIo_readUnnamedTag = NbtIo.method(Modifier.STATIC, Tag, "readUnnamedTag", DataInput.class, int.class, NbtAccounter).handle();
+        }
+    }
+    private static final MethodHandle NbtIo_writeUnnamedTag = NbtIo.method(Modifier.STATIC, void.class, "writeUnnamedTag", Tag, DataOutput.class).handle();
+
+    private static final MethodHandle NbtAccounter_unlimitedHeap;
+    static {
+        if (NETWORK_RECODE) {
+            NbtAccounter_unlimitedHeap = NbtAccounter.method(Modifier.STATIC, NbtAccounter, "unlimitedHeap").handle();
+        } else {
+            NbtAccounter_unlimitedHeap = NbtAccounter.field(Modifier.STATIC, NbtAccounter, "UNLIMITED").getter();
         }
     }
 
     private static final Supplier<Object> READ_LIMITER;
-
-    private static final boolean USE_FAST_STREAM = MC.version().isNewerThanOrEquals(MC.V_1_18);
-    private static final MethodHandle newFastInputStream;
-
-    private static final MethodHandle readNBT;
-    private static final MethodHandle writeNBT;
-
-    private static final MethodHandle unlimitedHeap;
-
     static {
-        // Constructors
-        MethodHandle new$FastInputStream = null;
-        // Methods
-        MethodHandle method$read = null;
-        MethodHandle method$write = null;
-        // Getters
-        MethodHandle get$unlimited = null;
-        try {
-            // Old names
-            String read = "a";
-            String write = "a";
-            String unlimited = "a";
-            // New names
-            if (ServerInstance.Type.MOJANG_MAPPED) {
-                read = "readUnnamedTag";
-                write = "writeUnnamedTag";
-                if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
-                    unlimited = "unlimitedHeap";
-                } else {
-                    unlimited = "UNLIMITED";
-                }
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
-                read = "c";
-                write = "b";
-            }
-
-            if (USE_FAST_STREAM) {
-                new$FastInputStream = EasyLookup.constructor("FastBufferedInputStream", InputStream.class);
-            }
-
-            if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
-                // Private method
-                // Note: The "unused" integer was removed, and also was added a new method (DataInput, NBTReadLimiter, byte)
-                //       to specify the id of NBT you're reading (probably add it here)
-                method$read = EasyLookup.staticMethod("NBTCompressedStreamTools", read, "NBTBase", DataInput.class, "NBTReadLimiter");
-            } else {
-                // Private method
-                method$read = EasyLookup.staticMethod("NBTCompressedStreamTools", read, "NBTBase", DataInput.class, int.class, "NBTReadLimiter");
-            }
-            // (1.8 - 1.17) private method
-            // (1.20.2) Note: New method to write NBT without adding an empty String after write NBT id, only used to send serialized packets
-            // (1.20.3) Note: New method to write NBT using a DelegateDataOutput that writes empty String if any error occurs
-            method$write = EasyLookup.staticMethod("NBTCompressedStreamTools", write, void.class, "NBTBase", DataOutput.class);
-
-            if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
-                get$unlimited = EasyLookup.staticMethod("NBTReadLimiter", unlimited, "NBTReadLimiter");
-            } else {
-                get$unlimited = EasyLookup.staticGetter("NBTReadLimiter", unlimited, "NBTReadLimiter");
-            }
-        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        newFastInputStream = new$FastInputStream;
-        readNBT = method$read;
-        writeNBT = method$write;
-        unlimitedHeap = get$unlimited;
-
-        if (get$unlimited == null) {
-            // Fallback instance constructor
+        if (NETWORK_RECODE) {
             READ_LIMITER = () -> {
                 try {
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
-                        return EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class, int.class).newInstance(Long.MAX_VALUE, 512);
-                    } else {
-                        return EasyLookup.classById("NBTReadLimiter").getDeclaredConstructor(long.class).newInstance(Long.MAX_VALUE);
-                    }
-                } catch (Throwable t) {
-                    throw new RuntimeException("Cannot create NbtAccounter instance");
-                }
-            };
-        } else if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) { // 1.20.2
-            READ_LIMITER = () -> {
-                try {
-                    return unlimitedHeap.invoke();
+                    return NbtAccounter_unlimitedHeap.invoke();
                 } catch (Throwable t) {
                     throw new RuntimeException("Cannot get NbtAccounter with unlimited heap");
                 }
@@ -125,7 +70,7 @@ public class TStreamTools {
                 throw new RuntimeException("Cannot get unlimited NbtAccounter");
             };
             try {
-                final Object readLimiter = get$unlimited.invoke();
+                final Object readLimiter = NbtAccounter_unlimitedHeap.invoke();
                 supplier = () -> readLimiter;
             } catch (Throwable t) {
                 t.printStackTrace();
@@ -176,7 +121,7 @@ public class TStreamTools {
 
         if (USE_FAST_STREAM) {
             try {
-                return new DataInputStream((InputStream) newFastInputStream.invoke(in));
+                return new DataInputStream((InputStream) FastBufferedInputStream$new.invoke(in));
             } catch (Throwable ignored) { }
         }
 
@@ -325,10 +270,10 @@ public class TStreamTools {
      */
     public static Object read(DataInput input) throws IOException {
         try {
-            if (MC.version().isNewerThanOrEquals(MC.V_1_20_2)) {
-                return readNBT.invoke(input, getReadLimiter());
+            if (NETWORK_RECODE) {
+                return NbtIo_readUnnamedTag.invoke(input, getReadLimiter());
             } else {
-                return readNBT.invoke(input, 0, getReadLimiter());
+                return NbtIo_readUnnamedTag.invoke(input, 0, getReadLimiter());
             }
         } catch (IOException e) {
             throw e;
@@ -384,7 +329,7 @@ public class TStreamTools {
      */
     public static void write(Object tag, DataOutput output) throws IOException {
         try {
-            writeNBT.invoke(tag, output);
+            NbtIo_writeUnnamedTag.invoke(tag, output);
         } catch (IOException e) {
             throw e;
         } catch (Throwable t) {

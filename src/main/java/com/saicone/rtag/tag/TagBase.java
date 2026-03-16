@@ -1,344 +1,233 @@
 package com.saicone.rtag.tag;
 
 import com.saicone.rtag.RtagMirror;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
-import com.saicone.rtag.util.ServerInstance;
-import com.saicone.rtag.util.ThrowableFunction;
+import com.saicone.rtag.util.reflect.Lookup;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.invoke.MethodHandle;
-import java.util.HashMap;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * Class to invoke methods inside classes that extends NBTBase.
+ * Class to invoke methods inside classes that extends Tag.
  *
  * @author Rubenicos
  */
 public class TagBase {
 
-    private static final Class<?> NBT_BASE = EasyLookup.classById("NBTBase");
+    // import
+    private static final Lookup.AClass<?> ByteTag = Lookup.SERVER.importClass("net.minecraft.nbt.ByteTag");
+    private static final Lookup.AClass<?> ByteArrayTag = Lookup.SERVER.importClass("net.minecraft.nbt.ByteArrayTag");
+    private static final Lookup.AClass<?> DoubleTag = Lookup.SERVER.importClass("net.minecraft.nbt.DoubleTag");
+    private static final Lookup.AClass<?> FloatTag = Lookup.SERVER.importClass("net.minecraft.nbt.FloatTag");
+    private static final Lookup.AClass<?> IntTag = Lookup.SERVER.importClass("net.minecraft.nbt.IntTag");
+    private static final Lookup.AClass<?> IntArrayTag = Lookup.SERVER.importClass("net.minecraft.nbt.IntArrayTag");
+    private static final Lookup.AClass<?> LongTag = Lookup.SERVER.importClass("net.minecraft.nbt.LongTag");
+    private static final Lookup.AClass<?> LongArrayTag = Lookup.SERVER.importClass("net.minecraft.nbt.LongArrayTag");
+    private static final Lookup.AClass<?> ShortTag = Lookup.SERVER.importClass("net.minecraft.nbt.ShortTag");
+    private static final Lookup.AClass<?> StringTag = Lookup.SERVER.importClass("net.minecraft.nbt.StringTag");
+    private static final Lookup.AClass<?> Tag = Lookup.SERVER.importClass("net.minecraft.nbt.Tag");
 
-    private static final Map<Class<?>, ThrowableFunction<Object, Object>> newTagFunction = new HashMap<>();
-    private static final Map<Class<?>, ThrowableFunction<Object, Object>> getValueFunction = new HashMap<>();
-
-    private static final MethodHandle getTypeId;
-
-    private static final MethodHandle tagByte;
-    private static final MethodHandle asByte;
-
-    private static final MethodHandle tagByteArray;
-    private static final MethodHandle asByteArray;
-
-    private static final MethodHandle tagDouble;
-    private static final MethodHandle asDouble;
-
-    private static final MethodHandle tagFloat;
-    private static final MethodHandle asFloat;
-
-    private static final MethodHandle tagInt;
-    private static final MethodHandle asInt;
-
-    private static final MethodHandle tagIntArray;
-    private static final MethodHandle asIntArray;
-
-    private static final MethodHandle tagLong;
-    private static final MethodHandle asLong;
-
-    // Only +1.12
-    private static final MethodHandle tagLongArray;
-    private static final MethodHandle asLongArray;
-
-    private static final MethodHandle tagShort;
-    private static final MethodHandle asShort;
-
-    private static final MethodHandle tagString;
-    private static final MethodHandle asString;
-
+    // declare
+    private static final MethodHandle ByteArrayTag$new = ByteArrayTag.constructor(byte[].class).handle();
+    private static final MethodHandle IntArrayTag$new = IntArrayTag.constructor(int[].class).handle();
+    private static final MethodHandle LongArrayTag$new;
     static {
-        // TagBase Methods
-        MethodHandle method$getTypeId = null;
-        // TagBase Constructors
-        MethodHandle new$Byte = null;
-        MethodHandle new$ByteArray = null;
-        MethodHandle new$Double = null;
-        MethodHandle new$Float = null;
-        MethodHandle new$Int = null;
-        MethodHandle new$IntArray = null;
-        MethodHandle new$Long = null;
-        MethodHandle new$LongArray = null;
-        MethodHandle new$Short = null;
-        MethodHandle new$String = null;
-        // TagBase Getters
-        MethodHandle get$Byte = null;
-        MethodHandle get$ByteArray = null;
-        MethodHandle get$Double = null;
-        MethodHandle get$Float = null;
-        MethodHandle get$Int = null;
-        MethodHandle get$IntArray = null;
-        MethodHandle get$Long = null;
-        MethodHandle get$LongArray = null;
-        MethodHandle get$Short = null;
-        MethodHandle get$String = null;
-        try {
-            // Old names
-            String getTypeId = "getTypeId";
-            String data = "data";
-            String asByte = data;
-            String asDouble = data;
-            String asFloat = data;
-            String asInt = data;
-            String asLong = data;
-            String asShort = data;
-            String asLongArray = "b";
-            String asString = data;
-
-            // New names
-            if (ServerInstance.Type.MOJANG_MAPPED) {
-                getTypeId = "getId";
-                asLongArray = "data";
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
-                    asByte = "value";
-                    asDouble = "value";
-                    asFloat = "value";
-                    asInt = "value";
-                    asLong = "value";
-                    asShort = "value";
-                    asString = "value";
-                }
-            } else {
-                if (MC.version().isBetween(MC.V_1_13, MC.V_1_14_4)) {
-                    asLongArray = "f";
-                }
-                if (MC.version().isUniversal()) {
-                    data = "c";
-                    asByte = "x";
-                    asDouble = "w";
-                    asFloat = "w";
-                    asInt = "c";
-                    asLong = "c";
-                    asShort = "c";
-                    asLongArray = "c";
-                    asString = "A";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
-                    getTypeId = "a";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) { // 1.19.3
-                    getTypeId = "b";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
-                    asByte = "v";
-                    asDouble = "c";
-                    asFloat = "c";
-                    asInt = "b";
-                    asLong = "b";
-                    asShort = "b";
-                    asString = "b";
-                }
-            }
-
-            method$getTypeId = EasyLookup.method(NBT_BASE, getTypeId, byte.class);
-
-            // Unreflect reason:
-            // Method names change a lot across versions
-            // Fields and constructors are private in all versions
-            new$Byte = EasyLookup.unreflectConstructor("NBTTagByte", byte.class);
-            get$Byte = EasyLookup.getter("NBTTagByte", asByte, byte.class);
-
-            new$ByteArray = EasyLookup.unreflectConstructor("NBTTagByteArray", byte[].class);
-            get$ByteArray = EasyLookup.getter("NBTTagByteArray", data, byte[].class);
-
-            new$Double = EasyLookup.unreflectConstructor("NBTTagDouble", double.class);
-            get$Double = EasyLookup.getter("NBTTagDouble", asDouble, double.class);
-
-            new$Float = EasyLookup.unreflectConstructor("NBTTagFloat", float.class);
-            get$Float = EasyLookup.getter("NBTTagFloat", asFloat, float.class);
-
-            new$Int = EasyLookup.unreflectConstructor("NBTTagInt", int.class);
-            get$Int = EasyLookup.getter("NBTTagInt", asInt, int.class);
-
-            new$IntArray = EasyLookup.unreflectConstructor("NBTTagIntArray", "int[]");
-            get$IntArray = EasyLookup.getter("NBTTagIntArray", data, "int[]");
-
-            new$Long = EasyLookup.unreflectConstructor("NBTTagLong", long.class);
-            get$Long = EasyLookup.getter("NBTTagLong", asLong, long.class);
-
-            if (MC.version().isNewerThanOrEquals(MC.V_1_12)) {
-                new$LongArray = EasyLookup.unreflectConstructor("NBTTagLongArray", "long[]");
-                get$LongArray = EasyLookup.getter("NBTTagLongArray", asLongArray, "long[]");
-            }
-
-            new$Short = EasyLookup.unreflectConstructor("NBTTagShort", short.class);
-            get$Short = EasyLookup.getter("NBTTagShort", asShort, short.class);
-
-            new$String = EasyLookup.unreflectConstructor("NBTTagString", String.class);
-            get$String = EasyLookup.getter("NBTTagString", asString, String.class);
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-        getTypeId = method$getTypeId;
-
-        tagByte = new$Byte;
-        tagByteArray = new$ByteArray;
-        tagDouble = new$Double;
-        tagFloat = new$Float;
-        tagInt = new$Int;
-        tagIntArray = new$IntArray;
-        tagLong = new$Long;
-        tagLongArray = new$LongArray;
-        tagShort = new$Short;
-        tagString = new$String;
-
-        asByte = get$Byte;
-        asByteArray = get$ByteArray;
-        asDouble = get$Double;
-        asFloat = get$Float;
-        asInt = get$Int;
-        asIntArray = get$IntArray;
-        asLong = get$Long;
-        asLongArray = get$LongArray;
-        asShort = get$Short;
-        asString = get$String;
-
-        newFunction(tagByte::invoke, byte.class, Byte.class);
-        // Boolean -> Byte compatibility
-        newFunction((bool) -> tagByte.invoke((Boolean) bool ? (byte) 1 : (byte) 0), boolean.class, Boolean.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagByte"), asByte::invoke);
-
-        newTagFunction.put(EasyLookup.classById("byte[]"), tagByteArray::invoke);
-        getValueFunction.put(EasyLookup.classById("NBTTagByteArray"), asByteArray::invoke);
-
-        newFunction(tagDouble::invoke, double.class, Double.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagDouble"), asDouble::invoke);
-
-        newFunction(tagFloat::invoke, float.class, Float.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagFloat"), asFloat::invoke);
-
-        newFunction(tagInt::invoke, int.class, Integer.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagInt"), asInt::invoke);
-
-        newTagFunction.put(EasyLookup.classById("int[]"), tagIntArray::invoke);
-        getValueFunction.put(EasyLookup.classById("NBTTagIntArray"), asIntArray::invoke);
-
-        newFunction(tagLong::invoke, long.class, Long.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagLong"), asLong::invoke);
-
         if (MC.version().isNewerThanOrEquals(MC.V_1_12)) {
-            newTagFunction.put(EasyLookup.classById("long[]"), tagLongArray::invoke);
-            getValueFunction.put(EasyLookup.classById("NBTTagLongArray"), asLongArray::invoke);
+            LongArrayTag$new = LongArrayTag.constructor(long[].class).handle();
+        } else {
+            LongArrayTag$new = null;
         }
-
-        newFunction(tagShort::invoke, short.class, Short.class);
-        getValueFunction.put(EasyLookup.classById("NBTTagShort"), asShort::invoke);
-
-        newTagFunction.put(String.class, tagString::invoke);
-        // UUID -> String compatibility
-        newTagFunction.put(UUID.class, (uuid) -> tagString.invoke(uuid.toString()));
-        getValueFunction.put(EasyLookup.classById("NBTTagString"), asString::invoke);
-
     }
+
+    private static final MethodHandle ByteTag_valueOf;
+    private static final MethodHandle ByteTag_valueOf$boolean;
+    private static final MethodHandle DoubleTag_valueOf;
+    private static final MethodHandle FloatTag_valueOf;
+    private static final MethodHandle IntTag_valueOf;
+    private static final MethodHandle LongTag_valueOf;
+    private static final MethodHandle ShortTag_valueOf;
+    private static final MethodHandle StringTag_valueOf;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
+            ByteTag_valueOf = ByteTag.method(Modifier.STATIC, ByteTag, "valueOf", byte.class).handle();
+            ByteTag_valueOf$boolean = ByteTag.method(Modifier.STATIC, ByteTag, "valueOf", boolean.class).handle();
+            DoubleTag_valueOf = DoubleTag.method(Modifier.STATIC, DoubleTag, "valueOf", double.class).handle();
+            FloatTag_valueOf = FloatTag.method(Modifier.STATIC, FloatTag, "valueOf", float.class).handle();
+            IntTag_valueOf = IntTag.method(Modifier.STATIC, IntTag, "valueOf", int.class).handle();
+            LongTag_valueOf = LongTag.method(Modifier.STATIC, LongTag, "valueOf", long.class).handle();
+            ShortTag_valueOf = ShortTag.method(Modifier.STATIC, ShortTag, "valueOf", short.class).handle();
+            StringTag_valueOf = StringTag.method(Modifier.STATIC, StringTag, "valueOf", String.class).handle();
+        } else {
+            ByteTag_valueOf = ByteTag.constructor(byte.class).handle();
+            ByteTag_valueOf$boolean = null;
+            DoubleTag_valueOf = DoubleTag.constructor(double.class).handle();
+            FloatTag_valueOf = FloatTag.constructor(float.class).handle();
+            IntTag_valueOf = IntTag.constructor(int.class).handle();
+            LongTag_valueOf = LongTag.constructor(long.class).handle();
+            ShortTag_valueOf = ShortTag.constructor(short.class).handle();
+            StringTag_valueOf = StringTag.constructor(String.class).handle();
+        }
+    }
+
+    private static final MethodHandle ByteArrayTag$get_data = ByteArrayTag.field(byte[].class, "data").getter();
+    private static final MethodHandle IntArrayTag$get_data = IntArrayTag.field(int[].class, "data").getter();
+    private static final MethodHandle LongArrayTag$get_data;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_12)) {
+            LongArrayTag$get_data = LongArrayTag.field(long[].class, "data").getter();
+        } else {
+            LongArrayTag$get_data = null;
+        }
+    }
+
+    private static final MethodHandle ByteTag$get_value;
+    private static final MethodHandle DoubleTag$get_value;
+    private static final MethodHandle FloatTag$get_value;
+    private static final MethodHandle IntTag$get_value;
+    private static final MethodHandle LongTag$get_value;
+    private static final MethodHandle ShortTag$get_value;
+    private static final MethodHandle StringTag$get_value;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
+            ByteTag$get_value = ByteTag.field(byte.class, "value").getter();
+            DoubleTag$get_value = DoubleTag.field(double.class, "value").getter();
+            FloatTag$get_value = FloatTag.field(float.class, "value").getter();
+            IntTag$get_value = IntTag.field(int.class, "value").getter();
+            LongTag$get_value = LongTag.field(long.class, "value").getter();
+            ShortTag$get_value = ShortTag.field(short.class, "value").getter();
+            StringTag$get_value = StringTag.field(String.class, "value").getter();
+        } else {
+            ByteTag$get_value = ByteTag.field(byte.class, "data").getter();
+            DoubleTag$get_value = DoubleTag.field(double.class, "data").getter();
+            FloatTag$get_value = FloatTag.field(float.class, "data").getter();
+            IntTag$get_value = IntTag.field(int.class, "data").getter();
+            LongTag$get_value = LongTag.field(long.class, "data").getter();
+            ShortTag$get_value = ShortTag.field(short.class, "data").getter();
+            StringTag$get_value = StringTag.field(String.class, "data").getter();
+        }
+    }
+
+    private static final MethodHandle Tag_getId = Tag.method(byte.class, "getId").handle();
+    private static final MethodHandle Tag_copy = Tag.method(Tag, "copy").handle();
 
     TagBase() {
     }
 
-    private static void newFunction(ThrowableFunction<Object, Object> function, Class<?>... classes) {
-        for (Class<?> c : classes) {
-            newTagFunction.put(c, function);
-        }
-    }
-
     /**
-     * Constructs an NBTBase directly associated with Java object.<br>
-     * For example Float -&gt;  NBTTagFloat
+     * Constructs a Tag directly associated with Java object.<br>
+     * For example Float -&gt;  FloatTag
      *
      * @see TagCompound#newTag(Map) 
      * @see TagList#newTag(List) 
      *
-     * @param object Java object that exist in NBTBase tag.
-     * @return       A NBTBase tag associated with provided object.
+     * @param object java object that can be represented as Tag.
+     * @return       a Tag associated with provided object.
      * @throws IllegalArgumentException if the object is not supported by this method.
      */
+    @SuppressWarnings("unchecked")
     public static Object newTag(Object object) throws IllegalArgumentException {
         if (object == null) {
             return null;
-        }
-
-        final ThrowableFunction<Object, Object> function = newTagFunction.get(object.getClass());
-        if (function == null) {
-            throw new IllegalArgumentException("The object type " + object.getClass().getName() + " cannot be used to create NBTBase tag using TagBase class");
-        }
-
-        try {
-            return function.apply(object);
-        } catch (Throwable t) {
-            throw new RuntimeException("Cannot create NBTBase object from " + object.getClass().getName() + " object", t);
+        } else if (object instanceof Byte) { // id 1
+            return Lookup.invoke(ByteTag_valueOf, object);
+        } else if (object instanceof Boolean) { // id 1
+            if (ByteTag_valueOf$boolean != null) {
+                return Lookup.invoke(ByteTag_valueOf$boolean, object);
+            } else {
+                return Lookup.invoke(ByteTag_valueOf, (Boolean) object ? (byte) 1 : (byte) 0);
+            }
+        } else if (object instanceof Short) { // id 2
+            return Lookup.invoke(ShortTag_valueOf, object);
+        } else if (object instanceof Integer) { // id 3
+            return Lookup.invoke(IntTag_valueOf, object);
+        } else if (object instanceof Long) { // id 4
+            return Lookup.invoke(LongTag_valueOf, object);
+        } else if (object instanceof Float) { // id 5
+            return Lookup.invoke(FloatTag_valueOf, object);
+        } else if (object instanceof Double) { // id 6
+            return Lookup.invoke(DoubleTag_valueOf, object);
+        } else if (object instanceof byte[]) { // id 7
+            return Lookup.invoke(ByteArrayTag$new, object);
+        } else if (object instanceof String) { // id 8
+            return Lookup.invoke(StringTag_valueOf, object);
+        } else if (object instanceof List) { // id 9
+            return TagList.newUncheckedTag((List<?>) object);
+        } else if (object instanceof Map) { // id 10
+            return TagCompound.newUncheckedTag((Map<String, Object>) object);
+        } else if (object instanceof int[]) { // id 11
+            return Lookup.invoke(IntArrayTag$new, object);
+        } else if (object instanceof long[]) { // id 12
+            return Lookup.invoke(LongArrayTag$new, object);
+        } else if (object instanceof UUID) { // id 8
+            return Lookup.invoke(StringTag_valueOf, object.toString());
+        } else {
+            throw new IllegalArgumentException("The object type " + object.getClass().getName() + " cannot be used to create a net.minecraft.nbt.Tag");
         }
     }
 
     /**
-     * Constructs an NBTBase directly associated with provided object.<br>
-     * For example List -&gt; NBTTagList
+     * Constructs a Tag recursively with provided object.<br>
+     * For example List -&gt; ListTag
      *
      * @param mirror RtagMirror to convert objects into tags.
-     * @param object Object that can be converted to NBTBase tag.
-     * @return       A NBTBase tag associated with provided object.
+     * @param object Object that can be represented as Tag.
+     * @return       a Tag associated with provided object.
      * @throws IllegalArgumentException if the object is not supported.
      */
     public static Object newTag(RtagMirror mirror, Object object) throws IllegalArgumentException {
-        try {
+        if (object instanceof List) {
+            return TagList.newTag(mirror, (List<?>) object);
+        } else if (object instanceof Map) {
+            return TagCompound.newTag(mirror, object);
+        } else {
             return newTag(object);
-        } catch (IllegalArgumentException e) {
-            if (object instanceof List) {
-                return TagList.newTag(mirror, (List<?>) object);
-            } else {
-                return TagCompound.newTag(mirror, object);
-            }
         }
     }
 
     /**
-     * Check if the provided object is instance of NBTBase class.
+     * Check if the provided object is instance of Tag class.
      *
      * @param object the object to check.
-     * @return       true if the object is an instance of NBTBase class.
+     * @return       true if the object is an instance of Tag class.
      */
     public static boolean isTag(Object object) {
-        return NBT_BASE.isInstance(object);
+        return Tag.isInstance(object);
     }
 
     /**
-     * Check if NBTBase object type is equals to provided type.
+     * Check if Tag object type is equals to provided type id.
      *
-     * @param tag  the NBTBase object to check.
-     * @param type the nbt type.
-     * @return     true if NBTBase type is equals.
+     * @param tag  the Tag object to check.
+     * @param type the nbt type id.
+     * @return     true if Tag type is equals.
      */
     public static boolean isTypeOf(Object tag, byte type) {
         return getTypeId(tag) == type;
     }
 
     /**
-     * Check if two NBTBase objects has the same type.
+     * Check if two Tag objects has the same type.
      *
-     * @param tag1 the first NBTBase object to check.
-     * @param tag2 the second NBTBase object to check.
-     * @return     true if the two NBTBase type are equals.
+     * @param tag1 the first Tag object to check.
+     * @param tag2 the second Tag object to check.
+     * @return     true if the two Tag type are equals.
      */
     public static boolean isTypeOf(Object tag1, Object tag2) {
         return getTypeId(tag1) == getTypeId(tag2);
     }
 
     /**
-     * Copy provided NBTBase object into new one.
+     * Copy provided Tag object into new one.
      *
-     * @param tag Tag to copy.
-     * @return    A NBTBase tag with the same value.
+     * @param tag the Tag to copy.
+     * @return    a Tag with the same value.
      */
     public static Object clone(Object tag) {
-        return newTag(getValue(tag));
+        return Lookup.invoke(Tag_copy, tag);
     }
 
     /**
@@ -350,67 +239,91 @@ public class TagBase {
      * @return    An ID that represents the tag type.
      */
     public static byte getTypeId(Object tag) {
-        try {
-            return (byte) getTypeId.invoke(tag);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        return Lookup.invoke(Tag_getId, tag);
     }
 
     /**
-     * Get Java value of NBTBase tag.<br>
-     * For example NBTTagString -&gt; String.
+     * Get Java value of Tag tag.<br>
+     * For example StringTag -&gt; String.
      *
      * @see TagCompound#getValue(RtagMirror, Object)
      * @see TagList#getValue(RtagMirror, Object)
      *
-     * @param tag Tag to extract value.
-     * @return    A java object inside NBTBase tag.
+     * @param tag the Tag to extract value.
+     * @return    a java object inside Tag tag.
      * @throws IllegalArgumentException if tag is not supported by this class.
      */
     public static Object getValue(Object tag) throws IllegalArgumentException {
-        if (tag == null) return null;
-
-        final ThrowableFunction<Object, Object> function = getValueFunction.get(tag.getClass());
-        if (function == null) {
-            throw new IllegalArgumentException("The object type " + tag.getClass().getName() + " is not supported by TagBase class");
+        if (tag == null) {
+            return null;
         }
 
-        try {
-            return function.apply(tag);
-        } catch (Throwable t) {
-            throw new RuntimeException("Cannot get java object from " + tag.getClass().getName() + " class", t);
-        }
+        final byte id = getTypeId(tag);
+        return getValue0(id, tag);
     }
 
     /**
-     * Get Java value of any NBTBase tag.<br>
-     * For example NBTTagCompound -&gt; Map.
+     * Get Java value recursively of any Tag tag.<br>
+     * For example CompoundTag -&gt; Map.
      *
      * @param mirror RtagMirror to convert objects into tags.
      * @param tag    Tag to extract value.
-     * @return       A java object like NBTBase tag.
+     * @return       a java object represented as Tag.
      * @throws IllegalArgumentException if tag is not supported.
      */
     public static Object getValue(RtagMirror mirror, Object tag) throws IllegalArgumentException {
-        try {
-            return getValue(tag);
-        } catch (IllegalArgumentException e) {
-            if (TagCompound.isTagCompound(tag)) {
-                return TagCompound.getValue(mirror, tag);
-            }
-            if (TagList.isTagList(tag)) {
-                return TagList.getValue(mirror, tag);
-            }
-            throw e;
+        if (tag == null) {
+            return null;
+        }
+
+        final byte id = getTypeId(tag);
+        if (id == 9) {
+            return TagList.getValue(mirror, tag);
+        } else if (id == 10) {
+            return TagCompound.getValue(mirror, tag);
+        } else {
+            return getValue0(id, tag);
+        }
+    }
+
+    private static Object getValue0(byte id, @NotNull Object tag) throws IllegalArgumentException {
+        switch (id) {
+            case 0:
+                return null;
+            case 1:
+                return Lookup.invoke(ByteTag$get_value, tag);
+            case 2:
+                return Lookup.invoke(ShortTag$get_value, tag);
+            case 3:
+                return Lookup.invoke(IntTag$get_value, tag);
+            case 4:
+                return Lookup.invoke(LongTag$get_value, tag);
+            case 5:
+                return Lookup.invoke(FloatTag$get_value, tag);
+            case 6:
+                return Lookup.invoke(DoubleTag$get_value, tag);
+            case 7:
+                return Lookup.invoke(ByteArrayTag$get_data, tag);
+            case 8:
+                return Lookup.invoke(StringTag$get_value, tag);
+            case 9:
+                return TagList.getValue(tag);
+            case 10:
+                return TagCompound.getValue(tag);
+            case 11:
+                return Lookup.invoke(IntArrayTag$get_data, tag);
+            case 12:
+                return Lookup.invoke(LongArrayTag$get_data, tag);
+            default:
+                throw new IllegalArgumentException("The object type " + tag.getClass().getName() + " is not supported by Tag class");
         }
     }
 
     /**
-     * Get the size of elements inside NBTTagCompound or NBTTagList.
+     * Get the size of elements inside CompoundTag or ListTag.
      *
-     * @param tag NBTBase instance.
-     * @return    Size of map or list inside.
+     * @param tag the Tag instance.
+     * @return    size of map or list inside.
      */
     public static int size(Object tag) {
         if (TagCompound.isTagCompound(tag)) {
@@ -423,9 +336,9 @@ public class TagBase {
     }
 
     /**
-     * Clear the provided NBTTagCompound or NBTTagList.
+     * Clear the provided CompoundTag or ListTag.
      *
-     * @param tag NBTBase instance.
+     * @param tag the Tag instance.
      */
     public static void clear(Object tag) {
         if (TagCompound.isTagCompound(tag)) {

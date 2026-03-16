@@ -12,6 +12,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
+import com.saicone.rtag.util.reflect.Lookup;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -26,8 +27,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
@@ -62,127 +63,64 @@ public class SkullTexture {
 
     private static final String TEXTURE_URL = "http://textures.minecraft.net/texture/";
 
-    static {
-        // Add reflected classes
-        try {
-            EasyLookup.addOBCClass("entity.CraftPlayer");
-            EasyLookup.addOBCClass("inventory.CraftMetaSkull");
-            if (MC.version().isComponent()) {
-                EasyLookup.addNMSClass("world.item.component.ResolvableProfile");
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+    // import
+    private static final Lookup.AClass<?> ResolvableProfile = Lookup.SERVER.importClass("net.minecraft.world.item.component.ResolvableProfile");
+    private static final Lookup.AClass<?> CraftPlayer = Lookup.SERVER.importClass("org.bukkit.craftbukkit.entity.CraftPlayer");
+    private static final Lookup.AClass<?> CraftMetaSkull = Lookup.SERVER.importClass("org.bukkit.craftbukkit.inventory.CraftMetaSkull");
 
-    // Reflected methods
-
+    // declare
     private static final MethodHandle ResolvableProfile_createResolved;
     private static final MethodHandle ResolvableProfile_createUnresolved$name;
     private static final MethodHandle ResolvableProfile_createUnresolved$id;
     private static final MethodHandle ResolvableProfile_partialProfile;
-
     static {
-        MethodHandle $createResolved = null;
-        MethodHandle $createUnresolved$name = null;
-        MethodHandle $createUnresolved$id = null;
-        MethodHandle $partialProfile = null;
-
-        try {
-            // Names
-            String createResolved = null;
-            String createUnresolved$name = null;
-            String createUnresolved$id = null;
-            String partialProfile = null;
-
-            if (ServerInstance.Type.MOJANG_MAPPED) {
-                partialProfile = "gameProfile";
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
-                    createResolved = "createResolved";
-                    createUnresolved$name = "createUnresolved";
-                    createUnresolved$id = "createUnresolved";
-                    partialProfile = "partialProfile";
-                }
-            } else {
-                partialProfile = "f";
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
-                    createResolved = "a";
-                    createUnresolved$name = "a";
-                    createUnresolved$id = "a";
-                    partialProfile = "b";
-                }
-            }
-
-            if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
-                $createResolved = EasyLookup.staticMethod("ResolvableProfile", createResolved, "ResolvableProfile", GameProfile.class);
-                $createUnresolved$name = EasyLookup.staticMethod("ResolvableProfile", createUnresolved$name, "ResolvableProfile", String.class);
-                $createUnresolved$id = EasyLookup.staticMethod("ResolvableProfile", createUnresolved$id, "ResolvableProfile", UUID.class);
-                $partialProfile = EasyLookup.method("ResolvableProfile", partialProfile, GameProfile.class);
-            } else if (MC.version().isComponent()) {
-                $createResolved = EasyLookup.constructor("ResolvableProfile", GameProfile.class);
-                $partialProfile = EasyLookup.getter("ResolvableProfile", partialProfile, GameProfile.class);
-            }
-        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
+            ResolvableProfile_createResolved = ResolvableProfile.method(Modifier.STATIC, ResolvableProfile, "createResolved", GameProfile.class).handle();
+            ResolvableProfile_createUnresolved$name = ResolvableProfile.method(Modifier.STATIC, ResolvableProfile, "createUnresolved", String.class).handle();
+            ResolvableProfile_createUnresolved$id = ResolvableProfile.method(Modifier.STATIC, ResolvableProfile, "createUnresolved", UUID.class).handle();
+            ResolvableProfile_partialProfile = ResolvableProfile.method(GameProfile.class, "partialProfile").handle();
+        } else if (MC.version().isComponent()) {
+            ResolvableProfile_createResolved = ResolvableProfile.constructor(GameProfile.class).handle();
+            ResolvableProfile_createUnresolved$name = null;
+            ResolvableProfile_createUnresolved$id = null;
+            ResolvableProfile_partialProfile = ResolvableProfile.field(GameProfile.class, "gameProfile").getter();
+        } else {
+            ResolvableProfile_createResolved = null;
+            ResolvableProfile_createUnresolved$name = null;
+            ResolvableProfile_createUnresolved$id = null;
+            ResolvableProfile_partialProfile = null;
         }
-
-        ResolvableProfile_createResolved = $createResolved;
-        ResolvableProfile_createUnresolved$name = $createUnresolved$name;
-        ResolvableProfile_createUnresolved$id = $createUnresolved$id;
-        ResolvableProfile_partialProfile = $partialProfile;
     }
 
-    private static final MethodHandle CraftPlayer_getProfile;
-
-    static {
-        MethodHandle $getProfile = null;
-
-        try {
-            $getProfile = EasyLookup.method("CraftPlayer", "getProfile", GameProfile.class);
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        CraftPlayer_getProfile = $getProfile;
-    }
+    private static final MethodHandle CraftPlayer_getProfile = CraftPlayer.method(GameProfile.class, "getProfile").handle();
 
     private static final boolean USE_RESOLVABLE_PROFILE;
-    private static final MethodHandle CraftMetaSkull_profile;
-    private static final MethodHandle CraftMetaSkull_setProfile;
-
     static {
         boolean useResolvableProfile = false;
-        MethodHandle $profile = null;
-        MethodHandle $setProfile = null;
-
-        try {
-            for (Method method : EasyLookup.classOf("CraftMetaSkull").getDeclaredMethods()) {
-                if (method.getName().equals("setProfile") && method.getParameters().length == 1) {
-                    if (method.getParameters()[0].getType().getSimpleName().equals("ResolvableProfile")) {
-                        useResolvableProfile = true;
-                    }
+        for (Method method : CraftMetaSkull.get().getDeclaredMethods()) {
+            if (method.getName().equals("setProfile") && method.getParameters().length == 1) {
+                if (method.getParameters()[0].getType().getSimpleName().equals("ResolvableProfile")) {
+                    useResolvableProfile = true;
                 }
             }
-
-            // Unreflect reason:
-            // Private field
-            $profile = EasyLookup.unreflectGetter("CraftMetaSkull", "profile");
-            // Unreflect reason:
-            // Private method/field
-            if (useResolvableProfile) { // +1.21.1 (latest builds)
-                $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", "ResolvableProfile");
-            } else if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
-                $setProfile = EasyLookup.unreflectMethod("CraftMetaSkull", "setProfile", GameProfile.class);
-            } else {
-                $setProfile = EasyLookup.unreflectSetter("CraftMetaSkull", "profile");
-            }
-        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
-            e.printStackTrace();
         }
-
         USE_RESOLVABLE_PROFILE = useResolvableProfile;
-        CraftMetaSkull_profile = $profile;
-        CraftMetaSkull_setProfile = $setProfile;
+    }
+
+    private static final MethodHandle CraftMetaSkull$get_profile;
+    private static final MethodHandle CraftMetaSkull_setProfile;
+    static {
+        if (USE_RESOLVABLE_PROFILE) {
+            CraftMetaSkull$get_profile = CraftMetaSkull.field(ResolvableProfile, "profile").getter();
+            CraftMetaSkull_setProfile = CraftMetaSkull.method(void.class, "setProfile", ResolvableProfile).handle();
+        } else {
+            CraftMetaSkull$get_profile = CraftMetaSkull.field(GameProfile.class, "profile").getter();
+            if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
+                CraftMetaSkull_setProfile = CraftMetaSkull.method(void.class, "setProfile", GameProfile.class).handle();
+            } else {
+                CraftMetaSkull_setProfile = CraftMetaSkull.field(GameProfile.class, "profile").setter();
+            }
+        }
     }
 
     // Providers
@@ -626,7 +564,7 @@ public class SkullTexture {
             return Profile.empty();
         }
         try {
-            final Object profile = CraftMetaSkull_profile.invoke(meta);
+            final Object profile = CraftMetaSkull$get_profile.invoke(meta);
             if (profile == null) {
                 return Profile.empty();
             } else if (profile instanceof GameProfile) {
@@ -816,99 +754,51 @@ public class SkullTexture {
      */
     public static class Profile {
 
-        // Reflected methods
-
+        // declare
         private static final MethodHandle Property_value;
         private static final MethodHandle Property_signature;
-
         static {
-            MethodHandle $value = null;
-            MethodHandle $signature = null;
+            // names
+            String value = "value";
+            String signature = "signature";
 
-            try {
-                // Names
-                String value = "value";
-                String signature = "signature";
-
-                for (Method method : Property.class.getDeclaredMethods()) {
-                    if (method.getName().equals("getValue")) {
-                        value = "getValue";
-                    } else if (method.getName().equals("getSignature")) {
-                        signature = "getSignature";
-                    }
+            for (Method method : Property.class.getDeclaredMethods()) {
+                if (method.getName().equals("getValue")) {
+                    value = "getValue";
+                } else if (method.getName().equals("getSignature")) {
+                    signature = "getSignature";
                 }
-
-                $value = EasyLookup.method(Property.class, value, String.class);
-                $signature = EasyLookup.method(Property.class, signature, String.class);
-            } catch (IllegalAccessException | NoSuchMethodException e) {
-                e.printStackTrace();
             }
 
-            Property_value = $value;
-            Property_signature = $signature;
+            Property_value = Lookup.aClass(Property.class).method(String.class, value).handle();
+            Property_signature = Lookup.aClass(Property.class).method(String.class, signature).handle();
         }
 
-        private static final MethodHandle PropertyMap$new;
+        private static final MethodHandle PropertyMap$new = Lookup.aClass(PropertyMap.class).constructor(Multimap.class).handleIfExist();
 
-        static {
-            MethodHandle $new = null;
-
-            try {
-                for (Constructor<?> constructor : PropertyMap.class.getDeclaredConstructors()) {
-                    if (constructor.getParameterCount() == 1 && Multimap.class.isAssignableFrom(constructor.getParameterTypes()[0])) {
-                        $new = EasyLookup.unreflectConstructor(constructor);
-                    }
-                }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-
-            PropertyMap$new = $new;
-        }
-
-        private static final MethodHandle GameProfile$new;
+        private static final MethodHandle GameProfile$new = Lookup.aClass(GameProfile.class).constructor(UUID.class, String.class, PropertyMap.class).handleIfExist();
         private static final MethodHandle GameProfile_id;
         private static final MethodHandle GameProfile_name;
         private static final MethodHandle GameProfile_properties;
-
         static {
-            MethodHandle $new = null;
-            MethodHandle $id = null;
-            MethodHandle $name = null;
-            MethodHandle $properties = null;
+            // names
+            String id = "id";
+            String name = "name";
+            String properties = "properties";
 
-            try {
-                // Names
-                String id = "id";
-                String name = "name";
-                String properties = "properties";
-
-                for (Method method : GameProfile.class.getDeclaredMethods()) {
-                    if (method.getName().equals("getId")) {
-                        id = "getId";
-                    } else if (method.getName().equals("getName")) {
-                        name = "getName";
-                    } else if (method.getName().equals("getProperties")) {
-                        properties = "getProperties";
-                    }
+            for (Method method : GameProfile.class.getDeclaredMethods()) {
+                if (method.getName().equals("getId")) {
+                    id = "getId";
+                } else if (method.getName().equals("getName")) {
+                    name = "getName";
+                } else if (method.getName().equals("getProperties")) {
+                    properties = "getProperties";
                 }
-
-                for (Constructor<?> constructor : GameProfile.class.getDeclaredConstructors()) {
-                    if (constructor.getParameterCount() == 3 && PropertyMap.class.isAssignableFrom(constructor.getParameterTypes()[2])) {
-                        $new = EasyLookup.unreflectConstructor(constructor);
-                    }
-                }
-                $id = EasyLookup.method(GameProfile.class, id, UUID.class);
-                $name = EasyLookup.method(GameProfile.class, name, String.class);
-                $properties = EasyLookup.method(GameProfile.class, properties, PropertyMap.class);
-            } catch (NoSuchMethodException | IllegalAccessException e) {
-                e.printStackTrace();
             }
 
-            GameProfile$new = $new;
-            GameProfile_id = $id;
-            GameProfile_name = $name;
-            GameProfile_properties = $properties;
+            GameProfile_id = Lookup.aClass(GameProfile.class).method(UUID.class, id).handle();
+            GameProfile_name = Lookup.aClass(GameProfile.class).method(String.class, name).handle();
+            GameProfile_properties = Lookup.aClass(GameProfile.class).method(PropertyMap.class, properties).handle();
         }
 
         // Providers

@@ -3,7 +3,7 @@ package com.saicone.rtag;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
-import com.saicone.rtag.util.EasyLookup;
+import com.saicone.rtag.util.reflect.Lookup;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
@@ -11,10 +11,10 @@ import java.util.Map;
 
 /**
  * <p>RtagMirror class to convert objects.<br>
- * By default it's only compatible with regular Java
+ * By default, it's only compatible with regular Java
  * objects like String, Short, Integer, Double, Float,
  * Long, Byte, Map and List.<br>
- * It also convert Byte, Integer and Long arrays as well.</p>
+ * It also converts Byte, Integer and Long arrays as well.</p>
  *
  * @author Rubenicos
  */
@@ -23,15 +23,15 @@ public class RtagMirror {
     /**
      * NBTBase class object.
      */
-    protected static final Class<?> TAG_BASE = EasyLookup.classById("NBTBase");
+    protected static final Class<?> TAG_BASE = Lookup.SERVER.importClass("net.minecraft.nbt.Tag").get();
     /**
      * NBTTagCompound class object.
      */
-    protected static final Class<?> TAG_COMPOUND = EasyLookup.classById("NBTTagCompound");
+    protected static final Class<?> TAG_COMPOUND = Lookup.SERVER.importClass("net.minecraft.nbt.CompoundTag").get();
     /**
      * NBTTagList class object.
      */
-    protected static final Class<?> TAG_LIST = EasyLookup.classById("NBTTagList");
+    protected static final Class<?> TAG_LIST = Lookup.SERVER.importClass("net.minecraft.nbt.ListTag").get();
 
     /**
      * {@link RtagMirror} public instance only compatible with regular Java objects.

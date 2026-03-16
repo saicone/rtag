@@ -4,13 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.saicone.rtag.RtagMirror;
 import com.saicone.rtag.stream.TStream;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.reflect.Lookup;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,12 +22,38 @@ import java.util.Map;
  */
 public class TagCompound {
 
-    // Import reflected classes
+    // import
+    private static final Lookup.AClass<?> CompoundTag = Lookup.SERVER.importClass("net.minecraft.nbt.CompoundTag");
+    private static final Lookup.AClass<?> Tag = Lookup.SERVER.importClass("net.minecraft.nbt.Tag");
+    private static final Lookup.AClass<?> TagParser = Lookup.SERVER.importClass("net.minecraft.nbt.TagParser");
+
+    // declare
+    private static final MethodHandle CompoundTag$new = CompoundTag.constructor().handle();
+    private static final MethodHandle CompoundTag$new_tags;
     static {
-        try {
-            EasyLookup.addNMSClass("nbt.MojangsonParser", "TagParser");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
+            CompoundTag$new_tags = CompoundTag.constructor(Map.class).handle();
+        } else {
+            CompoundTag$new_tags = null;
+        }
+    }
+    private static final MethodHandle CompoundTag$get_tags = CompoundTag.field(Map.class, "tags").getter();
+    private static final MethodHandle CompoundTag$set_tags = CompoundTag.field(Map.class, "tags").setter();
+    private static final MethodHandle CompoundTag_copy;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_10)) {
+            CompoundTag_copy = CompoundTag.method(CompoundTag, "copy").handle();
+        } else {
+            CompoundTag_copy = CompoundTag.method(Tag, "copy").handle();
+        }
+    }
+
+    private static final MethodHandle TagParser_parseCompoundFully;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
+            TagParser_parseCompoundFully = TagParser.method(Modifier.STATIC, CompoundTag, "parseCompoundFully", String.class).handle();
+        } else {
+            TagParser_parseCompoundFully = TagParser.method(Modifier.STATIC, CompoundTag, "parseTag", String.class).handle();
         }
     }
 
@@ -41,90 +67,6 @@ public class TagCompound {
     @Deprecated
     public static final TStream<Object> DATA = TStream.COMPOUND;
 
-    private static final Class<?> NBT_COMPOUND = EasyLookup.classById("NBTTagCompound");
-
-    private static final MethodHandle newEmpty;
-    private static final MethodHandle newCompound;
-    private static final MethodHandle setMapField;
-    private static final MethodHandle getMapField;
-    private static final MethodHandle clone;
-    private static final MethodHandle parse;
-
-    static {
-        // Constructors
-        MethodHandle new$EmptyCompound = null;
-        MethodHandle new$Compound = null;
-        // Getters
-        MethodHandle get$map = null;
-        // Setters
-        MethodHandle set$map = null;
-        // Methods
-        MethodHandle method$clone = null;
-        MethodHandle method$parse = null;
-        try {
-            // Old names
-            String map = "map";
-            String clone = "clone";
-            String parse = "parse";
-
-            // New names
-            if (ServerInstance.Type.MOJANG_MAPPED) {
-                map = "tags";
-                clone = "copy";
-                parse = "parseTag";
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
-                    parse = "parseCompoundFully";
-                }
-            } else {
-                if (MC.version().isNewerThanOrEquals(MC.V_1_10)) {
-                    clone = "g";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
-                    clone = "clone";
-                }
-                if (MC.version().isUniversal()) {
-                    map = "x";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
-                    clone = "g";
-                    parse = "a";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_19_4)) { // 1.19.4
-                    clone = "h";
-                }
-                if (MC.version().isComponent()) {
-                    clone = "i";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
-                    clone = "l";
-                }
-            }
-
-            new$EmptyCompound = EasyLookup.constructor(NBT_COMPOUND);
-            if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
-                // Protected method
-                new$Compound = EasyLookup.constructor(NBT_COMPOUND, Map.class);
-            }
-
-            // Private field
-            get$map = EasyLookup.getter(NBT_COMPOUND, map, Map.class);
-            set$map = EasyLookup.setter(NBT_COMPOUND, map, Map.class);
-
-            // (1.8 -  1.9) return NBTBase
-            method$clone = EasyLookup.method(NBT_COMPOUND, clone, NBT_COMPOUND);
-
-            method$parse = EasyLookup.staticMethod("MojangsonParser", parse, NBT_COMPOUND, String.class);
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-        newEmpty = new$EmptyCompound;
-        newCompound = new$Compound;
-        setMapField = set$map;
-        getMapField = get$map;
-        clone = method$clone;
-        parse = method$parse;
-    }
-
     TagCompound() {
     }
 
@@ -135,7 +77,7 @@ public class TagCompound {
      */
     public static Object newTag() {
         try {
-            return newEmpty.invoke();
+            return CompoundTag$new.invoke();
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -149,7 +91,7 @@ public class TagCompound {
      */
     public static Object newTag(String snbt) {
         try {
-            return parse.invoke(snbt);
+            return TagParser_parseCompoundFully.invoke(snbt);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -187,14 +129,14 @@ public class TagCompound {
     public static Object newUncheckedTag(Map<String, Object> map) {
         if (MC.version().isNewerThanOrEquals(MC.V_1_15)) {
             try {
-                return newCompound.invoke(map);
+                return CompoundTag$new_tags.invoke(map);
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
         } else {
             final Object tag = newTag();
             try {
-                setMapField.invoke(tag, map);
+                CompoundTag$set_tags.invoke(tag, map);
             } catch (ClassCastException e) {
                 getValue(tag).putAll(map);
             } catch (Throwable t) {
@@ -251,7 +193,7 @@ public class TagCompound {
      * @return       true if the object is an instance of NBTTagCompound class.
      */
     public static boolean isTagCompound(Object object) {
-        return NBT_COMPOUND.isInstance(object);
+        return CompoundTag.isInstance(object);
     }
 
     /**
@@ -262,7 +204,7 @@ public class TagCompound {
      */
     public static Object clone(Object tag) {
         try {
-            return clone.invoke(tag);
+            return CompoundTag_copy.invoke(tag);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -276,7 +218,7 @@ public class TagCompound {
      */
     public static Object safeClone(Object tag) {
         try {
-            return clone.invoke(tag);
+            return CompoundTag_copy.invoke(tag);
         } catch (Throwable t) {
             t.printStackTrace();
             return null;
@@ -292,7 +234,7 @@ public class TagCompound {
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getValue(Object tag) {
         try {
-            return (Map<String, Object>) getMapField.invoke(tag);
+            return (Map<String, Object>) CompoundTag$get_tags.invoke(tag);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -397,7 +339,7 @@ public class TagCompound {
             clear(tag);
         } else {
             try {
-                setMapField.invoke(tag, map);
+                CompoundTag$set_tags.invoke(tag, map);
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }

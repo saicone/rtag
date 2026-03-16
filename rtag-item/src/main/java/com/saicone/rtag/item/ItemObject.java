@@ -5,13 +5,14 @@ import com.saicone.rtag.data.ComponentType;
 import com.saicone.rtag.data.DataComponent;
 import com.saicone.rtag.tag.TagBase;
 import com.saicone.rtag.tag.TagCompound;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.reflect.Lookup;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,251 +23,165 @@ import java.util.Optional;
  */
 public class ItemObject {
 
-    // Import reflected classes
+    // import
+    private static final Lookup.AClass<?> DefaultedRegistry = Lookup.SERVER.importClass("net.minecraft.core.DefaultedRegistry");
+    private static final Lookup.AClass<?> DataComponentPatch = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentPatch");
+    private static final Lookup.AClass<?> BuiltInRegistries = Lookup.SERVER.importClass("net.minecraft.core.registries.BuiltInRegistries");
+    private static final Lookup.AClass<?> CompoundTag = Lookup.SERVER.importClass("net.minecraft.nbt.CompoundTag");
+    private static final Lookup.AClass<?> Identifier;
     static {
-        try {
-            EasyLookup.addNMSClass("world.item.ItemStack");
-            if (MC.version().isComponent()) {
-                EasyLookup.addNMSClass("core.RegistryBlocks", "DefaultedRegistry");
-                EasyLookup.addNMSClass("world.item.component.CustomData");
-            }
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_11)) {
+            Identifier = Lookup.SERVER.importClass("net.minecraft.resources.Identifier");
+        } else {
+            Identifier = Lookup.SERVER.importClass("net.minecraft.resources.ResourceLocation");
+        }
+    }
+    private static final Lookup.AClass<?> Item = Lookup.SERVER.importClass("net.minecraft.world.item.Item");
+    private static final Lookup.AClass<?> MC_ItemStack = Lookup.SERVER.importClass("net.minecraft.world.item.ItemStack");
+    private static final Lookup.AClass<?> CustomData = Lookup.SERVER.importClass("net.minecraft.world.item.component.CustomData");
+    private static final Lookup.AClass<?> CraftItemStack = Lookup.SERVER.importClass("org.bukkit.craftbukkit.inventory.CraftItemStack");
 
-            EasyLookup.addOBCClass("inventory.CraftItemStack");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+    // declare
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    private static final MethodHandle DefaultedRegistry_getValue;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) {
+            DefaultedRegistry_getValue = DefaultedRegistry.method(Object.class, "getValue", Identifier).handle();
+        } else if (MC.version().isComponent()) {
+            DefaultedRegistry_getValue = DefaultedRegistry.method(Object.class, "get", Identifier).handle();
+        } else {
+            DefaultedRegistry_getValue = null;
         }
     }
 
-    private static final Class<?> MC_ITEM = EasyLookup.classById("ItemStack");
-    private static final Class<?> CRAFT_ITEM = EasyLookup.classById("CraftItemStack");
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    private static final MethodHandle Identifier_parse;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
+            Identifier_parse = Identifier.method(Modifier.STATIC, Identifier, "parse", String.class).handle();
+        } else if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) {
+            Identifier_parse = Identifier.constructor(String.class).handle();
+        } else {
+            Identifier_parse = null;
+        }
+    }
+
+    private static final MethodHandle CustomData$new_tag;
+    private static final MethodHandle CustomData$get_tag;
+    static {
+        if (MC.version().isComponent()) {
+            CustomData$new_tag = CustomData.constructor(CompoundTag).handle();
+            CustomData$get_tag = CustomData.field(CompoundTag, "tag").getter();
+        } else {
+            CustomData$new_tag = null;
+            CustomData$get_tag = null;
+        }
+    }
+
+    private static final MethodHandle ItemStack_of;
+    static {
+        if (MC.version().isComponent()) {
+            ItemStack_of = null;
+        } else if (MC.version().isNewerThanOrEquals(MC.V_1_13) || MC.version().isOlderThanOrEquals(MC.V_1_10_2)) {
+            ItemStack_of = MC_ItemStack.method(Modifier.STATIC, MC_ItemStack, "of", CompoundTag).handle();
+        } else {
+            ItemStack_of = MC_ItemStack.constructor(CompoundTag).handle();
+        }
+    }
+    private static final MethodHandle ItemStack_isEmpty;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
+            ItemStack_isEmpty = MC_ItemStack.method(boolean.class, "isEmpty").handle();
+        } else {
+            ItemStack_isEmpty = null;
+        }
+    }
+    private static final MethodHandle ItemStack_copy = MC_ItemStack.method(MC_ItemStack, "copy").handle();
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    private static final MethodHandle ItemStack$set_item;
+    private static final MethodHandle ItemStack_applyComponentsAndValidate;
+    private static final MethodHandle ItemStack_save;
+    private static final MethodHandle ItemStack_load;
+    private static final MethodHandle ItemStack_getTag;
+    private static final MethodHandle ItemStack_setTag;
+    static {
+        if (MC.version().isComponent()) {
+            ItemStack$set_item = MC_ItemStack.field(Item, "item").getter();
+            ItemStack_applyComponentsAndValidate = MC_ItemStack.method(void.class, "applyComponentsAndValidate", DataComponentPatch).handle();
+            ItemStack_save = null;
+            ItemStack_load = null;
+            ItemStack_getTag = null;
+            ItemStack_setTag = null;
+        } else {
+            ItemStack$set_item = null;
+            ItemStack_applyComponentsAndValidate = null;
+            ItemStack_save = MC_ItemStack.method(CompoundTag, "save", CompoundTag).handle();
+            ItemStack_load = MC_ItemStack.method(void.class, "load", CompoundTag).handle();
+            ItemStack_getTag = MC_ItemStack.method(CompoundTag, "getTag").handle();
+            ItemStack_setTag = MC_ItemStack.method(void.class, "setTag", CompoundTag).handle();
+        }
+    }
+    private static final MethodHandle ItemStack_getCount;
+    private static final MethodHandle ItemStack_setCount;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
+            ItemStack_getCount = MC_ItemStack.method(int.class, "getCount").handle();
+            ItemStack_setCount = MC_ItemStack.method(void.class, "setCount", int.class).handle();
+        } else {
+            ItemStack_getCount = MC_ItemStack.field(int.class, "count").getter();
+            ItemStack_setCount = MC_ItemStack.field(int.class, "count").setter();
+        }
+    }
+
+    private static final MethodHandle CraftItemStack_getCraftStack;
+    static {
+        if (ServerInstance.Platform.PAPER && MC.version().isNewerThanOrEquals(MC.V_1_21)) {
+            CraftItemStack_getCraftStack = CraftItemStack.method(Modifier.STATIC, CraftItemStack, "getCraftStack", ItemStack.class).handle();
+        } else {
+            CraftItemStack_getCraftStack = null;
+        }
+    }
+    private static final MethodHandle CraftItemStack_asNMSCopy = CraftItemStack.method(Modifier.STATIC, MC_ItemStack, "asNMSCopy", ItemStack.class).handle();
+    private static final MethodHandle CraftItemStack_asBukkitCopy = CraftItemStack.method(Modifier.STATIC, ItemStack.class, "asBukkitCopy", MC_ItemStack).handle();
+    private static final MethodHandle CraftItemStack_asCraftMirror = CraftItemStack.method(Modifier.STATIC, CraftItemStack, "asCraftMirror", MC_ItemStack).handle();
+    private static final MethodHandle CraftItemStack$new_item = CraftItemStack.constructor(ItemStack.class).handle();
+    private static final MethodHandle CraftItemStack$get_handle = CraftItemStack.field(MC_ItemStack, "handle").getter();
+    private static final MethodHandle CraftItemStack$set_handle = CraftItemStack.field(MC_ItemStack, "handle").setter();
+
     private static final Object CUSTOM_DATA;
-    private static final Object ITEM_REGISTRY; // Remove in 2.0.0
+    static {
+        if (MC.version().isComponent()) {
+            CUSTOM_DATA = ComponentType.of("minecraft:custom_data");
+        } else {
+            CUSTOM_DATA = null;
+        }
+    }
 
-    // Minecraft-related
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    private static final Object ITEM_REGISTRY;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) {
+            ITEM_REGISTRY = BuiltInRegistries.field(Modifier.STATIC, DefaultedRegistry, "ITEM").getValue();
+        } else {
+            ITEM_REGISTRY = null;
+        }
+    }
 
-    // since 1.20.5
     /**
      * ItemStack codec.
      */
     @ApiStatus.Experimental
     public static final Object CODEC;
-    // pre 1.20.5
-    private static final MethodHandle newItem;
-
-    private static final MethodHandle newCustomData;
-    private static final MethodHandle newMinecraftKey; // Remove in 2.0.0
-    private static final MethodHandle save;
-    private static final MethodHandle apply;
-    private static final MethodHandle copy;
-    private static final MethodHandle isEmpty;
-    private static final MethodHandle getItem; // Remove in 2.0.0
-    private static final MethodHandle getTag;
-    private static final MethodHandle setItem; // Remove in 2.0.0
-    private static final MethodHandle setTag; // < 1.20.5
-    private static final MethodHandle setCount; // >= 1.20.5
-
-    // CraftBukkit-related
-    private static final MethodHandle newCraftItem;
-    private static final MethodHandle getHandleField;
-    private static final MethodHandle setHandleField;
-    private static final MethodHandle getCraftStack;
-    private static final MethodHandle asBukkitCopy;
-    private static final MethodHandle asCraftMirror;
-    private static final MethodHandle asNMSCopy;
-
     static {
-        // Constants
-        Object const$customData = null;
-        Object const$item = null;
-        Object const$codec = null;
-        // Constructors
-        MethodHandle new$ItemStack = null;
-        MethodHandle new$CustomData = null;
-        MethodHandle new$MinecraftKey = null;
-        MethodHandle new$CraftItemStack = null;
-        // Getters
-        MethodHandle get$handle = null;
-        // Setters
-        MethodHandle set$handle = null;
-        // Methods
-        MethodHandle method$save = null;
-        MethodHandle method$apply = null;
-        MethodHandle method$copy = null;
-        MethodHandle method$isEmpty = null;
-        MethodHandle method$getItem = null;
-        MethodHandle method$getTag = null;
-        MethodHandle method$setItem = null;
-        MethodHandle method$setTag = null;
-        MethodHandle method$setCount = null;
-        MethodHandle method$getCraftStack = null;
-        MethodHandle method$asBukkitCopy = null;
-        MethodHandle method$asNMSCopy = null;
-        MethodHandle method$asCraftMirror = null;
-        try {
-            // Old method names
-            String registry$item = "h";
-            String key$parse = "a";
-            String codec = "b";
-            String createStack = "createStack";
-            String save = "save";
-            String apply = "c";
-            String copy = "s";
-            String isEmpty = "isEmpty";
-            String getItem = "a";
-            String getTag = "getTag";
-            String setItem = "q";
-            String setTag = "setTag";
-            String setCount = "e";
-
-            // New method names
-            if (ServerInstance.Type.MOJANG_MAPPED) {
-                registry$item = "ITEM";
-                key$parse = "parse";
-                codec = "CODEC";
-                apply = "load";
-                getItem = "get";
-                setItem = "item";
-                if (MC.version().isComponent()) {
-                    apply = "applyComponentsAndValidate";
-                    copy = "copy";
-                    getTag = "tag";
-                    setCount = "setCount";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
-                    getItem = "getValue";
-                }
-            } else {
-                if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
-                    apply = "load";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
-                    createStack = "a";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_18)) {
-                    save = "b";
-                    isEmpty = "b";
-                    getTag = "s";
-                    setTag = "c";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_18_2)) { // 1.18.2
-                    getTag = "t";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_19)) {
-                    getTag = "u";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_20)) {
-                    getTag = "v";
-                }
-                if (MC.version().isComponent()) {
-                    apply = "a";
-                    isEmpty = "e";
-                    getTag = "e";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_20_6)) { // 1.20.6
-                    getTag = "f";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
-                    registry$item = "g";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) { // 1.21.2
-                    codec = "a";
-                    copy = "v";
-                    isEmpty = "f";
-                    setItem = "o";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_4)) { // 1.21.3
-                    getTag = "g";
-                    setItem = "p";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) { // 1.21.5
-                    codec = "b";
-                    setItem = "s";
-                }
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) { // 1.21.9
-                    registry$item = "h";
-                    getTag = "e";
-                }
-            }
-
-            if (MC.version().isComponent()) {
-                const$customData = ComponentType.of("minecraft:custom_data");
-                const$item = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$item).get(null);
-
-                const$codec = MC_ITEM.getDeclaredField(codec).get(null);
-                new$CustomData = EasyLookup.constructor("CustomData", "NBTTagCompound");
-                if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
-                    new$MinecraftKey = EasyLookup.staticMethod("MinecraftKey", key$parse, "MinecraftKey", String.class);
-                } else {
-                    new$MinecraftKey = EasyLookup.constructor("MinecraftKey", String.class);
-                }
-
-                method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "DataComponentPatch");
-                method$copy = EasyLookup.method(MC_ITEM, copy, MC_ITEM);
-                method$getItem = EasyLookup.method("RegistryBlocks", getItem, Object.class, "MinecraftKey");
-                method$getTag = EasyLookup.getter("CustomData", getTag, "NBTTagCompound");
-                method$setItem = EasyLookup.unreflectSetter(MC_ITEM, setItem);
-                method$setCount = EasyLookup.method(MC_ITEM, setCount, void.class, int.class);
-            } else {
-                if (MC.version().isNewerThanOrEquals(MC.V_1_13) || MC.version().isOlderThanOrEquals(MC.V_1_10_2)) {
-                    new$ItemStack = EasyLookup.staticMethod(MC_ITEM, createStack, "ItemStack", "NBTTagCompound");
-                } else {
-                    // (1.11 - 1.12) Only by public constructor
-                    new$ItemStack = EasyLookup.constructor(MC_ITEM, "NBTTagCompound");
-                }
-
-                method$save = EasyLookup.method(MC_ITEM, save, "NBTTagCompound", "NBTTagCompound");
-                // Private method
-                method$apply = EasyLookup.method(MC_ITEM, apply, void.class, "NBTTagCompound");
-                method$getTag = EasyLookup.method(MC_ITEM, getTag, "NBTTagCompound");
-                method$setTag = EasyLookup.method(MC_ITEM, setTag, void.class, "NBTTagCompound");
-            }
-            if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
-                method$isEmpty = EasyLookup.method(MC_ITEM, isEmpty, boolean.class);
-            } else {
-                method$isEmpty = EasyLookup.getter(MC_ITEM, "count", int.class);
-            }
-
-            new$CraftItemStack = EasyLookup.constructor(CRAFT_ITEM, ItemStack.class);
-
-            // Private field
-            get$handle = EasyLookup.getter(CRAFT_ITEM, "handle", MC_ITEM);
-            set$handle = EasyLookup.setter(CRAFT_ITEM, "handle", MC_ITEM);
-
-            if (ServerInstance.Platform.PAPER && MC.version().isNewerThanOrEquals(MC.V_1_21)) {
-                method$getCraftStack = EasyLookup.method(CRAFT_ITEM, "getCraftStack", CRAFT_ITEM, ItemStack.class);
-            }
-            method$asBukkitCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asBukkitCopy", ItemStack.class, "ItemStack");
-            method$asCraftMirror = EasyLookup.staticMethod(CRAFT_ITEM, "asCraftMirror", CRAFT_ITEM, "ItemStack");
-            // Bukkit -> Minecraft
-            method$asNMSCopy = EasyLookup.staticMethod(CRAFT_ITEM, "asNMSCopy", "ItemStack", ItemStack.class);
-        } catch (NoSuchMethodException | IllegalAccessException | NoSuchFieldException e) {
-            e.printStackTrace();
+        if (MC.version().isNewerThanOrEquals(MC.V_1_16)) {
+            CODEC = MC_ItemStack.field(Modifier.STATIC, Codec.class, "CODEC").getValue();
+        } else {
+            CODEC = null;
         }
-
-        CUSTOM_DATA = const$customData;
-        ITEM_REGISTRY = const$item;
-
-        CODEC = const$codec;
-        newItem = new$ItemStack;
-        newCustomData = new$CustomData;
-        newMinecraftKey = new$MinecraftKey;
-        save = method$save;
-        apply = method$apply;
-        copy = method$copy;
-        isEmpty = method$isEmpty;
-        getItem = method$getItem;
-        getTag = method$getTag;
-        setItem = method$setItem;
-        setTag = method$setTag;
-        setCount = method$setCount;
-
-        newCraftItem = new$CraftItemStack;
-        getHandleField = get$handle;
-        setHandleField = set$handle;
-        getCraftStack = method$getCraftStack;
-        asBukkitCopy = method$asBukkitCopy;
-        asCraftMirror = method$asCraftMirror;
-        asNMSCopy = method$asNMSCopy;
     }
 
     ItemObject() {
@@ -283,11 +198,7 @@ public class ItemObject {
         if (MC.version().isComponent()) {
             return ((Codec<Object>) CODEC).parse(ComponentType.createGlobalContext(ComponentType.NBT_OPS), compound).result().orElse(null);
         } else {
-            try {
-                return newItem.invoke(compound);
-            } catch (Throwable t) {
-                throw new RuntimeException(t);
-            }
+            return Lookup.invoke(ItemStack_of, compound);
         }
     }
 
@@ -298,11 +209,7 @@ public class ItemObject {
      * @return     A new CraftItemStack.
      */
     public static ItemStack newCraftItem(ItemStack item) {
-        try {
-            return (ItemStack) newCraftItem.invoke(item);
-        } catch (Throwable t) {
-            throw new RuntimeException("Cannot create CraftItemStack using ItemStack object", t);
-        }
+        return Lookup.invoke(CraftItemStack$new_item, item);
     }
 
     /**
@@ -312,7 +219,7 @@ public class ItemObject {
      * @return       true if the object is an instance of Minecraft ItemStack.
      */
     public static boolean isMinecraftItem(Object object) {
-        return MC_ITEM.isInstance(object);
+        return MC_ItemStack.isInstance(object);
     }
 
     /**
@@ -322,7 +229,7 @@ public class ItemObject {
      * @return       true if the object is an instance of CraftItemStack.
      */
     public static boolean isCraftItem(Object object) {
-        return CRAFT_ITEM.isInstance(object);
+        return CraftItemStack.isInstance(object);
     }
 
     /**
@@ -333,14 +240,10 @@ public class ItemObject {
      * @return     true if item is empty, false otherwise.
      */
     public static boolean isEmpty(Object item) {
-        try {
-            if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
-                return (boolean) isEmpty.invoke(item);
-            } else {
-                return (int) isEmpty.invoke(item) <= 0;
-            }
-        } catch (Throwable t) {
-            throw new RuntimeException("Cannot check if ItemStack is empty", t);
+        if (MC.version().isNewerThanOrEquals(MC.V_1_11)) {
+            return Lookup.invoke(ItemStack_isEmpty, item);
+        } else {
+            return Lookup.<Integer>invoke(ItemStack_getCount, item) <= 0;
         }
     }
 
@@ -355,11 +258,7 @@ public class ItemObject {
         if (MC.version().isComponent()) {
             return DataComponent.Holder.has(item, CUSTOM_DATA);
         } else {
-            try {
-                return getTag.invoke(item) != null;
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get tag from Minecraft ItemStack", t);
-            }
+            return Lookup.invoke(ItemStack_getTag, item) != null;
         }
     }
 
@@ -374,17 +273,13 @@ public class ItemObject {
         if (item == null) {
             return TagCompound.newTag();
         }
-        try {
-            if (MC.version().isComponent()) {
-                if ((boolean) isEmpty.invoke(item)) {
-                    return TagCompound.newTag();
-                }
-                return ((Codec<Object>) CODEC).encode(item, ComponentType.createGlobalContext(ComponentType.NBT_OPS), TagCompound.newTag()).getOrThrow();
-            } else {
-                return save.invoke(item, TagCompound.newTag());
+        if (MC.version().isComponent()) {
+            if (isEmpty(item)) {
+                return TagCompound.newTag();
             }
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
+            return ((Codec<Object>) CODEC).encode(item, ComponentType.createGlobalContext(ComponentType.NBT_OPS), TagCompound.newTag()).getOrThrow();
+        } else {
+            return Lookup.invoke(ItemStack_save, item, TagCompound.newTag());
         }
     }
 
@@ -404,9 +299,9 @@ public class ItemObject {
             final Object id = TagCompound.get(compound, "id");
             if (id != null) {
                 try {
-                    final Object loadedItem = getItem.invoke(ITEM_REGISTRY, newMinecraftKey.invoke(TagBase.getValue(id)));
+                    final Object loadedItem = DefaultedRegistry_getValue.invoke(ITEM_REGISTRY, Identifier_parse.invoke(TagBase.getValue(id)));
                     if (loadedItem != null) {
-                        setItem.invoke(item, loadedItem);
+                        ItemStack$set_item.invoke(item, loadedItem);
                     }
                 } catch (Throwable t) {
                     throw new RuntimeException("Cannot set item id", t);
@@ -414,11 +309,7 @@ public class ItemObject {
             }
             final Object count = TagCompound.get(compound, "count");
             if (count != null) {
-                try {
-                    setCount.invoke(item, Integer.parseInt(String.valueOf(TagBase.getValue(count))));
-                } catch (Throwable t) {
-                    throw new RuntimeException("Cannot set item count", t);
-                }
+                Lookup.invoke(ItemStack_setCount, item, Integer.parseInt(String.valueOf(TagBase.getValue(count))));
             }
             final Object components = TagCompound.get(compound, "components");
             if (components != null) {
@@ -463,10 +354,10 @@ public class ItemObject {
      * @param component The data component to apply into.
      */
     public static void apply(Object item, Object component) {
-        try {
-            apply.invoke(item, component);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
+        if (MC.version().isComponent()) {
+            Lookup.invoke(ItemStack_applyComponentsAndValidate, item, component);
+        } else {
+            Lookup.invoke(ItemStack_load, item, component);
         }
     }
 
@@ -477,15 +368,7 @@ public class ItemObject {
      * @return     A copy from Minecraft ItemStack.
      */
     public static Object copy(Object item) {
-        if (MC.version().isComponent()) {
-            try {
-                return copy.invoke(item);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot copy the provided Minecraft ItemStack", t);
-            }
-        } else {
-            return newItem(save(item));
-        }
+        return Lookup.invoke(ItemStack_copy, item);
     }
 
     /**
@@ -568,13 +451,9 @@ public class ItemObject {
      * @return     a CraftItemStack instance.
      */
     public static ItemStack getCraftStack(ItemStack item) {
-        if (getCraftStack != null) {
-            try {
-                return (ItemStack) getCraftStack.invoke(item);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get CraftItemStack from ItemStack object", t);
-            }
-        } else if (CRAFT_ITEM.isInstance(item)) {
+        if (CraftItemStack_getCraftStack != null) {
+            return Lookup.invoke(CraftItemStack_getCraftStack, item);
+        } else if (CraftItemStack.isInstance(item)) {
             return item;
         } else {
             return null;
@@ -589,7 +468,7 @@ public class ItemObject {
      * @return     Minecraft ItemStack.
      */
     public static Object getHandle(ItemStack item) {
-        if (CRAFT_ITEM.isInstance(item)) {
+        if (CraftItemStack.isInstance(item)) {
             return getUncheckedHandle(item);
         } else {
             return asNMSCopy(item);
@@ -603,11 +482,7 @@ public class ItemObject {
      * @return     Minecraft ItemStack or null.
      */
     public static Object getUncheckedHandle(ItemStack item) {
-        try {
-            return getHandleField.invoke(item);
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
+        return Lookup.invoke(CraftItemStack$get_handle, item);
     }
 
     /**
@@ -623,17 +498,9 @@ public class ItemObject {
             if (customData == null) {
                 return null;
             }
-            try {
-                return getTag.invoke(customData);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get tag from custom data component", t);
-            }
+            return Lookup.invoke(CustomData$get_tag, customData);
         } else {
-            try {
-                return getTag.invoke(item);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get tag from Minecraft ItemStack", t);
-            }
+            return Lookup.invoke(ItemStack_getTag, item);
         }
     }
 
@@ -661,12 +528,8 @@ public class ItemObject {
      */
     @SuppressWarnings("deprecation")
     public static void setHandle(ItemStack item, Object handle) {
-        if (CRAFT_ITEM.isInstance(item)) {
-            try {
-                setHandleField.invoke(item, handle);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set handle into CraftItemStack", t);
-            }
+        if (CraftItemStack.isInstance(item)) {
+            Lookup.invoke(CraftItemStack$set_handle, item, handle);
         } else {
             ItemStack copy = asBukkitCopy(handle);
             if (copy != null) {
@@ -689,21 +552,13 @@ public class ItemObject {
      */
     public static void setCustomDataTag(Object item, Object tag) {
         if (MC.version().isComponent()) {
-            try {
-                if (tag == null || TagCompound.getValue(tag).isEmpty()) {
-                    DataComponent.MapPatch.remove(DataComponent.Holder.getComponents(item), CUSTOM_DATA);
-                } else {
-                    DataComponent.MapPatch.set(DataComponent.Holder.getComponents(item), CUSTOM_DATA, newCustomData.invoke(tag));
-                }
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set custom data tag to Minecraft ItemStack", t);
+            if (tag == null || TagCompound.getValue(tag).isEmpty()) {
+                DataComponent.MapPatch.remove(DataComponent.Holder.getComponents(item), CUSTOM_DATA);
+            } else {
+                DataComponent.MapPatch.set(DataComponent.Holder.getComponents(item), CUSTOM_DATA, Lookup.invoke(CustomData$new_tag, tag));
             }
         } else {
-            try {
-                setTag.invoke(item, tag);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot set tag to Minecraft ItemStack", t);
-            }
+            Lookup.invoke(ItemStack_setTag, item, tag);
         }
     }
 
@@ -730,11 +585,7 @@ public class ItemObject {
      * @return     Bukkit ItemStack.
      */
     public static ItemStack asBukkitCopy(Object item) {
-        try {
-            return (ItemStack) asBukkitCopy.invoke(item);
-        } catch (Throwable t) {
-            throw new RuntimeException("Cannot convert Minecraft ItemStack into Bukkit ItemStack", t);
-        }
+        return Lookup.invoke(CraftItemStack_asBukkitCopy, item);
     }
 
     /**
@@ -745,11 +596,7 @@ public class ItemObject {
      * @return     Bukkit ItemStack.
      */
     public static ItemStack asCraftMirror(Object item) {
-        try {
-            return (ItemStack) asCraftMirror.invoke(item);
-        } catch (Throwable t) {
-            throw new RuntimeException("Cannot convert Minecraft ItemStack into Bukkit ItemStack", t);
-        }
+        return Lookup.invoke(CraftItemStack_asCraftMirror, item);
     }
 
     /**
@@ -760,10 +607,6 @@ public class ItemObject {
      * @return     Minecraft ItemStack.
      */
     public static Object asNMSCopy(ItemStack item) {
-        try {
-            return asNMSCopy.invoke(item);
-        } catch (Throwable t) {
-            throw new RuntimeException("Cannot convert Bukkit ItemStack into Minecraft ItemStack", t);
-        }
+        return Lookup.invoke(CraftItemStack_asNMSCopy, item);
     }
 }

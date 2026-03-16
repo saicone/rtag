@@ -8,14 +8,12 @@ import com.mojang.serialization.JavaOps;
 import com.mojang.serialization.JsonOps;
 import com.saicone.rtag.Rtag;
 import com.saicone.rtag.tag.TagBase;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.reflect.Lookup;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,135 +27,77 @@ import java.util.Optional;
 @ApiStatus.Experimental
 public class ComponentType {
 
-    // Import reflected classes
+    // import
+    private static final Lookup.AClass<?> Holder = Lookup.SERVER.importClass("net.minecraft.core.Holder");
+    private static final Lookup.AClass<?> HolderLookup$Provider = Lookup.SERVER.importClass("net.minecraft.core.HolderLookup$Provider");
+    private static final Lookup.AClass<?> MappedRegistry = Lookup.SERVER.importClass("net.minecraft.core.MappedRegistry");
+    private static final Lookup.AClass<?> Registry = Lookup.SERVER.importClass("net.minecraft.core.Registry");
+    private static final Lookup.AClass<?> DataComponentType = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentType");
+    private static final Lookup.AClass<?> BuiltInRegistries = Lookup.SERVER.importClass("net.minecraft.core.registries.BuiltInRegistries");
+    private static final Lookup.AClass<?> NbtOps = Lookup.SERVER.importClass("net.minecraft.nbt.NbtOps");
+    private static final Lookup.AClass<?> Identifier;
     static {
-        try {
-            if (MC.version().isNewerThanOrEquals(MC.V_1_13)) {
-                EasyLookup.addNMSClass("nbt.DynamicOpsNBT", "NbtOps");
-            }
-            if (MC.version().isNewerThanOrEquals(MC.V_1_18_2)) {
-                EasyLookup.addNMSClass("resources.RegistryOps");
-            }
-            if (MC.version().isComponent()) {
-                EasyLookup.addNMSClass("core.Holder");
-                EasyLookup.addNMSClass("core.RegistryMaterials", "MappedRegistry");
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        if (MC.version().isNewerThanOrEquals(MC.V_1_21_11)) {
+            Identifier = Lookup.SERVER.importClass("net.minecraft.resources.Identifier");
+        } else {
+            Identifier = Lookup.SERVER.importClass("net.minecraft.resources.ResourceLocation");
         }
     }
+    private static final Lookup.AClass<?> RegistryOps = Lookup.SERVER.importClass("net.minecraft.resources.RegistryOps");
 
-    private static final Class<?> COMPONENT_TYPE = EasyLookup.classById("DataComponentType");
-    private static final Class<?> REGISTRY_OPS_TYPE = EasyLookup.classById("RegistryOps");
+    // declare
+    private static final MethodHandle RegistryOps_create = RegistryOps.method(Modifier.STATIC, RegistryOps, "create", DynamicOps.class, HolderLookup$Provider).handle();
 
-    private static final Map<String, Object> TYPES = new HashMap<>();
-    private static final Map<String, Codec<Object>> CODECS = new HashMap<>();
+    private static final MethodHandle DataComponentType_codec = DataComponentType.method(Codec.class, "codec").handle();
 
     /**
      * NbtOps public instance from Minecraft code.
      */
     @ApiStatus.Experimental
-    public static final Object NBT_OPS;
+    public static final Object NBT_OPS = NbtOps.field(Modifier.STATIC, NbtOps, "INSTANCE").getValue();
     /**
      * JavaOps public instance from DataFixerUpper library.
      */
     @ApiStatus.Experimental
     public static final Object JAVA_OPS = JavaOps.INSTANCE;
 
-    private static final MethodHandle CREATE;
-    private static final MethodHandle CODEC;
-
     // Maybe move this into other place
     private static DynamicOps<Object> REGISTRY_NBT_OPS;
     private static DynamicOps<JsonElement> REGISTRY_JSON_OPS;
     private static DynamicOps<Object> REGISTRY_JAVA_OPS;
-
     static {
-        // Instances
-        DynamicOps<Object> nbtOps = null;
-        // Methods
-        MethodHandle method$create = null;
-        MethodHandle method$codec = null;
-        if (MC.version().isComponent()) {
-            try {
-                // Old names
-                String nbtOps$instance = "a";
-                String registry$create = "a";
-                String registry$components = "as";
-                String registry$map = "f";
-                String resource$key = "a";
-                String holder$value = "a";
-                String codec = "b";
-
-                // New names
-                if (ServerInstance.Type.MOJANG_MAPPED) {
-                    nbtOps$instance = "INSTANCE";
-                    registry$create = "create";
-                    registry$components = "DATA_COMPONENT_TYPE";
-                    registry$map = "byLocation";
-                    resource$key = "getPath";
-                    holder$value = "value";
-                    codec = "codec";
-                } else {
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
-                        registry$components = "aq";
-                    }
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) {
-                        registry$components = "ao";
-                        registry$map = "e";
-                    }
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_5)) {
-                        registry$components = "am";
-                    }
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_9)) {
-                        registry$components = "an";
-                    }
-                    if (MC.version().isNewerThanOrEquals(MC.V_1_21_11)) {
-                        registry$components = "am";
-                    }
-                }
-
-                nbtOps = (DynamicOps<Object>) EasyLookup.classById("DynamicOpsNBT").getDeclaredField(nbtOps$instance).get(null);
-
-                method$create = EasyLookup.staticMethod("RegistryOps", registry$create, "RegistryOps", DynamicOps.class, "HolderLookup.Provider");
-
-                final Object componentsRegistry = EasyLookup.classById("BuiltInRegistries").getDeclaredField(registry$components).get(null);
-                final Map<Object, Object> componentsMap = (Map<Object, Object>) EasyLookup.field("RegistryMaterials", registry$map).get(componentsRegistry);
-
-                final Method keyMethod = EasyLookup.classById("MinecraftKey").getDeclaredMethod(resource$key);
-                final Method valueMethod = EasyLookup.classById("Holder").getDeclaredMethod(holder$value);
-                final Method codecMethod = EasyLookup.classById("DataComponentType").getDeclaredMethod(codec);
-
-                method$codec = EasyLookup.unreflectMethod(codecMethod);
-
-                for (var entry : componentsMap.entrySet()) {
-                    if (entry.getValue() == null) {
-                        continue;
-                    }
-                    final String key = (String) keyMethod.invoke(entry.getKey());
-                    final Object value = valueMethod.invoke(entry.getValue());
-
-                    TYPES.put(key(key), value);
-
-                    final Codec<Object> valueCodec = (Codec<Object>) codecMethod.invoke(value);
-                    if (valueCodec != null) {
-                        CODECS.put(key(key), valueCodec);
-                    }
-                }
-            } catch (NoSuchFieldException | InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-        }
-        NBT_OPS = nbtOps;
-        CREATE = method$create;
-        CODEC = method$codec;
-
         try {
             REGISTRY_NBT_OPS = createGlobalContext(NBT_OPS);
             REGISTRY_JSON_OPS = createGlobalContext(JsonOps.INSTANCE);
             REGISTRY_JAVA_OPS = createGlobalContext(JAVA_OPS);
         } catch (Throwable t) {
             t.printStackTrace();
+        }
+    }
+
+    private static final Map<String, Object> TYPES = new HashMap<>();
+    private static final Map<String, Codec<Object>> CODECS = new HashMap<>();
+    static {
+        // Declare
+        final MethodHandle Identifier_getPath = Identifier.method(String.class, "getPath").handle();
+        final MethodHandle Holder_value = Holder.method(Object.class, "value").handle();
+
+        final Object DATA_COMPONENT_TYPE = BuiltInRegistries.field(Modifier.STATIC, Registry, "DATA_COMPONENT_TYPE").getValue();
+
+        final Map<Object, Object> byLocation = MappedRegistry.field(Map.class, "byLocation").getValue(DATA_COMPONENT_TYPE);
+        for (Map.Entry<Object, Object> entry : byLocation.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+            final String key = Lookup.invoke(Identifier_getPath, entry.getKey());
+            final Object value = Lookup.invoke(Holder_value, entry.getValue());
+
+            TYPES.put(key(key), value);
+
+            final Codec<Object> valueCodec = Lookup.invoke(DataComponentType_codec, value);
+            if (valueCodec != null) {
+                CODECS.put(key(key), valueCodec);
+            }
         }
     }
 
@@ -172,7 +112,7 @@ public class ComponentType {
      * @return     the same DataComponentType or a new one from cache.
      */
     public static Object of(Object type) {
-        if (COMPONENT_TYPE.isInstance(type)) {
+        if (DataComponentType.isInstance(type)) {
             return type;
         }
         return of(String.valueOf(type));
@@ -204,14 +144,9 @@ public class ComponentType {
      * @param type the data type to get codec.
      * @return     a codec from DataComponentType or from cache by ID.
      */
-    @SuppressWarnings("unchecked")
     public static Codec<Object> codec(Object type) {
-        if (COMPONENT_TYPE.isInstance(type)) {
-            try {
-                return (Codec<Object>) CODEC.invoke(type);
-            } catch (Throwable t) {
-                throw new RuntimeException("Cannot get codec from component type", t);
-            }
+        if (DataComponentType.isInstance(type)) {
+            return Lookup.invoke(DataComponentType_codec, type);
         }
         return codec(String.valueOf(type));
     }
@@ -248,7 +183,7 @@ public class ComponentType {
      * @return       true if the object is a DataComponentType.
      */
     public static boolean isType(Object object) {
-        return COMPONENT_TYPE.isInstance(object);
+        return DataComponentType.isInstance(object);
     }
 
     /**
@@ -284,14 +219,10 @@ public class ComponentType {
     @ApiStatus.Internal
     @SuppressWarnings("unchecked")
     public static <T> T createSerializationContext(Object dynamicOps, Object provider) {
-        if (REGISTRY_OPS_TYPE.isInstance(dynamicOps)) {
+        if (RegistryOps.isInstance(dynamicOps)) {
             return (T) dynamicOps;
         } else {
-            try {
-                return (T) CREATE.invoke(dynamicOps, provider);
-            } catch (Throwable e) {
-                throw new RuntimeException("Cannot create serialization context", e);
-            }
+            return Lookup.invoke(RegistryOps_create, dynamicOps, provider);
         }
     }
 

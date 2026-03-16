@@ -3,13 +3,13 @@ package com.saicone.rtag.registry;
 import com.mojang.serialization.DynamicOps;
 import com.saicone.rtag.Rtag;
 import com.saicone.rtag.data.ComponentType;
-import com.saicone.rtag.util.EasyLookup;
 import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.ProblemReporter;
-import com.saicone.rtag.util.ServerInstance;
+import com.saicone.rtag.util.reflect.Lookup;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Modifier;
 
 /**
  * Class to create I/O objects that require a certain level of registry.
@@ -19,58 +19,32 @@ import java.lang.invoke.MethodHandle;
 @ApiStatus.Experimental
 public class IOValue {
 
-    // Import reflected classes
-    static {
-        if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) { // 1.21.6
-            try {
-                EasyLookup.addNMSClass("util.ProblemReporter");
-                EasyLookup.addNMSClass("world.level.storage.ValueInput");
-                EasyLookup.addNMSClass("world.level.storage.ValueOutput");
-                EasyLookup.addNMSClass("world.level.storage.TagValueInput");
-                EasyLookup.addNMSClass("world.level.storage.TagValueOutput");
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+    // import
+    private static final Lookup.AClass<?> HolderLookup$Provider = Lookup.SERVER.importClass("net.minecraft.core.HolderLookup$Provider");
+    private static final Lookup.AClass<?> CompoundTag = Lookup.SERVER.importClass("net.minecraft.nbt.CompoundTag");
+    private static final Lookup.AClass<?> ProblemReporter$ = Lookup.SERVER.importClass("net.minecraft.util.ProblemReporter");
+    private static final Lookup.AClass<?> TagValueInput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.TagValueInput");
+    private static final Lookup.AClass<?> TagValueOutput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.TagValueOutput");
+    private static final Lookup.AClass<?> ValueInput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.ValueInput");
+    private static final Lookup.AClass<?> ValueOutput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.ValueOutput");
 
-    private static final MethodHandle newTagValueOutput;
-    private static final MethodHandle createTagValueInput;
-    private static final MethodHandle createTagValueOutput;
-    private static final MethodHandle buildResult;
-
+    // declare
+    private static final MethodHandle TagValueOutput$new;
+    private static final MethodHandle TagValueInput_create;
+    private static final MethodHandle TagValueOutput_createWithContext;
+    private static final MethodHandle TagValueOutput_buildResult;
     static {
-        MethodHandle new$TagValueOutput = null;
-        MethodHandle method$TagValueInput = null;
-        MethodHandle method$TagValueOutput = null;
-        MethodHandle method$buildResult = null;
         if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
-            try {
-                // Old method names
-                String TagValueInput$create = "a";
-                String TagValueOutput$createWithContext = "a";
-                String TagValueOutput$buildResult = "b";
-
-                // New method names
-                if (ServerInstance.Type.MOJANG_MAPPED) {
-                    TagValueInput$create = "create";
-                    TagValueOutput$createWithContext = "createWithContext";
-                    TagValueOutput$buildResult = "buildResult";
-                }
-
-                method$TagValueInput = EasyLookup.staticMethod("TagValueInput", TagValueInput$create, "ValueInput", "ProblemReporter", "HolderLookup.Provider", "NBTTagCompound");
-
-                new$TagValueOutput = EasyLookup.constructor("TagValueOutput", "ProblemReporter", DynamicOps.class, "NBTTagCompound");
-                method$TagValueOutput = EasyLookup.staticMethod("TagValueOutput", TagValueOutput$createWithContext, "TagValueOutput", "ProblemReporter", "HolderLookup.Provider");
-                method$buildResult = EasyLookup.method("TagValueOutput", TagValueOutput$buildResult, "NBTTagCompound");
-            } catch (NoSuchMethodException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
+            TagValueOutput$new = TagValueOutput.constructor(ProblemReporter$, DynamicOps.class, CompoundTag).handle();
+            TagValueInput_create = TagValueInput.method(Modifier.STATIC, ValueInput, "create", ProblemReporter$, HolderLookup$Provider, CompoundTag).handle();
+            TagValueOutput_createWithContext = TagValueOutput.method(Modifier.STATIC, TagValueOutput, "createWithContext", ProblemReporter$, HolderLookup$Provider).handle();
+            TagValueOutput_buildResult = TagValueOutput.method(CompoundTag, "buildResult").handle();
+        } else {
+            TagValueOutput$new = null;
+            TagValueInput_create = null;
+            TagValueOutput_createWithContext = null;
+            TagValueOutput_buildResult = null;
         }
-        newTagValueOutput = new$TagValueOutput;
-        createTagValueInput = method$TagValueInput;
-        createTagValueOutput = method$TagValueOutput;
-        buildResult = method$buildResult;
     }
 
     /**
@@ -95,7 +69,7 @@ public class IOValue {
      */
     public static Object createInput(Object reporter, Object provider, Object compound) {
         try {
-            return createTagValueInput.invoke(reporter, provider, compound);
+            return TagValueInput_create.invoke(reporter, provider, compound);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -121,7 +95,7 @@ public class IOValue {
      */
     public static Object createOutput(Object reporter, Object provider) {
         try {
-            return createTagValueOutput.invoke(reporter, provider);
+            return TagValueOutput_createWithContext.invoke(reporter, provider);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -138,7 +112,7 @@ public class IOValue {
      */
     public static Object createOutputWrapping(Object reporter, Object provider, Object compound) {
         try {
-            return newTagValueOutput.invoke(reporter, ComponentType.createSerializationContext(ComponentType.NBT_OPS, provider), compound);
+            return TagValueOutput$new.invoke(reporter, ComponentType.createSerializationContext(ComponentType.NBT_OPS, provider), compound);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
@@ -152,7 +126,7 @@ public class IOValue {
      */
     public static Object result(Object output) {
         try {
-            return buildResult.invoke(output);
+            return TagValueOutput_buildResult.invoke(output);
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
