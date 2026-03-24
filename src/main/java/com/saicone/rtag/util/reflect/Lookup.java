@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 @ApiStatus.Internal
@@ -66,8 +67,6 @@ public class Lookup {
             return null;
         }
     };
-
-    private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     Lookup() {
     }
@@ -171,6 +170,8 @@ public class Lookup {
         }
     }
 
+    private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+
     public static Class<?> caller() {
         return caller(false);
     }
@@ -266,6 +267,14 @@ public class Lookup {
         }
 
         return score;
+    }
+
+    private static final boolean DEBUG = "true".equals(System.getProperty("saicone.easylookup.debug")) || "true".equals(System.getProperty("lookup.debug"));
+
+    private static void debug(@NotNull Supplier<String> message) {
+        if (DEBUG) {
+            System.out.println(message.get());
+        }
     }
 
     public static class Runtime {
@@ -414,6 +423,7 @@ public class Lookup {
                     Object type = reference.getParent();
                     if (type instanceof Class) {
                         clazz = (Class<T>) type;
+                        debug(() -> "\u001B[0;30;46m NEW CLASS \u001B[0m " + clazz.getName());
                         return clazz;
                     }
                     if (type instanceof String) {
@@ -426,6 +436,7 @@ public class Lookup {
                 }
                 try {
                     clazz = (Class<T>) Class.forName(name, true, parent.getClassLoader());
+                    debug(() -> "\u001B[0;30;46m NEW CLASS \u001B[0m " + name);
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
@@ -572,6 +583,7 @@ public class Lookup {
                 }
 
                 constructor = (Constructor<T>) currentConstructor;
+                debug(() -> "\u001B[0;30;42m FOUND  AS \u001B[0m " + Reference.valueOf(constructor));
             }
             return constructor;
         }
@@ -609,6 +621,13 @@ public class Lookup {
                 try {
                     return handle0();
                 } catch (IllegalAccessException | NoSuchMethodException e) {
+                    debug(() -> {
+                        Reference reference = parent.getPackage().map(toReference());
+                        if (reference == null) {
+                            reference = this.toReference();
+                        }
+                        return (e instanceof IllegalAccessException ? "\u001B[0;30;43m NO ACCESS " : "\u001B[0;37;41m NOT FOUND ") + "\u001B[0m " + (modifiers.length == 0 ? "" : format(modifiers) + " ") + reference;
+                    });
                     return MethodHandles.lookup().unreflectConstructor(get());
                 }
             } catch (Throwable t) {
@@ -736,6 +755,7 @@ public class Lookup {
                 }
 
                 method = currentMethod;
+                debug(() -> "\u001B[0;30;42m FOUND  AS \u001B[0m " + Reference.valueOf(method));
             }
             return method;
         }
@@ -776,6 +796,13 @@ public class Lookup {
             if (parent.parent.isLocked()) {
                 return null;
             }
+            final Reference reference = parent.getPackage().map(toReference());
+            final String name;
+            if (reference != null) {
+                name = reference.getName();
+            } else {
+                name = this.name;
+            }
             try {
                 try {
                     if (staticMod) {
@@ -784,6 +811,7 @@ public class Lookup {
                         return parent.getLookup().findVirtual(parent.get(), name, methodType(parent.getPackage().getClass(type), parent.getPackage().getClasses(parameters)));
                     }
                 } catch (IllegalAccessException | NoSuchMethodException e) {
+                    debug(() -> (e instanceof IllegalAccessException ? "\u001B[0;30;43m NO ACCESS " : "\u001B[0;37;41m NOT FOUND ") + "\u001B[0m " + (modifiers.length == 0 ? "" : format(modifiers) + " ") + (reference != null ? reference : this.toReference()));
                     return MethodHandles.lookup().unreflect(get());
                 }
             } catch (RuntimeException e) {
@@ -897,6 +925,7 @@ public class Lookup {
                 }
 
                 field = currentField;
+                debug(() -> "\u001B[0;30;42m FOUND  AS \u001B[0m " + Reference.valueOf(field));
             }
             return field;
         }
@@ -944,6 +973,13 @@ public class Lookup {
             if (parent.parent.isLocked()) {
                 return null;
             }
+            final Reference reference = parent.getPackage().map(toReference());
+            final String name;
+            if (reference != null) {
+                name = reference.getName();
+            } else {
+                name = this.name;
+            }
             try {
                 try {
                     if (staticMod) {
@@ -952,6 +988,7 @@ public class Lookup {
                         return parent.getLookup().findGetter(parent.get(), name, parent.getPackage().getClass(type));
                     }
                 } catch (IllegalAccessException | NoSuchFieldException e) {
+                    debug(() -> (e instanceof IllegalAccessException ? "\u001B[0;30;43m NO ACCESS " : "\u001B[0;37;41m NOT FOUND ") + "\u001B[0m " + (modifiers.length == 0 ? "" : format(modifiers) + " ") + (reference != null ? reference : this.toReference()));
                     return MethodHandles.lookup().unreflectGetter(get());
                 }
             } catch (RuntimeException e) {
@@ -965,6 +1002,13 @@ public class Lookup {
             if (parent.parent.isLocked()) {
                 return null;
             }
+            final Reference reference = parent.getPackage().map(toReference());
+            final String name;
+            if (reference != null) {
+                name = reference.getName();
+            } else {
+                name = this.name;
+            }
             try {
                 try {
                     if (staticMod) {
@@ -973,6 +1017,7 @@ public class Lookup {
                         return parent.getLookup().findSetter(parent.get(), name, parent.getPackage().getClass(type));
                     }
                 } catch (IllegalAccessException | NoSuchFieldException e) {
+                    debug(() -> (e instanceof IllegalAccessException ? "\u001B[0;30;43m NO ACCESS " : "\u001B[0;37;41m NOT FOUND ") + "\u001B[0m " + (modifiers.length == 0 ? "" : format(modifiers) + " ") + (reference != null ? reference : this.toReference()));
                     return MethodHandles.lookup().unreflectSetter(get());
                 }
             } catch (RuntimeException e) {

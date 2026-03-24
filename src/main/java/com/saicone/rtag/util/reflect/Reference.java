@@ -4,6 +4,9 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -47,6 +50,26 @@ public class Reference {
         }
         clazz = fromString(s);
         return new Reference(clazz, type, name, parameters);
+    }
+
+    @NotNull
+    public static Reference valueOf(@NotNull Class<?> clazz) {
+        return new Reference(clazz, null, null, null);
+    }
+
+    @NotNull
+    public static Reference valueOf(@NotNull Constructor<?> constructor) {
+        return new Reference(constructor.getDeclaringClass(), null, null, constructor.getParameterTypes());
+    }
+
+    @NotNull
+    public static Reference valueOf(@NotNull Method method) {
+        return new Reference(method.getDeclaringClass(), method.getReturnType(), method.getName(), method.getParameterTypes());
+    }
+
+    @NotNull
+    public static Reference valueOf(@NotNull Field field) {
+        return new Reference(field.getDeclaringClass(), field.getType(), field.getName(), null);
     }
 
     @NotNull
