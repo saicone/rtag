@@ -80,6 +80,11 @@ public class DataComponent {
     @ApiStatus.Experimental
     public static class Holder {
 
+        // lock
+        static {
+            Lookup.SERVER.require(MC.version().isComponent());
+        }
+
         // declare
         private static final MethodHandle DataComponentHolder_getComponents = DataComponentHolder.method(DataComponentMap, "getComponents").handle();
         private static final MethodHandle DataComponentHolder_get = DataComponentHolder.method(Object.class, "get", DataComponentType).handle();
@@ -127,6 +132,11 @@ public class DataComponent {
      */
     @ApiStatus.Experimental
     public static class Map {
+
+        // lock
+        static {
+            Lookup.SERVER.require(MC.version().isComponent());
+        }
 
         /**
          * An empty DataComponentMap instance.
@@ -245,6 +255,11 @@ public class DataComponent {
     @ApiStatus.Experimental
     public static class MapPatch {
 
+        // lock
+        static {
+            Lookup.SERVER.require(MC.version().isComponent());
+        }
+
         // declare
         private static final MethodHandle PatchedDataComponentMap$get_patch = PatchedDataComponentMap.field(Reference2ObjectMap.class, "patch").getter();
         private static final MethodHandle PatchedDataComponentMap$set_patch = PatchedDataComponentMap.field(Reference2ObjectMap.class, "patch").setter();
@@ -305,6 +320,11 @@ public class DataComponent {
      */
     @ApiStatus.Experimental
     public static class Patch {
+
+        // lock
+        static {
+            Lookup.SERVER.require(MC.version().isComponent());
+        }
 
         /**
          * An empty DataComponentPatch instance.

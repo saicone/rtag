@@ -118,7 +118,7 @@ public class ItemData {
             return src;
         }
         if (destPos < 0 || destPos >= componentPath.length) {
-            throw new IndexOutOfBoundsException("Destination position out of range:" + srcPos);
+            throw new IndexOutOfBoundsException("Destination position out of range:" + destPos);
         }
 
         i++;

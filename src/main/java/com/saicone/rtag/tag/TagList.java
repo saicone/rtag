@@ -52,8 +52,8 @@ public class TagList {
             ListTag$set_type = ListTag.field(byte.class, "type").setter();
         }
     }
-    private static final MethodHandle ListTag$get_list = ListTag.field(byte.class, "list").getter();
-    private static final MethodHandle ListTag$set_list = ListTag.field(byte.class, "list").setter();
+    private static final MethodHandle ListTag$get_list = ListTag.field(List.class, "list").getter();
+    private static final MethodHandle ListTag$set_list = ListTag.field(List.class, "list").setter();
 
     TagList() {
     }

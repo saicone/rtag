@@ -3,6 +3,7 @@ package com.saicone.rtag.util;
 import com.saicone.rtag.util.reflect.Lookup;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 
 /**
@@ -25,7 +26,7 @@ public interface ProblemReporter {
                 try {
                     final Lookup.AClass<?> ProblemReporter = Lookup.SERVER.importClass("net.minecraft.util.ProblemReporter");
                     if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
-                        return ProblemReporter.field(ProblemReporter, "DISCARDING").getValue();
+                        return ProblemReporter.field(Modifier.STATIC, ProblemReporter, "DISCARDING").getValue();
                     } else {
                         final Class<?> clazz = ProblemReporter.get();
                         return Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, (proxy, method, args) -> {

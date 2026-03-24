@@ -19,8 +19,10 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.UnaryOperator;
 
@@ -58,12 +60,14 @@ public class Lookup {
             if (!MC.version().isUniversal() && name.startsWith("net.minecraft.") && !name.startsWith(minecraftPackage)) {
                 return minecraftPackage + simpleName(name);
             }
-            if (!ServerInstance.Type.CRAFTBUKKIT_RELOCATED && name.startsWith("org.bukkit.craftbukkit.") && !name.startsWith(craftbukkitPackage)) {
+            if (ServerInstance.Type.CRAFTBUKKIT_RELOCATED && name.startsWith("org.bukkit.craftbukkit.") && !name.startsWith(craftbukkitPackage)) {
                 return craftbukkitPackage + name.substring("org.bukkit.craftbukkit.".length());
             }
             return null;
         }
     };
+
+    private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     Lookup() {
     }
@@ -167,6 +171,41 @@ public class Lookup {
         }
     }
 
+    public static Class<?> caller() {
+        return caller(false);
+    }
+
+    public static Class<?> caller(boolean ignoreCurrent) {
+        return STACK_WALKER.walk(stream -> {
+            final var it = stream.iterator();
+            if (!it.hasNext()) {
+                return null;
+            }
+
+            final Class<?> current = it.next().getDeclaringClass();
+            if (!it.hasNext()) {
+                return null;
+            }
+
+            final Class<?> firstCaller = it.next().getDeclaringClass();
+            if (current == firstCaller || ignoreCurrent) {
+                while (it.hasNext()) {
+                    final Class<?> caller = it.next().getDeclaringClass();
+                    if (caller != firstCaller && caller.getDeclaringClass() != firstCaller) {
+                        return caller;
+                    }
+                }
+                return null;
+            }
+
+            if (it.hasNext()) {
+                return it.next().getDeclaringClass();
+            }
+
+            return null;
+        });
+    }
+
     @NotNull
     public static <T> AClass<T> aClass(@NotNull Class<T> clazz) {
         return RUNTIME.importClass(clazz);
@@ -236,6 +275,7 @@ public class Lookup {
 
         private final Map<String, AClass<?>> classPath = new HashMap<>();
         private static final Map<String, AClass<?>> staticClassPath = new HashMap<>();
+        private static final Set<Class<?>> lockedCallers = new HashSet<>();
 
         public Runtime(@NotNull ClassLoader parent) {
             this(parent, reference -> null);
@@ -287,6 +327,20 @@ public class Lookup {
                 classes[i] = getClass(types[i]);
             }
             return classes;
+        }
+
+        public boolean isLocked() {
+            return lockedCallers.contains(caller());
+        }
+
+        public boolean isUnlocked() {
+            return !isLocked();
+        }
+
+        public void require(boolean condition) {
+            if (!condition) {
+                lockedCallers.add(caller());
+            }
         }
 
         @NotNull
@@ -413,7 +467,7 @@ public class Lookup {
         @NotNull
         public Object[] getEnumValues() {
             try {
-                return (Object[]) getClass().getDeclaredMethod("values").invoke(null);
+                return (Object[]) get().getDeclaredMethod("values").invoke(null);
             } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
@@ -482,9 +536,11 @@ public class Lookup {
             this.parent = parent;
         }
 
-        @NotNull
         @SuppressWarnings("unchecked")
         public Constructor<T> get() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             if (constructor == null) {
                 Constructor<?> currentConstructor = null;
                 int currentScore = 0;
@@ -545,8 +601,10 @@ public class Lookup {
             }
         }
 
-        @NotNull
         public MethodHandle handle() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             try {
                 try {
                     return handle0();
@@ -569,6 +627,9 @@ public class Lookup {
 
         @Nullable
         public MethodHandle handleIfExist() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             try {
                 try {
                     return handle0();
@@ -634,8 +695,10 @@ public class Lookup {
             this.parent = parent;
         }
 
-        @NotNull
         public Method get() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             if (method == null) {
                 Method currentMethod = null;
                 int currentScore = 0;
@@ -678,7 +741,7 @@ public class Lookup {
         }
 
         public <T> T invoke() {
-            return Lookup.invoke(handle(), null);
+            return Lookup.invoke(handle());
         }
 
         public <T> T invoke(@Nullable Object instance) {
@@ -709,8 +772,10 @@ public class Lookup {
             }
         }
 
-        @NotNull
         public MethodHandle handle() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             try {
                 try {
                     if (staticMod) {
@@ -794,8 +859,10 @@ public class Lookup {
             this.parent = parent;
         }
 
-        @NotNull
         public Field get() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             if (field == null) {
                 Field currentField = null;
                 int currentScore = 0;
@@ -835,7 +902,7 @@ public class Lookup {
         }
 
         public <T> T getValue() {
-            return Lookup.invoke(getter(), null);
+            return Lookup.invoke(getter());
         }
 
         public <T> T getValue(@Nullable Object instance) {
@@ -873,8 +940,10 @@ public class Lookup {
             }
         }
 
-        @NotNull
         public MethodHandle getter() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             try {
                 try {
                     if (staticMod) {
@@ -892,8 +961,10 @@ public class Lookup {
             }
         }
 
-        @NotNull
         public MethodHandle setter() {
+            if (parent.parent.isLocked()) {
+                return null;
+            }
             try {
                 try {
                     if (staticMod) {

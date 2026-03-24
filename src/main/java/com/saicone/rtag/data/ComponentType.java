@@ -27,6 +27,11 @@ import java.util.Optional;
 @ApiStatus.Experimental
 public class ComponentType {
 
+    // lock
+    static {
+        Lookup.SERVER.require(MC.version().isComponent());
+    }
+
     // import
     private static final Lookup.AClass<?> Holder = Lookup.SERVER.importClass("net.minecraft.core.Holder");
     private static final Lookup.AClass<?> HolderLookup$Provider = Lookup.SERVER.importClass("net.minecraft.core.HolderLookup$Provider");
@@ -71,32 +76,36 @@ public class ComponentType {
             REGISTRY_JSON_OPS = createGlobalContext(JsonOps.INSTANCE);
             REGISTRY_JAVA_OPS = createGlobalContext(JAVA_OPS);
         } catch (Throwable t) {
-            t.printStackTrace();
+            if (Lookup.SERVER.isUnlocked()) {
+                t.printStackTrace();
+            }
         }
     }
 
     private static final Map<String, Object> TYPES = new HashMap<>();
     private static final Map<String, Codec<Object>> CODECS = new HashMap<>();
     static {
-        // Declare
-        final MethodHandle Identifier_getPath = Identifier.method(String.class, "getPath").handle();
-        final MethodHandle Holder_value = Holder.method(Object.class, "value").handle();
+        if (Lookup.SERVER.isUnlocked()) {
+            // Declare
+            final MethodHandle Identifier_getPath = Identifier.method(String.class, "getPath").handle();
+            final MethodHandle Holder_value = Holder.method(Object.class, "value").handle();
 
-        final Object DATA_COMPONENT_TYPE = BuiltInRegistries.field(Modifier.STATIC, Registry, "DATA_COMPONENT_TYPE").getValue();
+            final Object DATA_COMPONENT_TYPE = BuiltInRegistries.field(Modifier.STATIC, Registry, "DATA_COMPONENT_TYPE").getValue();
 
-        final Map<Object, Object> byLocation = MappedRegistry.field(Map.class, "byLocation").getValue(DATA_COMPONENT_TYPE);
-        for (Map.Entry<Object, Object> entry : byLocation.entrySet()) {
-            if (entry.getValue() == null) {
-                continue;
-            }
-            final String key = Lookup.invoke(Identifier_getPath, entry.getKey());
-            final Object value = Lookup.invoke(Holder_value, entry.getValue());
+            final Map<Object, Object> byLocation = MappedRegistry.field(Map.class, "byLocation").getValue(DATA_COMPONENT_TYPE);
+            for (Map.Entry<Object, Object> entry : byLocation.entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
+                final String key = Lookup.invoke(Identifier_getPath, entry.getKey());
+                final Object value = Lookup.invoke(Holder_value, entry.getValue());
 
-            TYPES.put(key(key), value);
+                TYPES.put(key(key), value);
 
-            final Codec<Object> valueCodec = Lookup.invoke(DataComponentType_codec, value);
-            if (valueCodec != null) {
-                CODECS.put(key(key), valueCodec);
+                final Codec<Object> valueCodec = Lookup.invoke(DataComponentType_codec, value);
+                if (valueCodec != null) {
+                    CODECS.put(key(key), valueCodec);
+                }
             }
         }
     }
