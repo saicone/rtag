@@ -16,7 +16,7 @@ public class RtagPlugin extends JavaPlugin {
         instance = this;
         getLogger().info("Found version " + MC.version() + " (data version = " + MC.version().dataVersion().orElse(null) + ", package = " + MC.version().bukkitPackage() + ")");
         // Utils
-        loadRtagClass("util.EasyLookup",
+        loadRtagClass(
                 "util.ChatComponent",
                 "util.EnchantmentTag",
                 "util.ItemMaterialTag",

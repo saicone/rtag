@@ -25,6 +25,8 @@ public class ItemObject {
 
     // import
     private static final Lookup.AClass<?> DefaultedRegistry = Lookup.SERVER.importClass("net.minecraft.core.DefaultedRegistry");
+    private static final Lookup.AClass<?> Holder = Lookup.SERVER.importClass("net.minecraft.core.Holder");
+    private static final Lookup.AClass<?> Registry = Lookup.SERVER.importClass("net.minecraft.core.Registry");
     private static final Lookup.AClass<?> DataComponentPatch = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentPatch");
     private static final Lookup.AClass<?> BuiltInRegistries = Lookup.SERVER.importClass("net.minecraft.core.registries.BuiltInRegistries");
     private static final Lookup.AClass<?> CompoundTag = Lookup.SERVER.importClass("net.minecraft.nbt.CompoundTag");
@@ -43,7 +45,7 @@ public class ItemObject {
 
     // declare
     @Deprecated
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     private static final MethodHandle DefaultedRegistry_getValue;
     static {
         if (MC.version().isNewerThanOrEquals(MC.V_1_21_2)) {
@@ -56,7 +58,19 @@ public class ItemObject {
     }
 
     @Deprecated
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
+    private static final MethodHandle Registry_wrapAsHolder;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_26_1)) {
+            Registry_wrapAsHolder = Registry.method(Holder, "wrapAsHolder", Object.class).handle();
+        } else {
+            // Not used on lower versions
+            Registry_wrapAsHolder = null;
+        }
+    }
+
+    @Deprecated
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     private static final MethodHandle Identifier_parse;
     static {
         if (MC.version().isNewerThanOrEquals(MC.V_1_21)) {
@@ -100,7 +114,7 @@ public class ItemObject {
     }
     private static final MethodHandle ItemStack_copy = MC_ItemStack.method(MC_ItemStack, "copy").handle();
     @Deprecated
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     private static final MethodHandle ItemStack$set_item;
     private static final MethodHandle ItemStack_applyComponentsAndValidate;
     private static final MethodHandle ItemStack_save;
@@ -109,7 +123,11 @@ public class ItemObject {
     private static final MethodHandle ItemStack_setTag;
     static {
         if (MC.version().isComponent()) {
-            ItemStack$set_item = MC_ItemStack.field(Item, "item").getter();
+            if (MC.version().isNewerThanOrEquals(MC.V_26_1)) {
+                ItemStack$set_item = MC_ItemStack.field(Holder, "item").setter();
+            } else {
+                ItemStack$set_item = MC_ItemStack.field(Item, "item").setter();
+            }
             ItemStack_applyComponentsAndValidate = MC_ItemStack.method(void.class, "applyComponentsAndValidate", DataComponentPatch).handle();
             ItemStack_save = null;
             ItemStack_load = null;
@@ -161,7 +179,7 @@ public class ItemObject {
     }
 
     @Deprecated
-    @ApiStatus.ScheduledForRemoval(inVersion = "2.0.0")
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.6.0")
     private static final Object ITEM_REGISTRY;
     static {
         if (MC.version().isNewerThanOrEquals(MC.V_1_19_3)) {
@@ -299,7 +317,10 @@ public class ItemObject {
             final Object id = TagCompound.get(compound, "id");
             if (id != null) {
                 try {
-                    final Object loadedItem = DefaultedRegistry_getValue.invoke(ITEM_REGISTRY, Identifier_parse.invoke(TagBase.getValue(id)));
+                    Object loadedItem = DefaultedRegistry_getValue.invoke(ITEM_REGISTRY, Identifier_parse.invoke(TagBase.getValue(id)));
+                    if (MC.version().isNewerThanOrEquals(MC.V_26_1)) {
+                        loadedItem = Registry_wrapAsHolder.invoke(ITEM_REGISTRY, loadedItem);
+                    }
                     if (loadedItem != null) {
                         ItemStack$set_item.invoke(item, loadedItem);
                     }

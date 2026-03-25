@@ -19,33 +19,25 @@ import java.lang.reflect.Modifier;
 @ApiStatus.Experimental
 public class IOValue {
 
+    // lock
+    static {
+        Lookup.SERVER.require(MC.version().isNewerThanOrEquals(MC.V_1_21_6));
+    }
+
     // import
     private static final Lookup.AClass<?> HolderLookup$Provider = Lookup.SERVER.importClass("net.minecraft.core.HolderLookup$Provider");
     private static final Lookup.AClass<?> CompoundTag = Lookup.SERVER.importClass("net.minecraft.nbt.CompoundTag");
-    private static final Lookup.AClass<?> ProblemReporter$ = Lookup.SERVER.importClass("net.minecraft.util.ProblemReporter");
+    private static final Lookup.AClass<?> MC_ProblemReporter = Lookup.SERVER.importClass("net.minecraft.util.ProblemReporter");
     private static final Lookup.AClass<?> TagValueInput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.TagValueInput");
     private static final Lookup.AClass<?> TagValueOutput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.TagValueOutput");
     private static final Lookup.AClass<?> ValueInput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.ValueInput");
     private static final Lookup.AClass<?> ValueOutput = Lookup.SERVER.importClass("net.minecraft.world.level.storage.ValueOutput");
 
     // declare
-    private static final MethodHandle TagValueOutput$new;
-    private static final MethodHandle TagValueInput_create;
-    private static final MethodHandle TagValueOutput_createWithContext;
-    private static final MethodHandle TagValueOutput_buildResult;
-    static {
-        if (MC.version().isNewerThanOrEquals(MC.V_1_21_6)) {
-            TagValueOutput$new = TagValueOutput.constructor(ProblemReporter$, DynamicOps.class, CompoundTag).handle();
-            TagValueInput_create = TagValueInput.method(Modifier.STATIC, ValueInput, "create", ProblemReporter$, HolderLookup$Provider, CompoundTag).handle();
-            TagValueOutput_createWithContext = TagValueOutput.method(Modifier.STATIC, TagValueOutput, "createWithContext", ProblemReporter$, HolderLookup$Provider).handle();
-            TagValueOutput_buildResult = TagValueOutput.method(CompoundTag, "buildResult").handle();
-        } else {
-            TagValueOutput$new = null;
-            TagValueInput_create = null;
-            TagValueOutput_createWithContext = null;
-            TagValueOutput_buildResult = null;
-        }
-    }
+    private static final MethodHandle TagValueOutput$new = TagValueOutput.constructor(MC_ProblemReporter, DynamicOps.class, CompoundTag).handle();
+    private static final MethodHandle TagValueInput_create = TagValueInput.method(Modifier.STATIC, ValueInput, "create", MC_ProblemReporter, HolderLookup$Provider, CompoundTag).handle();
+    private static final MethodHandle TagValueOutput_createWithContext = TagValueOutput.method(Modifier.STATIC, TagValueOutput, "createWithContext", MC_ProblemReporter, HolderLookup$Provider).handle();
+    private static final MethodHandle TagValueOutput_buildResult = TagValueOutput.method(CompoundTag, "buildResult").handle();
 
     /**
      * Create a tag value input using provided objects.<br>

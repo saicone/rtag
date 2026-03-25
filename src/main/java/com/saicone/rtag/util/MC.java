@@ -160,6 +160,10 @@ public final class MC implements Comparable<MC> {
     public static final MC
             V_1_21_11  = ver(1, 21, 11).rev(7).data(4671).protocol(774).resource(75.0f, 94.1f);
 
+    // Tiny Takeover
+    public static final MC
+            V_26_1  = ver(26, 1).rev(1).data(4786).protocol(775).resource(84.0f, 101.1f);
+
     @NotNull
     private static MC ver(int major, int feature) {
         return new MC(major, feature);
@@ -285,9 +289,9 @@ public final class MC implements Comparable<MC> {
 
         this.ordinal = ORDINAL.getAndIncrement();
         this.name = major + "." + feature + "." + minor;
-        this.legacy = feature <= 12;
-        this.flat = feature >= 13;
-        this.universal = feature >= 17;
+        this.legacy = major < 26 && feature <= 12;
+        this.flat = major >= 26 || feature >= 13;
+        this.universal = major >= 26 || feature >= 17;
     }
 
     @NotNull
@@ -298,7 +302,7 @@ public final class MC implements Comparable<MC> {
         final String featureFormatted = this.feature >= 10 ? String.valueOf(this.feature) : "0" + this.feature;
         final String revisionFormatted = revision >= 10 ? String.valueOf(revision) : "0" + revision;
 
-        this.featRevision = Float.parseFloat(this.feature + "." + revisionFormatted);
+        this.featRevision = Float.parseFloat((this.major >= 26 ? String.valueOf(this.major) : "") + this.feature + "." + revisionFormatted);
         this.fullRevision = Integer.parseInt(this.major + featureFormatted + revisionFormatted);
         this.bukkitPackage = "v" + this.major + "_" + this.feature + "_R" + revision;
         return this;
