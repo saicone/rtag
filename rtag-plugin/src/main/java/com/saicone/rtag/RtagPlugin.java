@@ -50,7 +50,7 @@ public class RtagPlugin extends JavaPlugin {
                 for (Class<?> declared : clazz.getDeclaredClasses()) {
                     Class.forName(declared.getName());
                 }
-            } catch (ClassNotFoundException ignored) { }
+            } catch (ClassNotFoundException | NoClassDefFoundError ignored) { }
         }
     }
 }
