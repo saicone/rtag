@@ -582,6 +582,10 @@ public class ItemData {
         loadPath("minecraft:use_effects", "tag", "components", "minecraft:use_effects");
         // 1.21.11 - pre1
         loadPath("minecraft:attack_range", "tag", "components", "minecraft:attack_range");
+        // 26.1 - snap1
+        loadPath("minecraft:additional_trade_cost", "tag", "components", "minecraft:additional_trade_cost");
+        // 26.1 - snap5
+        loadPath("minecraft:dye", "tag", "components", "minecraft:dye");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
@@ -705,6 +709,11 @@ public class ItemData {
     }
 
     private static void loadComponentDetectors() {
+        // 26.1
+        loadComponentDetector(MC.V_26_1, components ->
+                components.containsKey("minecraft:additional_trade_cost")
+                        || components.containsKey("minecraft:dye")
+        );
         // 1.21.11
         loadComponentDetector(MC.V_1_21_11, components ->
                 components.containsKey("minecraft:damage_type")
