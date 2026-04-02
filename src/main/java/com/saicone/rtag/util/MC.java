@@ -162,7 +162,8 @@ public final class MC implements Comparable<MC> {
 
     // Tiny Takeover
     public static final MC
-            V_26_1  = ver(26, 1).rev(1).data(4786).protocol(775).resource(84.0f, 101.1f);
+            V_26_1  = ver(26, 1).rev(1).data(4786).protocol(775).resource(84.0f, 101.1f),
+            V_26_1_1 = ver(26, 1, 1).rev(1).data(4788).protocol(775).resource(84.0f, 101.1f);
 
     @NotNull
     private static MC ver(int major, int feature) {
@@ -273,22 +274,24 @@ public final class MC implements Comparable<MC> {
     // - metadata
     private final int ordinal;
     private final String name;
+    private final String string;
     private final boolean legacy;
     private final boolean flat;
     private final boolean universal;
     private boolean component;
 
     MC(int major, int feature) {
-        this(major, feature, 0);
+        this(major, feature, null);
     }
 
-    MC(int major, int feature, int minor) {
+    MC(int major, int feature, @Nullable Integer minor) {
         this.major = major;
         this.feature = feature;
-        this.minor = minor;
+        this.minor = minor != null ? minor : 0;
 
         this.ordinal = ORDINAL.getAndIncrement();
-        this.name = major + "." + feature + "." + minor;
+        this.name = "V_" + major + "_" + feature + (minor != null ? "_" + minor : "");
+        this.string = major + "." + feature + (minor != null ? "." + minor : "");
         this.legacy = major < 26 && feature <= 12;
         this.flat = major >= 26 || feature >= 13;
         this.universal = major >= 26 || feature >= 17;
@@ -454,12 +457,14 @@ public final class MC implements Comparable<MC> {
     }
 
     /**
-     * Get version name as string.
+     * Get the declaration version name as string ({@code V_#_##}).<br>
+     * For a formatted name use {@link MC#toString()}.
      *
      * @return the version name.
      */
     @NotNull
-    private String name() {
+    @ApiStatus.Internal
+    public String name() {
         return name;
     }
 
@@ -468,7 +473,8 @@ public final class MC implements Comparable<MC> {
      *
      * @return the version ordinal number.
      */
-    private int ordinal() {
+    @ApiStatus.Internal
+    public int ordinal() {
         return ordinal;
     }
 
@@ -559,9 +565,14 @@ public final class MC implements Comparable<MC> {
         return (this.ordinal() >= version1.ordinal() && this.ordinal() <= version2.ordinal()) || (this.ordinal() >= version2.ordinal() && this.ordinal() <= version1.ordinal());
     }
 
+    /**
+     * Get the string representation of this version ({@code #.##}).
+     *
+     * @return a formatted name.
+     */
     @Override
     public String toString() {
-        return name;
+        return string;
     }
 
     /**
