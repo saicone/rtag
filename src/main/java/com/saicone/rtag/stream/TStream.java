@@ -6,11 +6,11 @@ import com.saicone.rtag.tag.TagCompound;
 import com.saicone.rtag.tag.TagList;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -247,7 +247,7 @@ public class TStream<T> {
                     }
                 }
                 output.writeObject(null);
-                data = Base64Coder.encodeLines(out.toByteArray());
+                data = Base64.getEncoder().encodeToString(out.toByteArray());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -348,7 +348,8 @@ public class TStream<T> {
         if (base64.equalsIgnoreCase("null")) {
             return;
         }
-        fromBytes(Base64Coder.decodeLines(base64), consumer);
+        base64 = base64.replaceAll("\\s", "");
+        fromBytes(Base64.getDecoder().decode(base64), consumer);
     }
 
     /**
@@ -361,7 +362,8 @@ public class TStream<T> {
         if (base64.equalsIgnoreCase("null")) {
             return new ArrayList<>();
         }
-        return listFromBytes(Base64Coder.decodeLines(base64));
+        base64 = base64.replaceAll("\\s", "");
+        return listFromBytes(Base64.getDecoder().decode(base64));
     }
 
     /**
