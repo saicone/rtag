@@ -1,3 +1,5 @@
+description = 'Rtag Item'
+
 repositories {
     maven { url = uri('https://papermc.io/repo/repository/maven-public/') }
 }

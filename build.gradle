@@ -1,7 +1,14 @@
+
+description = 'Rtag'
+
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven-publish'
     apply plugin: 'idea'
+
+    if (project.name != 'rtag-plugin') {
+        apply from: "$rootDir/gradle/publish-config.gradle"
+    }
 
     idea {
         module {
@@ -52,13 +59,18 @@ allprojects {
         }
     }
 
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                groupId = project.group
-                artifactId = project.name
-                version = project.version
-                from components.java
+    if (project.name != 'rtag-plugin') {
+        publishing {
+            publications {
+                maven(MavenPublication) {
+                    from components.java
+
+                    pom {
+                        afterEvaluate {
+                            description = 'The "readable tag" library, an easy way to handle minecraft data'
+                        }
+                    }
+                }
             }
         }
     }
@@ -67,6 +79,20 @@ allprojects {
 subprojects {
     dependencies {
         implementation rootProject
+    }
+
+    if (project.name != 'rtag-plugin') {
+        publishing {
+            publications {
+                maven(MavenPublication) {
+                    pom {
+                        afterEvaluate {
+                            description = "Module \"${project.name}\" of Rtag"
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

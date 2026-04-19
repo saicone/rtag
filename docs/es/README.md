@@ -90,15 +90,15 @@ import TabItem from '@theme/TabItem';
 
 ```groovy
 repositories {
-    maven { url 'https://jitpack.io' }
+    mavenCentral()
 }
 
 dependencies {
-    compileOnly 'com.saicone.rtag:rtag:VERSION'
+    compileOnly 'com.saicone:rtag:VERSION'
     // Otros módulos
-    compileOnly 'com.saicone.rtag:rtag-block:VERSION'
-    compileOnly 'com.saicone.rtag:rtag-entity:VERSION'
-    compileOnly 'com.saicone.rtag:rtag-item:VERSION'
+    compileOnly 'com.saicone:rtag-block:VERSION'
+    compileOnly 'com.saicone:rtag-entity:VERSION'
+    compileOnly 'com.saicone:rtag-item:VERSION'
 }
 ```
 
@@ -107,15 +107,15 @@ dependencies {
 
 ```kotlin
 repositories {
-    maven("https://jitpack.io")
+    mavenCentral()
 }
 
 dependencies {
-    compileOnly("com.saicone.rtag:rtag:VERSION")
+    compileOnly("com.saicone:rtag:VERSION")
     // Otros módulos
-    compileOnly("com.saicone.rtag:rtag-block:VERSION")
-    compileOnly("com.saicone.rtag:rtag-entity:VERSION")
-    compileOnly("com.saicone.rtag:rtag-item:VERSION")
+    compileOnly("com.saicone:rtag-block:VERSION")
+    compileOnly("com.saicone:rtag-entity:VERSION")
+    compileOnly("com.saicone:rtag-item:VERSION")
 }
 ```
 
@@ -123,35 +123,28 @@ dependencies {
 <TabItem value="maven" label="pom.xml">
 
 ```xml
-<repositories>
-    <repository>
-        <id>Jitpack</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-  
 <dependencies>
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag</artifactId>
         <version>VERSION</version>
         <scope>provided</scope>
     </dependency>
     <!-- Otros módulos -->
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag-block</artifactId>
         <version>VERSION</version>
         <scope>provided</scope>
     </dependency>
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag-entity</artifactId>
         <version>VERSION</version>
         <scope>provided</scope>
     </dependency>
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag-item</artifactId>
         <version>VERSION</version>
         <scope>provided</scope>
@@ -171,19 +164,19 @@ Rtag es completamente compatible para ser implementado dentro de tu proyecto, si
 
 ```groovy
 plugins {
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '9.4.1'
 }
 
 repositories {
-    maven { url 'https://jitpack.io' }
+    mavenCentral()
 }
 
 dependencies {
-    implementation  'com.saicone.rtag:rtag:VERSION'
+    implementation  'com.saicone:rtag:VERSION'
     // Otros módulos
-    implementation 'com.saicone.rtag:rtag-block:VERSION'
-    implementation 'com.saicone.rtag:rtag-entity:VERSION'
-    implementation 'com.saicone.rtag:rtag-item:VERSION'
+    implementation 'com.saicone:rtag-block:VERSION'
+    implementation 'com.saicone:rtag-entity:VERSION'
+    implementation 'com.saicone:rtag-item:VERSION'
 }
 
 jar.dependsOn (shadowJar)
@@ -201,19 +194,19 @@ shadowJar {
 
 ```kotlin
 plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "9.4.1"
 }
 
 repositories {
-    maven("https://jitpack.io")
+    mavenCentral()
 }
 
 dependencies {
-    implementation("com.saicone.rtag:rtag:VERSION")
+    implementation("com.saicone:rtag:VERSION")
     // Otros módulos
-    implementation("com.saicone.rtag:rtag-block:VERSION")
-    implementation("com.saicone.rtag:rtag-entity:VERSION")
-    implementation("com.saicone.rtag:rtag-item:VERSION")
+    implementation("com.saicone:rtag-block:VERSION")
+    implementation("com.saicone:rtag-entity:VERSION")
+    implementation("com.saicone:rtag-item:VERSION")
 }
 
 tasks {
@@ -234,35 +227,28 @@ tasks {
 <TabItem value="maven" label="pom.xml">
 
 ```xml
-<repositories>
-    <repository>
-        <id>Jitpack</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-  
 <dependencies>
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag</artifactId>
         <version>VERSION</version>
         <scope>compile</scope>
     </dependency>
     <!-- Otros módulos -->
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag-block</artifactId>
         <version>VERSION</version>
         <scope>compile</scope>
     </dependency>
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag-entity</artifactId>
         <version>VERSION</version>
         <scope>compile</scope>
     </dependency>
     <dependency>
-        <groupId>com.saicone.rtag</groupId>
+        <groupId>com.saicone</groupId>
         <artifactId>rtag-item</artifactId>
         <version>VERSION</version>
         <scope>compile</scope>

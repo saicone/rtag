@@ -12,8 +12,8 @@
     <a href="https://github.com/saicone/rtag">
         <img src="https://img.shields.io/github/languages/code-size/saicone/rtag?logo=github&logoColor=white&style=flat-square"/>
     </a>
-    <a href="https://jitpack.io/#com.saicone/rtag">
-        <img src="https://jitpack.io/v/com.saicone/rtag.svg?style=flat-square"/>
+    <a href="https://central.sonatype.com/artifact/com.saicone/rtag">
+        <img src="https://img.shields.io/maven-central/v/com.saicone/rtag?style=flat-square"/>
     </a>
     <a href="https://javadoc.saicone.com/rtag/">
         <img src="https://img.shields.io/badge/JavaDoc-Online-green?style=flat-square"/>
@@ -89,15 +89,15 @@ tag.update();
 For Gradle Groovy project (build.gradle)
 ```groovy
 repositories {
-    maven { url 'https://jitpack.io' }
+    mavenCentral()
 }
 
 dependencies {
-    compileOnly 'com.saicone.rtag:rtag:VERSION'
+    compileOnly 'com.saicone:rtag:VERSION'
     // Other modules
-    compileOnly 'com.saicone.rtag:rtag-block:VERSION'
-    compileOnly 'com.saicone.rtag:rtag-entity:VERSION'
-    compileOnly 'com.saicone.rtag:rtag-item:VERSION'
+    compileOnly 'com.saicone:rtag-block:VERSION'
+    compileOnly 'com.saicone:rtag-entity:VERSION'
+    compileOnly 'com.saicone:rtag-item:VERSION'
 }
 ```
 
@@ -106,15 +106,15 @@ dependencies {
   
   ```kotlin
   repositories {
-      maven("https://jitpack.io")
+      mavenCentral()
   }
 
   dependencies {
-      compileOnly("com.saicone.rtag:rtag:VERSION")
+      compileOnly("com.saicone:rtag:VERSION")
       // Other modules
-      compileOnly("com.saicone.rtag:rtag-block:VERSION")
-      compileOnly("com.saicone.rtag:rtag-entity:VERSION")
-      compileOnly("com.saicone.rtag:rtag-item:VERSION")
+      compileOnly("com.saicone:rtag-block:VERSION")
+      compileOnly("com.saicone:rtag-entity:VERSION")
+      compileOnly("com.saicone:rtag-item:VERSION")
   }
   ```
 </details>
@@ -123,35 +123,28 @@ dependencies {
   <summary>For Maven project (pom.xml)</summary>
   
   ```xml
-  <repositories>
-      <repository>
-          <id>Jitpack</id>
-          <url>https://jitpack.io</url>
-      </repository>
-  </repositories>
-    
   <dependencies>
       <dependency>
-          <groupId>com.saicone.rtag</groupId>
+          <groupId>com.saicone</groupId>
           <artifactId>rtag</artifactId>
           <version>VERSION</version>
           <scope>provided</scope>
       </dependency>
       <!-- Other modules -->
       <dependency>
-          <groupId>com.saicone.rtag</groupId>
+          <groupId>com.saicone</groupId>
           <artifactId>rtag-block</artifactId>
           <version>VERSION</version>
           <scope>provided</scope>
       </dependency>
       <dependency>
-          <groupId>com.saicone.rtag</groupId>
+          <groupId>com.saicone</groupId>
           <artifactId>rtag-entity</artifactId>
           <version>VERSION</version>
           <scope>provided</scope>
       </dependency>
       <dependency>
-          <groupId>com.saicone.rtag</groupId>
+          <groupId>com.saicone</groupId>
           <artifactId>rtag-item</artifactId>
           <version>VERSION</version>
           <scope>provided</scope>
