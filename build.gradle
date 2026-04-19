@@ -20,7 +20,7 @@ allprojects {
     }
 
     dependencies {
-        compileOnly 'org.jetbrains:annotations:26.0.2'
+        compileOnly 'org.jetbrains:annotations:26.1.0'
     }
 
     compileJava {
@@ -61,7 +61,7 @@ subprojects {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.21.11-R0.1-SNAPSHOT'
-    compileOnly 'it.unimi.dsi:fastutil:8.5.16'
+    compileOnly 'it.unimi.dsi:fastutil:8.5.18'
     compileOnly('com.github.Rubenicos:DataFixerUpper:9.0') { transitive = false }
     compileOnly 'com.mojang:authlib:1.5.26' // 3.11.50
 }
