@@ -163,7 +163,8 @@ public final class MC implements Comparable<MC> {
     // Tiny Takeover
     public static final MC
             V_26_1  = ver(26, 1).rev(1).data(4786).protocol(775).resource(84.0f, 101.1f),
-            V_26_1_1 = ver(26, 1, 1).rev(1).data(4788).protocol(775).resource(84.0f, 101.1f);
+            V_26_1_1 = ver(26, 1, 1).rev(1).data(4788).protocol(775).resource(84.0f, 101.1f),
+            V_26_1_2 = ver(26, 1, 2).rev(1).data(4790).protocol(775).resource(84.0f, 101.1f);
 
     @NotNull
     private static MC ver(int major, int feature) {
@@ -198,6 +199,7 @@ public final class MC implements Comparable<MC> {
         } catch (Throwable t) {
             t.printStackTrace();
         }
+
         // For some reason the server version cannot be parsed, so internal methods will be used
         if (serverVersion == null) {
             final String serverPackage = Bukkit.getServer().getClass().getPackage().getName();
@@ -208,7 +210,8 @@ public final class MC implements Comparable<MC> {
                 serverVersion = findReverse(MC::dataVersion, getDataVersion(serverPackage));
             }
         }
-        VERSION = serverVersion;
+
+        VERSION = serverVersion == null ? MC.last() : serverVersion;
     }
 
     private static int getDataVersion(@NotNull String serverPackage) {
@@ -584,25 +587,42 @@ public final class MC implements Comparable<MC> {
     @Nullable
     @ApiStatus.Internal
     public static MC fromString(@NotNull String s) {
-        final String[] split = s.replace("MC:", "").trim().split("\\.");
+        // sanitize
+        s = s.replace("MC:", "")
+                .split("-", 2)[0]
+                .split("_", 2)[0]
+                .split("\\.build", 2)[0]
+                .trim();
+
+        // split
+        final String[] split = s.split("\\.");
         if (split.length < 2) {
             return null;
         }
+
+        // parse
         final int major = Integer.parseInt(split[0]);
-        final int feature;
-        final int minor;
-        if (split[1].contains("-") || split[1].contains("_")) {
-            feature = Integer.parseInt(split[1].split("[-_]")[0]);
-            minor = 0;
-        } else {
-            feature = Integer.parseInt(split[1]);
-            minor = split.length > 2 ? Integer.parseInt(split[2].split("[-_]")[0]) : 0;
+        final int feature = Integer.parseInt(split[1]);
+        int minor = 0;
+        if (split.length > 2 && !split[2].equals("x")) {
+            minor = Integer.parseInt(split[2]);
         }
+
+        // find exact
         for (MC value : VALUES) {
             if (value.major == major && value.feature == feature && value.minor == minor) {
                 return value;
             }
         }
+
+        // find latest supported patch
+        for (int i = VALUES.size(); i-- > 0; ) {
+            final MC value = VALUES.get(i);
+            if (value.major == major && value.feature == feature) {
+                return value;
+            }
+        }
+
         return null;
     }
 
