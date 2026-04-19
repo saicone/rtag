@@ -9,7 +9,7 @@ if (central) {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = System.getenv("GROUP") ?: project.group
+            groupId = central ? project.group : "com.saicone.rtag"
             artifactId = project.name
             version = System.getenv("VERSION") ?: project.version
 
