@@ -16,8 +16,6 @@ dependencies {
     implementation project(':rtag-block')
     implementation project(':rtag-entity')
     implementation project(':rtag-item')
-
-    compileOnly 'org.spigotmc:spigot-api:1.21.11-R0.1-SNAPSHOT'
 }
 
 jar {
