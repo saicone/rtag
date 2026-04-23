@@ -126,13 +126,15 @@ public class SkullTexture {
     // Providers
 
     private static final JsonParser JSON_PARSER = new JsonParser();
-    private static final Supplier<ItemStack> PLAYER_HEAD = () -> {
+    public static final Supplier<ItemStack> PLAYER_HEAD;
+    static {
         if (MC.version().isFlat()) {
-            return new ItemStack(Material.PLAYER_HEAD);
+            PLAYER_HEAD = () -> new ItemStack(Material.PLAYER_HEAD);
         } else {
-            return new ItemStack(Material.getMaterial("SKULL_ITEM"), 1, (short) 3);
+            final Material material = Material.getMaterial("SKULL_ITEM");
+            PLAYER_HEAD = () -> new ItemStack(material, 1, (short) 3);
         }
-    };
+    }
 
     // Instances
 
