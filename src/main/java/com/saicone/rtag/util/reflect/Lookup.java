@@ -34,7 +34,7 @@ public class Lookup {
 
     public static final Runtime SERVER = new Runtime(
             Lookup.class.getClassLoader(),
-            ServerInstance.Type.MOJANG_MAPPED ? reference -> null : Remapper.mojangToSpigot(MC.version())
+            ServerInstance.Type.MOJANG_MAPPED ? reference -> null : Remapper.MOJANG_TO_SPIGOT
     ) {
         private final String minecraftPackage = "net.minecraft.server." + MC.version().bukkitPackage() + ".";
         private final String craftbukkitPackage = "org.bukkit.craftbukkit." + MC.version().bukkitPackage() + ".";

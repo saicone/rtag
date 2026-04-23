@@ -21,6 +21,8 @@ import java.util.function.UnaryOperator;
 @ApiStatus.Internal
 public class Remapper implements UnaryOperator<Reference> {
 
+    public static final Remapper MOJANG_TO_SPIGOT = mojangToSpigot(MC.version());
+
     @NotNull
     public static Remapper mojangToSpigot(@NotNull MC version) {
         final Remapper remapper = new Remapper();
