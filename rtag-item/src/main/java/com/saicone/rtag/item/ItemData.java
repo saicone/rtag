@@ -689,11 +689,26 @@ public class ItemData {
                         if (value != null) {
                             if (TagList.isTagList(value)) {
                                 for (Object line : TagList.getValue(value)) {
+                                    if (TagCompound.isTagCompound(line)) {
+                                        // Detect book labeled content
+                                        if (TagCompound.hasKey(line, "raw")) {
+                                            if (predicate.test(TagCompound.get(line, "raw"))) {
+                                                return true;
+                                            }
+                                            continue;
+                                        }
+                                        if (TagCompound.hasKey(line, "filtered")) {
+                                            if (predicate.test(TagCompound.get(line, "filtered"))) {
+                                                return true;
+                                            }
+                                            continue;
+                                        }
+                                    }
                                     if (predicate.test(line)) {
                                         return true;
                                     }
                                 }
-                            } else if (predicate.test(parent.get(key))) {
+                            } else if (predicate.test(value)) {
                                 return true;
                             }
                         }

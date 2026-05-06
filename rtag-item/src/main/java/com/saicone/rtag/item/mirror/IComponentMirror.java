@@ -1150,7 +1150,20 @@ public class IComponentMirror implements ItemMirror {
             if (to.isNewerThanOrEquals(MC.V_1_21_5) && from.isOlderThan(MC.V_1_21_5) && id.equals("minecraft:written_book_content")) {
                 final Object pages = TagCompound.get(component, "pages");
                 if (pages != null) {
-                    TagList.getValue(pages).replaceAll(this::upgradeText);
+                    TagList.getValue(pages).replaceAll(line -> {
+                        if (TagCompound.isTagCompound(line)) {
+                            final Map<String, Object> map = TagCompound.getValue(line);
+                            if (map.containsKey("raw")) {
+                                map.put("raw", upgradeText(map.get("raw")));
+                            }
+                            if (map.containsKey("filtered")) {
+                                map.put("filtered", upgradeText(map.get("filtered")));
+                            }
+                            return line;
+                        } else {
+                            return upgradeText(line);
+                        }
+                    });
                 }
             }
         }
@@ -1201,7 +1214,20 @@ public class IComponentMirror implements ItemMirror {
             if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5) && id.equals("minecraft:written_book_content")) {
                 final Object pages = TagCompound.get(component, "pages");
                 if (pages != null) {
-                    TagList.getValue(pages).replaceAll(this::downgradeText);
+                    TagList.getValue(pages).replaceAll(line -> {
+                        if (TagCompound.isTagCompound(line)) {
+                            final Map<String, Object> map = TagCompound.getValue(line);
+                            if (map.containsKey("raw")) {
+                                map.put("raw", downgradeText(map.get("raw")));
+                            }
+                            if (map.containsKey("filtered")) {
+                                map.put("filtered", downgradeText(map.get("filtered")));
+                            }
+                            return line;
+                        } else {
+                            return downgradeText(line);
+                        }
+                    });
                 }
             }
         }
