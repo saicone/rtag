@@ -166,6 +166,10 @@ public final class MC implements Comparable<MC> {
             V_26_1_1 = ver(26, 1, 1).rev(1).data(4788).protocol(775).resource(84.0f, 101.1f),
             V_26_1_2 = ver(26, 1, 2).rev(1).data(4790).protocol(775).resource(84.0f, 101.1f);
 
+    // 	Chaos Cubed
+    public static final MC
+            V_26_2  = ver(26, 2).rev(1).data(4903).protocol(776).resource(88.0f, 107.1f);
+
     @NotNull
     private static MC ver(int major, int feature) {
         return new MC(major, feature);

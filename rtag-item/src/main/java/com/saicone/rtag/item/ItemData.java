@@ -586,6 +586,8 @@ public class ItemData {
         loadPath("minecraft:additional_trade_cost", "tag", "components", "minecraft:additional_trade_cost");
         // 26.1 - snap5
         loadPath("minecraft:dye", "tag", "components", "minecraft:dye");
+        // 26.2 - snap1
+        loadPath("minecraft:sulfur_cube_content", "tag", "components", "minecraft:sulfur_cube_content");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
@@ -724,6 +726,10 @@ public class ItemData {
     }
 
     private static void loadComponentDetectors() {
+        // 26.2
+        loadComponentDetector(MC.V_26_2, components ->
+                components.containsKey("minecraft:sulfur_cube_content")
+        );
         // 26.1
         loadComponentDetector(MC.V_26_1, components ->
                 components.containsKey("minecraft:additional_trade_cost")
