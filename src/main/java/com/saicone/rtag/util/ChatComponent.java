@@ -825,7 +825,7 @@ public class ChatComponent {
                 return joiner.toString();
             case 8: // String
                 // "<value>"
-                return palette[0] + '"' + palette[2] + TagBase.getValue(tag) + palette[0] + '"';
+                return palette[0] + '"' + palette[2] + TagString.escape((String) TagBase.getValue(tag)) + palette[0] + '"';
             case 9: // List
                 // [<pretty value>, <pretty value>, <pretty value>...]
                 return prettyList(tag, count, indent, palette);
@@ -888,9 +888,86 @@ public class ChatComponent {
         }
 
         for (var entry : map.entrySet()) {
-            joiner.add(palette[1] + entry.getKey() + palette[0] + ": " + pretty(entry.getValue(), count + 1, indent, palette));
+            joiner.add(palette[1] + TagString.quoteIfNeeded(entry.getKey()) + palette[0] + ": " + pretty(entry.getValue(), count + 1, indent, palette));
         }
         return joiner.toString();
+    }
+
+    private static final class TagString {
+        public static String quoteIfNeeded(String input) {
+            if (input == null) {
+                return "\"\"";
+            }
+
+            if (input.isEmpty()) {
+                return "\"\"";
+            }
+
+            if (needsQuotes(input)) {
+                return '"' + escape(input) + '"';
+            }
+
+            return input;
+        }
+
+        private static boolean needsQuotes(String input) {
+            final char first = input.charAt(0);
+            if (Character.isDigit(first) || first == '-' || first == '.' || first == '+') {
+                return true;
+            }
+
+            for (int i = 0; i < input.length(); i++) {
+                final char c = input.charAt(i);
+                if (!isAllowedUnquoted(c)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static boolean isAllowedUnquoted(char c) {
+            return (c >= 'a' && c <= 'z')
+                    || (c >= 'A' && c <= 'Z')
+                    || (c >= '0' && c <= '9')
+                    || c == '_'
+                    || c == '-'
+                    || c == '.'
+                    || c == '+';
+        }
+
+        public static String escape(String s) {
+            final StringBuilder builder = new StringBuilder(s.length());
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                switch (c) {
+                    case '\\':
+                        builder.append("\\\\");
+                        break;
+                    case '"' :
+                        builder.append("\\\"");
+                        break;
+                    case '\b':
+                        builder.append("\\b");
+                        break;
+                    case '\f':
+                        builder.append("\\f");
+                        break;
+                    case '\n':
+                        builder.append("\\n");
+                        break;
+                    case '\r':
+                        builder.append("\\r");
+                        break;
+                    case '\t':
+                        builder.append("\\t");
+                        break;
+                    default:
+                        builder.append(c);
+                        break;
+                }
+            }
+            return builder.toString();
+        }
     }
 
     @SuppressWarnings("unchecked")
