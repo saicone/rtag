@@ -2,9 +2,14 @@ description = 'Rtag Item'
 
 repositories {
     maven { url = uri('https://papermc.io/repo/repository/maven-public/') }
+    maven { url = uri('https://repo.codemc.io/repository/nms/') }
 }
 
 dependencies {
     compileOnly 'com.mojang:authlib:1.5.26' // 3.11.50
     compileOnly('com.github.Rubenicos:DataFixerUpper:9.0') { transitive = false }
+    // TODO: Remove this dependency when ItemDataFix use reflection
+    compileOnly('org.spigotmc:spigot:26.1-R0.1-SNAPSHOT') {
+        exclude group: 'com.mojang'
+    }
 }
