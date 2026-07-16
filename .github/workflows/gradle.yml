@@ -33,3 +33,10 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Upload artifact
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: 'Click here to download'
+          path: '**/rtag-plugin/build/libs/*.jar'
