@@ -141,7 +141,7 @@ public class DataComponent {
         /**
          * An empty DataComponentMap instance.
          */
-        public static final Object EMPTY = DataComponentMap.field(Modifier.STATIC, DataComponentMap, "EMPTY").getValue();
+        public static final Object EMPTY = DataComponentMap.field(Modifier.STATIC, DataComponentMap, "EMPTY").getterValue();
 
         // declare
         private static final MethodHandle DataComponentGetter_get;
@@ -329,7 +329,7 @@ public class DataComponent {
         /**
          * An empty DataComponentPatch instance.
          */
-        public static final Object EMPTY = DataComponentPatch.field(Modifier.STATIC, DataComponentPatch, "EMPTY").getValue();
+        public static final Object EMPTY = DataComponentPatch.field(Modifier.STATIC, DataComponentPatch, "EMPTY").getterValue();
 
         // declare
         private static final MethodHandle DataComponentPatch$get_map = DataComponentPatch.field(Reference2ObjectMap.class, "map").getter();

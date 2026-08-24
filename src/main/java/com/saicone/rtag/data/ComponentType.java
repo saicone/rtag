@@ -59,7 +59,7 @@ public class ComponentType {
      * NbtOps public instance from Minecraft code.
      */
     @ApiStatus.Experimental
-    public static final Object NBT_OPS = NbtOps.field(Modifier.STATIC, NbtOps, "INSTANCE").getValue();
+    public static final Object NBT_OPS = NbtOps.field(Modifier.STATIC, NbtOps, "INSTANCE").getterValue();
     /**
      * JavaOps public instance from DataFixerUpper library.
      */

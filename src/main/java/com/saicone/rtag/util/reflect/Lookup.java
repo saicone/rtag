@@ -7,6 +7,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -71,6 +72,7 @@ public class Lookup {
     Lookup() {
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle) {
         try {
@@ -80,6 +82,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1) {
         try {
@@ -89,6 +92,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2) {
         try {
@@ -98,6 +102,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3) {
         try {
@@ -107,6 +112,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4) {
         try {
@@ -116,6 +122,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5) {
         try {
@@ -125,6 +132,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6) {
         try {
@@ -134,6 +142,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7) {
         try {
@@ -143,6 +152,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8) {
         try {
@@ -152,6 +162,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8, @Nullable Object arg9) {
         try {
@@ -161,6 +172,7 @@ public class Lookup {
         }
     }
 
+    @UnknownNullability
     @SuppressWarnings("unchecked")
     public static <T> T invoke(@NotNull MethodHandle handle, @Nullable Object arg1, @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5, @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8, @Nullable Object arg9, @Nullable Object arg10) {
         try {
@@ -172,10 +184,12 @@ public class Lookup {
 
     private static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
+    @UnknownNullability
     public static Class<?> caller() {
         return caller(false);
     }
 
+    @UnknownNullability
     public static Class<?> caller(boolean ignoreCurrent) {
         return STACK_WALKER.walk(stream -> {
             final var it = stream.iterator();
@@ -547,6 +561,7 @@ public class Lookup {
             this.parent = parent;
         }
 
+        @UnknownNullability
         @SuppressWarnings("unchecked")
         public Constructor<T> get() {
             if (parent.parent.isLocked()) {
@@ -613,6 +628,7 @@ public class Lookup {
             }
         }
 
+        @UnknownNullability
         public MethodHandle handle() {
             if (parent.parent.isLocked()) {
                 return null;
@@ -714,6 +730,7 @@ public class Lookup {
             this.parent = parent;
         }
 
+        @UnknownNullability
         public Method get() {
             if (parent.parent.isLocked()) {
                 return null;
@@ -760,10 +777,12 @@ public class Lookup {
             return method;
         }
 
+        @UnknownNullability
         public <T> T invoke() {
             return Lookup.invoke(handle());
         }
 
+        @UnknownNullability
         public <T> T invoke(@Nullable Object instance) {
             return Lookup.invoke(handle(), instance);
         }
@@ -792,6 +811,7 @@ public class Lookup {
             }
         }
 
+        @UnknownNullability
         public MethodHandle handle() {
             if (parent.parent.isLocked()) {
                 return null;
@@ -887,6 +907,7 @@ public class Lookup {
             this.parent = parent;
         }
 
+        @UnknownNullability
         public Field get() {
             if (parent.parent.isLocked()) {
                 return null;
@@ -930,10 +951,12 @@ public class Lookup {
             return field;
         }
 
+        @UnknownNullability
         public <T> T getValue() {
             return Lookup.invoke(getter());
         }
 
+        @UnknownNullability
         public <T> T getValue(@Nullable Object instance) {
             return Lookup.invoke(getter(), instance);
         }
@@ -969,6 +992,7 @@ public class Lookup {
             }
         }
 
+        @UnknownNullability
         public MethodHandle getter() {
             if (parent.parent.isLocked()) {
                 return null;
@@ -998,6 +1022,25 @@ public class Lookup {
             }
         }
 
+        @UnknownNullability
+        public <T> T getterValue() {
+            final MethodHandle getter = getter();
+            if (getter == null) {
+                return null;
+            }
+            return Lookup.invoke(getter);
+        }
+
+        @UnknownNullability
+        public <T> T getterValue(@Nullable Object instance) {
+            final MethodHandle getter = getter();
+            if (getter == null) {
+                return null;
+            }
+            return Lookup.invoke(getter, instance);
+        }
+
+        @UnknownNullability
         public MethodHandle setter() {
             if (parent.parent.isLocked()) {
                 return null;
@@ -1025,6 +1068,22 @@ public class Lookup {
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
+        }
+
+        public void setterValue(@Nullable Object value) {
+            final MethodHandle setter = setter();
+            if (setter == null) {
+                return;
+            }
+            Lookup.invoke(setter, null, value);
+        }
+
+        public void setterValue(@Nullable Object instance, @Nullable Object value) {
+            final MethodHandle setter = setter();
+            if (setter == null) {
+                return;
+            }
+            Lookup.invoke(setter, instance, value);
         }
 
         @NotNull
