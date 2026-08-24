@@ -3,6 +3,8 @@ package com.saicone.rtag;
 import com.saicone.rtag.util.MC;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.logging.Level;
+
 public class RtagPlugin extends JavaPlugin {
 
     private static final String[] KNOWN_CLASSES = new String[] {
@@ -52,7 +54,11 @@ public class RtagPlugin extends JavaPlugin {
                 for (Class<?> declared : clazz.getDeclaredClasses()) {
                     Class.forName(declared.getName());
                 }
-            } catch (ClassNotFoundException | NoClassDefFoundError ignored) { }
+            } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
+                // ignored exception
+            } catch (Throwable t) {
+                getLogger().log(Level.WARNING, "Failed to initialize class " + name, t);
+            }
         }
     }
 }
