@@ -342,7 +342,8 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public Object getComponent(Object type) {
         final Object componentType = ComponentType.of(type);
         if (patch != null && patch.has(componentType)) {
-            return patch.get(componentType);
+            final Object value = patch.get(componentType);
+            return value == DataComponent.REMOVED ? null : value;
         }
         return DataComponent.Map.get(components, componentType);
     }
