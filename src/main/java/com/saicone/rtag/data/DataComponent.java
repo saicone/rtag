@@ -38,14 +38,14 @@ public class DataComponent {
 
     /**
      * Data component object instance to mark a component type as removed.<br>
-     * On version below 26.3 this object is just an empty optional.
+     * On version below 26.3 this object is just a null object.
      */
     public static final Object REMOVED;
     static {
         if (MC.version().isNewerThanOrEquals(MC.V_26_3)) {
             REMOVED = Removed.field(Modifier.STATIC, Removed, "INSTANCE").getValue();
         } else {
-            REMOVED = Optional.empty();
+            REMOVED = null;
         }
     }
 
