@@ -163,8 +163,22 @@ public class ItemObject {
         }
     }
     private static final MethodHandle CraftItemStack_asNMSCopy = CraftItemStack.method(Modifier.STATIC, MC_ItemStack, "asNMSCopy", ItemStack.class).handle();
-    private static final MethodHandle CraftItemStack_asBukkitCopy = CraftItemStack.method(Modifier.STATIC, ItemStack.class, "asBukkitCopy", MC_ItemStack).handle();
-    private static final MethodHandle CraftItemStack_asCraftMirror = CraftItemStack.method(Modifier.STATIC, CraftItemStack, "asCraftMirror", MC_ItemStack).handle();
+    private static final MethodHandle CraftItemStack_asBukkitCopy;
+    static {
+        if (ServerInstance.Platform.PAPER && MC.version().isNewerThanOrEquals(MC.V_26_3)) {
+            CraftItemStack_asBukkitCopy = null;
+        } else {
+            CraftItemStack_asBukkitCopy = CraftItemStack.method(Modifier.STATIC, ItemStack.class, "asBukkitCopy", MC_ItemStack).handle();
+        }
+    }
+    private static final MethodHandle CraftItemStack_asBukkitMirror;
+    static {
+        if (ServerInstance.Platform.PAPER && MC.version().isNewerThanOrEquals(MC.V_26_3)) {
+            CraftItemStack_asBukkitMirror = CraftItemStack.method(Modifier.STATIC, ItemStack.class, "asBukkitMirror", MC_ItemStack).handle();
+        } else {
+            CraftItemStack_asBukkitMirror = CraftItemStack.method(Modifier.STATIC, CraftItemStack, "asCraftMirror", MC_ItemStack).handle();
+        }
+    }
     private static final MethodHandle CraftItemStack$new_item = CraftItemStack.constructor(ItemStack.class).handle();
     private static final MethodHandle CraftItemStack$get_handle = CraftItemStack.field(MC_ItemStack, "handle").getter();
     private static final MethodHandle CraftItemStack$set_handle = CraftItemStack.field(MC_ItemStack, "handle").setter();
@@ -606,7 +620,11 @@ public class ItemObject {
      * @return     Bukkit ItemStack.
      */
     public static ItemStack asBukkitCopy(Object item) {
-        return Lookup.invoke(CraftItemStack_asBukkitCopy, item);
+        if (ServerInstance.Platform.PAPER && MC.version().isNewerThanOrEquals(MC.V_26_3)) {
+            return asCraftMirror(copy(item));
+        } else {
+            return Lookup.invoke(CraftItemStack_asBukkitCopy, item);
+        }
     }
 
     /**
@@ -617,7 +635,7 @@ public class ItemObject {
      * @return     Bukkit ItemStack.
      */
     public static ItemStack asCraftMirror(Object item) {
-        return Lookup.invoke(CraftItemStack_asCraftMirror, item);
+        return Lookup.invoke(CraftItemStack_asBukkitMirror, item);
     }
 
     /**
