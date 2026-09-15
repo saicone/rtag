@@ -14,7 +14,6 @@ import org.jetbrains.annotations.ApiStatus;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Class to invoke ItemStack methods across versions.
@@ -348,11 +347,11 @@ public class ItemObject {
             }
             final Object components = TagCompound.get(compound, "components");
             if (components != null) {
-                final DataComponent.Builder<Optional<?>> builder = DataComponent.Patch.builder();
+                final DataComponent.Builder<Object> builder = DataComponent.Patch.builder();
                 for (Map.Entry<String, Object> entry : TagCompound.getValue(components).entrySet()) {
                     final Object type = ComponentType.of(entry.getKey());
                     if (type != null) {
-                        ComponentType.parseNbt(entry.getKey(), entry.getValue()).ifPresent(component -> builder.set(type, Optional.of(component)));
+                        ComponentType.parseNbt(entry.getKey(), entry.getValue()).ifPresent(component -> builder.set(type, component));
                     }
                 }
                 apply(item, builder.build());

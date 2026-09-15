@@ -10,14 +10,19 @@ import com.saicone.rtag.util.ChatComponent;
 import com.saicone.rtag.util.EnchantmentTag;
 import com.saicone.rtag.util.MC;
 import com.saicone.rtag.util.OptionalType;
-import com.saicone.rtag.util.ServerInstance;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -41,7 +46,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
 
     private final Object components;
 
-    private transient DataComponent.Builder<Optional<?>> patch;
+    private transient DataComponent.Builder<Object> patch;
     private transient boolean edited = false;
     private transient boolean copied = true;
 
@@ -180,7 +185,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         return components;
     }
 
-    private DataComponent.Builder<Optional<?>> getPatch() {
+    private DataComponent.Builder<Object> getPatch() {
         if (patch == null) {
             patch = DataComponent.Patch.builder();
         }
@@ -248,7 +253,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public boolean hasComponent(Object type) {
         final Object componentType = ComponentType.of(type);
         if (patch != null && patch.has(componentType)) {
-            return patch.get(componentType).isPresent();
+            return patch.get(componentType) != null;
         }
         return DataComponent.Map.has(components, componentType);
     }
@@ -280,7 +285,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
      */
     @ApiStatus.Experimental
     public void setComponent(Object type) {
-        getPatch().set(ComponentType.of(type), Optional.of(Rtag.UNIT));
+        getPatch().set(ComponentType.of(type), Rtag.UNIT);
     }
 
     /**
@@ -294,7 +299,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
         final Object parsed = ComponentType.parse(type, value).orElseThrow(() ->
                 new RuntimeException("Cannot parse provided value into defined component type")
         );
-        getPatch().set(ComponentType.of(type), Optional.of(parsed));
+        getPatch().set(ComponentType.of(type), parsed);
     }
 
     /**
@@ -337,7 +342,7 @@ public class RtagItem extends RtagEditor<ItemStack, RtagItem> {
     public Object getComponent(Object type) {
         final Object componentType = ComponentType.of(type);
         if (patch != null && patch.has(componentType)) {
-            return patch.get(componentType).orElse(null);
+            return patch.get(componentType);
         }
         return DataComponent.Map.get(components, componentType);
     }

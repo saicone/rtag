@@ -19,6 +19,11 @@ import java.util.Set;
 @ApiStatus.Experimental
 public class DataComponent {
 
+    // lock
+    static {
+        Lookup.SERVER.require(MC.version().isComponent());
+    }
+
     // import
     private static final Lookup.AClass<?> DataComponentGetter = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentGetter");
     private static final Lookup.AClass<?> DataComponentHolder = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentHolder");
@@ -29,6 +34,20 @@ public class DataComponent {
     private static final Lookup.AClass<?> DataComponentPatch$Builder = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentPatch$Builder");
     private static final Lookup.AClass<?> DataComponentType = Lookup.SERVER.importClass("net.minecraft.core.component.DataComponentType");
     private static final Lookup.AClass<?> PatchedDataComponentMap = Lookup.SERVER.importClass("net.minecraft.core.component.PatchedDataComponentMap");
+    private static final Lookup.AClass<?> Removed = Lookup.SERVER.importClass("net.minecraft.core.component.Removed");
+
+    /**
+     * Data component object instance to mark a component type as removed.<br>
+     * On version below 26.3 this object is just an empty optional.
+     */
+    public static final Object REMOVED;
+    static {
+        if (MC.version().isNewerThanOrEquals(MC.V_26_3)) {
+            REMOVED = Removed.field(Modifier.STATIC, Removed, "INSTANCE").getValue();
+        } else {
+            REMOVED = Optional.empty();
+        }
+    }
 
     DataComponent() {
     }
@@ -47,7 +66,7 @@ public class DataComponent {
         } else if (DataComponentMap.isInstance(component)) {
             return Map.get(component, type);
         } else if (DataComponentPatch.isInstance(component)) {
-            return Patch.get(component, type).orElse(null);
+            return Patch.get(component, type);
         } else {
             throw new IllegalArgumentException("The object type " + component.getClass().getName() + " is not supported");
         }
@@ -67,7 +86,7 @@ public class DataComponent {
         } else if (DataComponentMap.isInstance(component)) {
             return Optional.ofNullable(Map.get(component, type));
         } else if (DataComponentPatch.isInstance(component)) {
-            return Patch.get(component, type);
+            return Optional.ofNullable(Patch.get(component, type));
         } else {
             throw new IllegalArgumentException("The object type " + component.getClass().getName() + " is not supported");
         }
@@ -348,21 +367,47 @@ public class DataComponent {
          * @return a newly generated builder to edit.
          */
         @SuppressWarnings("unchecked")
-        public static Builder<Optional<?>> builder() {
+        public static Builder<Object> builder() {
             try {
                 final Object build = DataComponentPatch_builder.invoke();
-                return new Builder<>(build, (Reference2ObjectMap<Object, Optional<?>>) DataComponentPatch$Builder$get_map.invoke(build)) {
-                    @Override
-                    public Builder<Optional<?>> remove(Object type) {
-                        getMap().put(type, Optional.empty());
-                        return this;
-                    }
+                if (MC.version().isNewerThanOrEquals(MC.V_26_3)) {
+                    return new Builder<>(build, (Reference2ObjectMap<Object, Object>) DataComponentPatch$Builder$get_map.invoke(build)) {
+                        @Override
+                        public Builder<Object> remove(Object type) {
+                            getMap().put(type, REMOVED);
+                            return this;
+                        }
 
-                    @Override
-                    public Object build() {
-                        return Lookup.invoke(DataComponentPatch$Builder_build, build);
-                    }
-                };
+                        @Override
+                        public Object build() {
+                            return Lookup.invoke(DataComponentPatch$Builder_build, build);
+                        }
+                    };
+                } else {
+                    return new Builder<>(build, (Reference2ObjectMap<Object, Object>) DataComponentPatch$Builder$get_map.invoke(build)) {
+                        @Override
+                        public Object get(Object type) {
+                            final Optional<?> value = (Optional<?>) super.get(type);
+                            return value.orElse(null);
+                        }
+
+                        @Override
+                        public Builder<Object> set(Object type, Object value) {
+                            return super.set(type, Optional.of(value));
+                        }
+
+                        @Override
+                        public Builder<Object> remove(Object type) {
+                            getMap().put(type, Optional.empty());
+                            return this;
+                        }
+
+                        @Override
+                        public Object build() {
+                            return Lookup.invoke(DataComponentPatch$Builder_build, build);
+                        }
+                    };
+                }
             } catch (Throwable t) {
                 throw new RuntimeException("Cannot create component patch builder", t);
             }
@@ -373,30 +418,35 @@ public class DataComponent {
          *
          * @param patch the component patch to get component from.
          * @param type  the DataComponentType instance that declares a component type.
-         * @return      the component declared type from data component cache wrapped into optional object.
+         * @return      the component declared type from data component cache.
          */
-        @SuppressWarnings("unchecked")
-        public static Optional<Object> get(Object patch, Object type) {
-            return (Optional<Object>) getValue(patch).get(type);
+        public static Object get(Object patch, Object type) {
+            Object value = getValue(patch).get(type);
+            if (MC.version().isOlderThan(MC.V_26_3)) {
+                return ((Optional<?>) value).orElse(null);
+            }
+            return value;
         }
 
         /**
-         * Get the map value from component patch.
+         * Get the map value from component patch.<br>
+         * On versions older than 26.3 this method return a map with {@link Optional} objects as values.
          *
          * @param patch the patch to get the value itself.
          * @return      a Reference2ObjectMap inside component patch.
          */
-        public static Reference2ObjectMap<Object, Optional<?>> getValue(Object patch) {
+        public static Reference2ObjectMap<Object, Object> getValue(Object patch) {
             return Lookup.invoke(DataComponentPatch$get_map, patch);
         }
 
         /**
-         * Get a DataComponentType key set from component patch.
+         * Get a DataComponentType key set from component patch.<br>
+         * On versions older than 26.3 this method return a set of entries with {@link Optional} objects as values.
          *
          * @param patch the patch to get the key set.
          * @return      set full of DataComponentType objects.
          */
-        public static Set<java.util.Map.Entry<Object, Optional<?>>> entrySet(Object patch) {
+        public static Set<java.util.Map.Entry<Object, Object>> entrySet(Object patch) {
             return getValue(patch).entrySet();
         }
 
@@ -421,12 +471,13 @@ public class DataComponent {
         }
 
         /**
-         * Replace the map value into component patch.
+         * Replace the map value into component patch.<br>
+         * If server version is older than 26.3 the map values must be {@link Optional} objects.
          *
          * @param patch the component patch to set the map value.
          * @param value a Reference2ObjectMap with DataComponentType as keys and wrapped declared objects has values.
          */
-        public static void setValue(Object patch, Reference2ObjectMap<Object, Optional<?>> value) {
+        public static void setValue(Object patch, Reference2ObjectMap<Object, Object> value) {
             Lookup.invoke(DataComponentPatch$set_map, patch, value);
         }
     }
