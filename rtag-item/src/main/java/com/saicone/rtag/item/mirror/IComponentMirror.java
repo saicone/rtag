@@ -78,6 +78,10 @@ public class IComponentMirror implements ItemMirror {
         TRANSFORMATIONS.put("minecraft:instrument", new TextComponentTransformation("description"));
         TRANSFORMATIONS.put("minecraft:item_name", new TextComponentTransformation());
         TRANSFORMATIONS.put("minecraft:lore", new Lore());
+        TRANSFORMATIONS.put("minecraft:pot_decorations", new PotDecorations());
+        TRANSFORMATIONS.put("minecraft:swing_animation", new SwingAnimation());
+        TRANSFORMATIONS.put("minecraft:attack_animation", new SwingAnimation());
+        TRANSFORMATIONS.put("minecraft:interact_animation", new SwingAnimation());
 
         // Run last on downgrade
         TRANSFORMATIONS.put("minecraft:tooltip_display", new TooltipDisplay());
@@ -1937,6 +1941,73 @@ public class IComponentMirror implements ItemMirror {
         public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
             if (from.isNewerThanOrEquals(MC.V_1_21_5) && to.isOlderThan(MC.V_1_21_5)) {
                 TagList.getValue(component).replaceAll(this::downgradeText);
+            }
+        }
+    }
+
+    /**
+     * PotDecorations component transformation.
+     */
+    public static class PotDecorations implements Transformation {
+
+        private static final String[] SIDES = new String[] {
+                "left",
+                "back",
+                "right",
+                "front",
+        };
+
+        @Override
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_26_3) && from.isOlderThan(MC.V_26_3)) {
+                final Map<String, Object> newComponent = new HashMap<>();
+                int index = 0;
+                for (Object element : TagList.getValue(component)) {
+                    newComponent.put(SIDES[index++], TagCompound.newTag(Map.of("id", element)));
+                }
+                TagCompound.set(components, id, TagCompound.newUncheckedTag(newComponent));
+            }
+        }
+
+        @Override
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_26_3) && to.isOlderThan(MC.V_26_3)) {
+                final List<Object> oldComponent = new ArrayList<>();
+                for (String side : SIDES) {
+                    final Object element = TagCompound.get(component, side);
+                    if (element != null) {
+                        final Object idValue = TagCompound.get(element, "id");
+                        if (idValue != null) {
+                            oldComponent.add(idValue);
+                            continue;
+                        }
+                    }
+                    oldComponent.add(TagBase.newTag("brick"));
+                }
+                TagCompound.set(components, id, TagList.newTag(oldComponent));
+            }
+        }
+    }
+
+    /**
+     * SwingAnimation component transformation.
+     */
+    public static class SwingAnimation implements Transformation {
+
+        @Override
+        public void upgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_26_3) && from.isOlderThan(MC.V_26_3)) {
+                TagCompound.remove(components, id);
+                TagCompound.set(components, "minecraft:attack_animation", component);
+                TagCompound.set(components, "minecraft:interact_animation", component);
+            }
+        }
+
+        @Override
+        public void downgrade(@NotNull Object components, @NotNull String id, @NotNull Object component, @NotNull MC from, @NotNull MC to) {
+            if (from.isNewerThanOrEquals(MC.V_26_3) && to.isOlderThan(MC.V_26_3)) {
+                TagCompound.remove(components, id);
+                TagCompound.set(components, "minecraft:swing_animation", component);
             }
         }
     }

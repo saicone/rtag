@@ -588,6 +588,24 @@ public class ItemData {
         loadPath("minecraft:dye", "tag", "components", "minecraft:dye");
         // 26.2 - snap1
         loadPath("minecraft:sulfur_cube_content", "tag", "components", "minecraft:sulfur_cube_content");
+        // 26.3 - snap1
+        loadPath("minecraft:provides_pottery_pattern", "tag", "components", "minecraft:provides_pottery_pattern");
+        // 26.3 - snap2
+        loadPath("minecraft:instrument", "tag", "components", "minecraft:instrument");
+        // 26.3 - snap3
+        loadPath("minecraft:compostable", "tag", "components", "minecraft:compostable");
+        // 26.3 - snap4
+        loadPath("minecraft:cooking_fuel", "tag", "components", "minecraft:cooking_fuel");
+        loadPath("minecraft:brewing_fuel", "tag", "components", "minecraft:brewing_fuel");
+        loadPath("minecraft:sign_text_front", "tag", "components", "minecraft:sign_text_front");
+        loadPath("minecraft:sign_text_back", "tag", "components", "minecraft:sign_text_back");
+        loadPath("minecraft:waxed", "tag", "components", "minecraft:waxed");
+        loadPath("minecraft:cushion/color", "tag", "components", "minecraft:cushion/color");
+        loadPath("minecraft:villager_food", "tag", "components", "minecraft:villager_food");
+        loadPath("minecraft:mob_visibility", "tag", "components", "minecraft:mob_visibility");
+        // 26.3 - snap7
+        loadPath("minecraft:attack_animation", "tag", "components", "minecraft:attack_animation");
+        loadPath("minecraft:interact_animation", "tag", "components", "minecraft:interact_animation");
         // --- Not supported
         // minecraft:hide_additional_tooltip = Same has 6th bit from tag.HideFlags
     }
@@ -726,6 +744,38 @@ public class ItemData {
     }
 
     private static void loadComponentDetectors() {
+        // 26.3
+        loadComponentDetector(MC.V_26_3, components ->
+                components.containsKey("minecraft:provides_pottery_pattern")
+                        || components.containsKey("minecraft:instrument")
+                        || components.containsKey("minecraft:compostable")
+                        || components.containsKey("minecraft:cooking_fuel")
+                        || components.containsKey("minecraft:brewing_fuel")
+                        || components.containsKey("minecraft:sign_text_front")
+                        || components.containsKey("minecraft:sign_text_back")
+                        || components.containsKey("minecraft:waxed")
+                        || components.containsKey("minecraft:cushion/color")
+                        || components.containsKey("minecraft:villager_food")
+                        || components.containsKey("minecraft:mob_visibility")
+                        || components.containsKey("minecraft:attack_animation")
+                        || components.containsKey("minecraft:interact_animation")
+        );
+        loadComponentDetector(MC.V_26_3, "minecraft:pot_decorations", TagCompound::isTagCompound);
+        loadComponentDetector(MC.V_26_3, "minecraft:consumable", consumable -> {
+            final Object effects = TagCompound.get(consumable, "on_consume_effects");
+            if (effects == null) {
+                return false;
+            }
+            if (TagList.isTagList(effects)) {
+                for (Object effect : TagList.getValue(effects)) {
+                    final Object type = TagCompound.get(effect, "type");
+                    if (type != null && "teleport_randomly".equals(TagBase.getValue(type)) && TagCompound.get(effect, "directional_particles") != null) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
         // 26.2
         loadComponentDetector(MC.V_26_2, components ->
                 components.containsKey("minecraft:sulfur_cube_content")
