@@ -80,6 +80,10 @@ tag.update();
 ```
 
 ## Get Rtag
+| Type     | Version           | Download                                                                               |
+|:---------|-------------------|----------------------------------------------------------------------------------------|
+| Stable   | `1.5.18`          | [Click here](https://github.com/saicone/rtag/releases/download/1.5.18/rtag-1.5.18.jar) |
+| Snapshot | `1.5.19-SNAPSHOT` | [Click here](https://cdn.saic.one/github/rtag/artifact)                                |
 
 ### Requirements
 *  **At least Minecraft 1.8.8:** Rtag is made to be used in last Minecraft versions, old versions support is only for commercial purposes.
@@ -90,6 +94,8 @@ For Gradle Groovy project (build.gradle)
 ```groovy
 repositories {
     mavenCentral()
+    // Use this repository if you want to use a snapshot version
+    maven { url = uri('https://central.sonatype.com/repository/maven-snapshots') }
 }
 
 dependencies {
@@ -101,57 +107,53 @@ dependencies {
 }
 ```
 
-<details>
-  <summary>For Gradle Kotlin project (build.gradle.kts)</summary>
-  
-  ```kotlin
-  repositories {
-      mavenCentral()
-  }
+For Gradle Kotlin project (build.gradle.kts)
+```kotlin
+repositories {
+    mavenCentral()
+    // Use this repository if you want to use a snapshot version
+    maven("https://central.sonatype.com/repository/maven-snapshots")
+}
 
-  dependencies {
-      compileOnly("com.saicone:rtag:VERSION")
-      // Other modules
-      compileOnly("com.saicone:rtag-block:VERSION")
-      compileOnly("com.saicone:rtag-entity:VERSION")
-      compileOnly("com.saicone:rtag-item:VERSION")
-  }
-  ```
-</details>
+dependencies {
+    compileOnly("com.saicone:rtag:VERSION")
+    // Other modules
+    compileOnly("com.saicone:rtag-block:VERSION")
+    compileOnly("com.saicone:rtag-entity:VERSION")
+    compileOnly("com.saicone:rtag-item:VERSION")
+}
+```
 
-<details>
-  <summary>For Maven project (pom.xml)</summary>
-  
-  ```xml
-  <dependencies>
-      <dependency>
-          <groupId>com.saicone</groupId>
-          <artifactId>rtag</artifactId>
-          <version>VERSION</version>
-          <scope>provided</scope>
-      </dependency>
-      <!-- Other modules -->
-      <dependency>
-          <groupId>com.saicone</groupId>
-          <artifactId>rtag-block</artifactId>
-          <version>VERSION</version>
-          <scope>provided</scope>
-      </dependency>
-      <dependency>
-          <groupId>com.saicone</groupId>
-          <artifactId>rtag-entity</artifactId>
-          <version>VERSION</version>
-          <scope>provided</scope>
-      </dependency>
-      <dependency>
-          <groupId>com.saicone</groupId>
-          <artifactId>rtag-item</artifactId>
-          <version>VERSION</version>
-          <scope>provided</scope>
-      </dependency>
-  </dependencies>
-  ```
-</details>
+For Maven project (pom.xml)
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.saicone</groupId>
+        <artifactId>rtag</artifactId>
+        <version>VERSION</version>
+        <scope>provided</scope>
+    </dependency>
+    <!-- Other modules -->
+    <dependency>
+        <groupId>com.saicone</groupId>
+        <artifactId>rtag-block</artifactId>
+        <version>VERSION</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.saicone</groupId>
+        <artifactId>rtag-entity</artifactId>
+        <version>VERSION</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.saicone</groupId>
+        <artifactId>rtag-item</artifactId>
+        <version>VERSION</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+```
 
 
 # Why Rtag
