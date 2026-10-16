@@ -440,7 +440,7 @@ public class Remapper implements UnaryOperator<Reference> {
                 method("net.minecraft.core.component.DataComponentPatch", "build").to("a");
             }});
             remapper.add(new Mapping("net.minecraft.core.component.DataComponentType") {{
-                field(Codec.class, "codec").to("b");
+                method(Codec.class, "codec").to("b");
             }});
             remapper.add(new Mapping("net.minecraft.core.component.PatchedDataComponentMap") {{
                 field(Reference2ObjectMap.class, "patch").to("d");
