@@ -35,8 +35,11 @@ jobs:
         run: ./gradlew build
 
       - name: Upload artifact
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && github.repository_owner == 'saicone' }}
         uses: actions/upload-artifact@v7
         with:
-          name: 'Click here to download'
-          path: '**/rtag-plugin/build/libs/*.jar'
+          path: |
+            **/rtag-plugin/build/libs/rtag-[0-9]*.jar
+            !**/rtag-plugin/build/libs/rtag-plugin-*.jar
+            !**/rtag-plugin/build/libs/*-sources.jar
+          archive: false
